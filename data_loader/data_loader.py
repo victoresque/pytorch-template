@@ -21,14 +21,14 @@ class DataLoader(BaseDataLoader):
             self.y += [i for i in target.numpy()]
         self.x = np.array(self.x)
         self.y = np.array(self.y)
-        self.n_batch = len(self.data_loader) * 256 / batch_size
+        self.n_batch = len(self.x) // self.batch_size
         self.batch_idx = 0
 
     def next_batch(self):
         x_batch = self.x[self.batch_idx * self.batch_size:(self.batch_idx + 1) * self.batch_size]
         y_batch = self.y[self.batch_idx * self.batch_size:(self.batch_idx + 1) * self.batch_size]
-        self.batch_idx = self.batch_idx + 1 if self.batch_idx != self.n_batch - 1 else 0
+        self.batch_idx = self.batch_idx + 1 if self.batch_idx + 1 < self.n_batch else 0
         return x_batch, y_batch
 
     def __len__(self):
-        return len(self.data_loader)
+        return self.n_batch

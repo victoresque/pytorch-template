@@ -8,7 +8,7 @@ from trainers.trainer import Trainer
 from logger.logger import Logger
 
 parser = argparse.ArgumentParser(description='PyTorch Template')
-parser.add_argument('-b', '--batch-size', default=256, type=int,
+parser.add_argument('-b', '--batch-size', default=32, type=int,
                     help='mini-batch size (default: 32)')
 parser.add_argument('-e', '--epochs', default=5, type=int,
                     help='number of total epochs (default: 32)')
