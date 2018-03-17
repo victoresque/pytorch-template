@@ -35,6 +35,7 @@ def main(args):
     metrics = [accuracy]
     optimizer = optim.Adam(model.parameters())
     data_loader = DataLoader(args.data_dir, args.batch_size)
+    identifier = type(model).__name__ + '_'
     trainer = Trainer(model, data_loader, loss, metrics,
                       optimizer=optimizer,
                       epochs=args.epochs,
@@ -43,6 +44,7 @@ def main(args):
                       save_freq=args.save_freq,
                       resume=args.resume,
                       verbosity=args.verbosity,
+                      identifier=identifier,
                       with_cuda=not args.no_cuda)
     trainer.train()
     logger.print()

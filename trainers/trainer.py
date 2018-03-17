@@ -6,9 +6,9 @@ from base.base_trainer import BaseTrainer
 
 class Trainer(BaseTrainer):
     def __init__(self, model, data_loader, loss, metrics, optimizer, epochs,
-                 save_dir, save_freq, resume, with_cuda, verbosity, logger=None):
+                 save_dir, save_freq, resume, with_cuda, verbosity, identifier='', logger=None):
         super(Trainer, self).__init__(model, loss, metrics, optimizer, epochs,
-                                      save_dir, save_freq, resume, verbosity, logger)
+                                      save_dir, save_freq, resume, verbosity, identifier, logger)
         self.batch_size = data_loader.batch_size
         self.data_loader = data_loader
         self.with_cuda = with_cuda

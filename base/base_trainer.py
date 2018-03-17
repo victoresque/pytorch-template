@@ -7,7 +7,7 @@ from utils.util import ensure_dir
 
 class BaseTrainer:
     def __init__(self, model, loss, metrics, optimizer, epochs,
-                 save_dir, save_freq, resume, verbosity, logger=None):
+                 save_dir, save_freq, resume, verbosity, identifier='', logger=None):
         self.model = model
         self.loss = loss
         self.metrics = metrics
@@ -16,6 +16,7 @@ class BaseTrainer:
         self.save_dir = save_dir
         self.save_freq = save_freq
         self.verbosity = verbosity
+        self.identifier = identifier
         self.logger = logger
         self.min_loss = math.inf
         self.start_epoch = 1
@@ -45,14 +46,17 @@ class BaseTrainer:
     def _save_checkpoint(self, epoch, loss):
         if loss < self.min_loss:
             self.min_loss = loss
+        arch = type(self.model).__name__
         state = {
             'epoch': epoch,
+            'logger': self.logger
+            'arch': arch,
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'min_loss': self.min_loss,
-            'logger': self.logger
         }
-        filename = os.path.join(self.save_dir, 'checkpoint_epoch{:02d}.pth.tar'.format(epoch))
+        filename = os.path.join(self.save_dir,
+                                self.identifier + 'checkpoint_epoch{:02d}_loss_{:.5f}.pth.tar'.format(epoch, loss))
         print("Saving checkpoint: {} ...".format(filename))
         torch.save(state, filename)
         if loss == self.min_loss:
