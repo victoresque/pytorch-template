@@ -49,7 +49,7 @@ class BaseTrainer:
         arch = type(self.model).__name__
         state = {
             'epoch': epoch,
-            'logger': self.logger
+            'logger': self.logger,
             'arch': arch,
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
