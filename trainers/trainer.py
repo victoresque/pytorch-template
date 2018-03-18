@@ -49,4 +49,4 @@ class Trainer(BaseTrainer):
 
         avg_loss = total_loss / n_batch
         avg_metrics = (total_metrics / n_batch).tolist()
-        return avg_loss, avg_metrics
+        return {'loss': avg_loss, 'metrics': avg_metrics}

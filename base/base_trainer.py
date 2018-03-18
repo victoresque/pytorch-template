@@ -27,18 +27,21 @@ class BaseTrainer:
     def train(self):
         for epoch in range(self.start_epoch, self.epochs+1):
             result = self._train_epoch(epoch)
-            if epoch % self.save_freq == 0:
-                self._save_checkpoint(epoch, result[0])
             if self.logger:
                 log = {
                     'epoch': epoch,
-                    'loss': result[0]
+                    'loss': result['loss']
                 }
                 for i, metric in enumerate(self.metrics):
-                    log[metric.__name__] = result[1][i]
+                    log[metric.__name__] = result['metrics'][i]
+                for key, value in result.items():
+                    if key != 'loss' and key != 'metrics':
+                        log[key] = value
                 self.logger.add_entry(log)
                 if self.verbosity >= 1:
                     print(log)
+            if epoch % self.save_freq == 0:
+                self._save_checkpoint(epoch, result['loss'])
 
     def _train_epoch(self, epoch):
         raise NotImplementedError
