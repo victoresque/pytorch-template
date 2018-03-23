@@ -1,5 +1,10 @@
 
 class Logger:
+    """ Logger
+
+    Note:
+        Used by BaseTrainer to save training history.
+    """
     def __init__(self):
         self.entries = {}
 

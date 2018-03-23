@@ -6,6 +6,11 @@ from utils.util import ensure_dir
 
 
 class BaseTrainer:
+    """ Base class for all trainers.
+
+    Note:
+        Modify if you need to change logging style, checkpoint naming, or something else.
+    """
     def __init__(self, model, loss, metrics, optimizer, epochs,
                  save_dir, save_freq, resume, verbosity, identifier='', logger=None):
         self.model = model

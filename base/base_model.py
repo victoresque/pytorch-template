@@ -6,6 +6,11 @@ import numpy as np
 
 
 class BaseModel(nn.Module):
+    """ Base class for all models.
+
+    Note:
+        No need to modify this in most cases.
+    """
     def __init__(self):
         super(BaseModel, self).__init__()
         self.model = None

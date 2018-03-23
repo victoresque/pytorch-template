@@ -7,6 +7,13 @@ from base.base_data_loader import BaseDataLoader
 
 class DataLoader(BaseDataLoader):
     def __init__(self, data_dir, batch_size):
+        """
+        :param data_dir: Data directory
+        :param batch_size: Batch size used in __next__()
+
+        Note:
+            Modify __init__() to fit your data
+        """
         super(DataLoader, self).__init__(batch_size)
         self.data_dir = data_dir
         self.data_loader = torch.utils.data.DataLoader(
@@ -28,6 +35,7 @@ class DataLoader(BaseDataLoader):
     def __iter__(self):
         self.n_batch = len(self.x) // self.batch_size
         self.batch_idx = 0
+        assert self.n_batch > 0
         return self
 
     def __next__(self):
@@ -40,6 +48,9 @@ class DataLoader(BaseDataLoader):
             raise StopIteration
 
     def __len__(self):
+        """
+        :return: Total batch number
+        """
         self.n_batch = len(self.x) // self.batch_size
         return self.n_batch
 

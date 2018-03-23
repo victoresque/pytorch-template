@@ -1,7 +1,7 @@
 import argparse
 import torch.optim as optim
 from models.model import Model
-from models.loss import nll_loss
+from models.loss import my_loss
 from models.metric import accuracy
 from data_loader.data_loader import DataLoader
 from utils.util import split_validation
@@ -30,16 +30,26 @@ parser.add_argument('--no-cuda', action="store_true",
 
 
 def main(args):
+    # Model
     model = Model()
     model.summary()
+
+    # A logger to store training process information
     logger = Logger()
 
-    loss = nll_loss
+    # Specifying loss function, metric(s), and optimizer
+    loss = my_loss
     metrics = [accuracy]
     optimizer = optim.Adam(model.parameters())
+
+    # Data loader and validation split
     data_loader = DataLoader(args.data_dir, args.batch_size)
     data_loader, valid_data_loader = split_validation(data_loader, args.validation_split)
+
+    # An identifier (prefix) for saved model
     identifier = type(model).__name__ + '_'
+
+    # Trainer instance
     trainer = Trainer(model, loss, metrics,
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
@@ -52,7 +62,11 @@ def main(args):
                       verbosity=args.verbosity,
                       identifier=identifier,
                       with_cuda=not args.no_cuda)
+
+    # Start training!
     trainer.train()
+
+    # See training history
     print(logger)
 
 

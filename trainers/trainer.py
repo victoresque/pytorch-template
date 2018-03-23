@@ -17,6 +17,19 @@ class Trainer(BaseTrainer):
         self.with_cuda = with_cuda
 
     def _train_epoch(self, epoch):
+        """ Train an epoch
+
+        :param epoch: Current training epoch.
+        :return: A log that contains all information you want to save.
+
+        Note:
+            You should modify the data loading part in most cases.
+            If you have additional information to record, for example:
+                additional_log = {"x": x, "y": y}
+            merge it with log before return. i.e.
+                log = {**log, **additional_log}
+                return log
+        """
         self.model.train()
         if self.with_cuda:
             self.model.cuda()
@@ -59,6 +72,13 @@ class Trainer(BaseTrainer):
         return log
 
     def _valid_epoch(self):
+        """ Validate after training an epoch
+
+        :return: A log that contains information about validation
+
+        Note:
+            You should modify the data loading part in most cases.
+        """
         self.model.eval()
         total_val_loss = 0
         total_val_metrics = np.zeros(len(self.metrics))
