@@ -28,14 +28,15 @@ class BaseTrainer:
         for epoch in range(self.start_epoch, self.epochs+1):
             result = self._train_epoch(epoch)
             if self.logger:
-                log = {
-                    'epoch': epoch,
-                    'loss': result['loss']
-                }
-                for i, metric in enumerate(self.metrics):
-                    log[metric.__name__] = result['metrics'][i]
+                log = {'epoch': epoch}
                 for key, value in result.items():
-                    if key != 'loss' and key != 'metrics':
+                    if key == 'metrics':
+                        for i, metric in enumerate(self.metrics):
+                            log[metric.__name__] = result['metrics'][i]
+                    elif key == 'val_metrics':
+                        for i, metric in enumerate(self.metrics):
+                            log['val_'+metric.__name__] = result['val_metrics'][i]
+                    else:
                         log[key] = value
                 self.logger.add_entry(log)
                 if self.verbosity >= 1:
