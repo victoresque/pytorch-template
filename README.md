@@ -73,7 +73,7 @@ You can add your own arguments.
 You can customize data loader to fit your project, just modify ```data_loader/data_loader.py``` or add other files.
 ### Model
 Implement your model under ```model/```
-### Loss/Metrics
+### Loss/metrics
 If you need to change the loss function or metrics, first ```import``` those function in ```main.py```, then modify this part:
 ```python
 loss = my_loss
@@ -104,11 +104,27 @@ Train Epoch: 2 [0/53984 (0%)] Loss: 0.023072
 ⋯
 ```
 Currently the name shown in log is the name of the function.
+### Additional logging
+If you have additional information to be logged, you can modify ```_train_epoch()``` in class ```Trainer```, for example, say you have an additional log saved as a dictionary:
+```python
+additional_log = {"x": x, "y": y}
+```
+just merge it with ```log``` as shown below before returning:
+```python
+log = {**log, **additional_log}
+return log
+```
 ### Validation data
 If you have separate validation data, try implement another data loader for validation, otherwise if you just want to split validation data from training data, try pass ```--validation-split 0.1```, in some cases you might need to modify ```utils/util.py```
+### Checkpoint naming
+If you need to add prefix to your checkpoint, modify this line in ```main.py```
+```python
+identifier = type(model).__name__ + '_'
+```
+The prefix of the model will change, if you need to further change the naming of checkpoints, try modify ```_save_checkpoint()``` in class ```BaseTrainer```
 
 ## Contributing
-Feel free to contribute any sort of function or enhancement, here the coding style follows PEP8
+Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8
 
 ## Acknowledgments
 This project is heavily inspired by the project [Tensorflow-Project-Template](https://github.com/MrGemy95/Tensorflow-Project-Template), be sure to star it!
