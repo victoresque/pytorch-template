@@ -129,4 +129,4 @@ The prefix of the model will change, if you need to further change the naming of
 Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8
 
 ## Acknowledgments
-This project is heavily inspired by the project [Tensorflow-Project-Template](https://github.com/MrGemy95/Tensorflow-Project-Template), be sure to star it!
+This project is heavily inspired by the project [Tensorflow-Project-Template](https://github.com/MrGemy95/Tensorflow-Project-Template) by [Mahmoud Gemy](https://github.com/MrGemy95), be sure to star it!
