@@ -39,7 +39,7 @@ You can add your own arguments.
 
 ## Structure
 ```
-├──  base/ - abstract base classes
+├── base/ - abstract base classes
 │   ├── base_data_loader.py - abstract base class for data loaders.
 │   ├── base_model.py - abstract base class for models.
 │   └── base_trainer.py - abstract base class for trainers
@@ -69,6 +69,8 @@ You can add your own arguments.
 ```
 
 ## Customization
+### Training
+In most cases, you need to modify ```trainer/trainer.py``` to fit the training logic of your project
 ### Data loading
 You can customize data loader to fit your project, just modify ```data_loader/data_loader.py``` or add other files.
 ### Model
