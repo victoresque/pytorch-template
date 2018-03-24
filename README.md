@@ -39,27 +39,27 @@ You can add your own arguments.
 
 ## Structure
 ```
-├──  base/    - abstract base classes
-│   ├── base_data_loader.py  - abstract base class for data loaders.
-│   ├── base_model.py  - abstract base class for models.
-│   └── base_trainer.py  - abstract base class for trainers
+├──  base/ - abstract base classes
+│   ├── base_data_loader.py - abstract base class for data loaders.
+│   ├── base_model.py - abstract base class for models.
+│   └── base_trainer.py - abstract base class for trainers
 │
-├── data_loader/    - anything about data loading goes here
+├── data_loader/ - anything about data loading goes here
 │   └── data_loader.py
 │
-├── datasets/    - default dataset folder
+├── datasets/ - default dataset folder
 │
-├── logger/    - for training process logging
+├── logger/ - for training process logging
 │   └── logger.py
 │
-├── model/    - models, losses, and metrics
-│   ├── modules/  - submodules of your model
-│   ├── saved/  - default checkpoint folder
+├── model/ - models, losses, and metrics
+│   ├── modules/ - submodules of your model
+│   ├── saved/ - default checkpoint folder
 │   ├── loss.py
 │   ├── metric.py
 │   └── model.py
 │
-├── trainer/    - trainers for your project
+├── trainer/ - trainers for your project
 │   └── trainer.py
 │
 └── utils
@@ -92,7 +92,7 @@ Train Epoch: 2 [0/53984 (0%)] Loss: 0.013225
 If you have multiple metrics in your project, just add it to the ```metrics``` list:
 ```python
 loss = my_loss
-metrics = [my_metric]
+metrics = [my_metric, my_metric2]
 ```
 Now the logging shows two metrics:
 ```
