@@ -5,6 +5,12 @@ from base.base_trainer import BaseTrainer
 
 
 class Trainer(BaseTrainer):
+    """ Trainer class
+
+    Note:
+        Inherited from BaseTrainer.
+        Modify __init__() if you have additional arguments to pass.
+    """
     def __init__(self, model, loss, metrics, data_loader, optimizer, epochs,
                  save_dir, save_freq, resume, with_cuda, verbosity, identifier='',
                  valid_data_loader=None, logger=None):
@@ -25,10 +31,10 @@ class Trainer(BaseTrainer):
         Note:
             You should modify the data loading part in most cases.
             If you have additional information to record, for example:
-                additional_log = {"x": x, "y": y}
+                > additional_log = {"x": x, "y": y}
             merge it with log before return. i.e.
-                log = {**log, **additional_log}
-                return log
+                > log = {**log, **additional_log}
+                > return log
         """
         self.model.train()
         if self.with_cuda:
@@ -77,7 +83,7 @@ class Trainer(BaseTrainer):
         :return: A log that contains information about validation
 
         Note:
-            You should modify the data loading part in most cases.
+            Modify this part if you need to.
         """
         self.model.eval()
         total_val_loss = 0

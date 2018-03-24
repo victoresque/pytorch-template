@@ -1,11 +1,11 @@
 import argparse
 import torch.optim as optim
-from models.model import Model
-from models.loss import my_loss
-from models.metric import accuracy
+from model.model import Model
+from model.loss import my_loss
+from model.metric import my_metric, my_metric2
 from data_loader.data_loader import DataLoader
 from utils.util import split_validation
-from trainers.trainer import Trainer
+from trainer.trainer import Trainer
 from logger.logger import Logger
 
 parser = argparse.ArgumentParser(description='PyTorch Template')
@@ -17,12 +17,12 @@ parser.add_argument('--resume', default='', type=str,
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('--verbosity', default=2, type=int,
                     help='verbosity, 0: quiet, 1: per epoch, 2: complete (default: 2)')
-parser.add_argument('--save-dir', default='models/saved', type=str,
-                    help='directory of saved model (default: models/saved)')
+parser.add_argument('--save-dir', default='model/saved', type=str,
+                    help='directory of saved model (default: model/saved)')
 parser.add_argument('--save-freq', default=1, type=int,
                     help='training checkpoint frequency (default: 1)')
-parser.add_argument('--data-dir', default='data/datasets', type=str,
-                    help='directory of training/testing data (default: data/datasets)')
+parser.add_argument('--data-dir', default='datasets', type=str,
+                    help='directory of training/testing data (default: datasets)')
 parser.add_argument('--validation-split', default=0.1, type=float,
                     help='ratio of split validation data, [0.0, 1.0) (default: 0.0)')
 parser.add_argument('--no-cuda', action="store_true",
@@ -39,7 +39,7 @@ def main(args):
 
     # Specifying loss function, metric(s), and optimizer
     loss = my_loss
-    metrics = [accuracy]
+    metrics = [my_metric, my_metric2]
     optimizer = optim.Adam(model.parameters())
 
     # Data loader and validation split

@@ -6,7 +6,7 @@ import numpy as np
 
 
 class BaseModel(nn.Module):
-    """ Base class for all models.
+    """ Base class for all model.
 
     Note:
         No need to modify this in most cases.

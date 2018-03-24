@@ -6,7 +6,7 @@ from utils.util import ensure_dir
 
 
 class BaseTrainer:
-    """ Base class for all trainers.
+    """ Base class for all trainer.
 
     Note:
         Modify if you need to change logging style, checkpoint naming, or something else.
