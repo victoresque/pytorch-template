@@ -63,8 +63,8 @@ You can add your own arguments.
 │   └── trainer.py
 │
 └── utils
-     ├── logger.py
-     └── any_other_utils_you_need
+     ├── utils.py
+     └── ...
 
 ```
 
