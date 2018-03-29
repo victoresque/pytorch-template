@@ -17,8 +17,8 @@ def split_validation(data_loader, validation_split, randomized=True):
         data_loader.x = np.array([data_loader.x[i] for i in rand_idx])
         data_loader.y = np.array([data_loader.y[i] for i in rand_idx])
     split = int(len(data_loader.x) * validation_split)
-    data_loader.x = data_loader.x[split:]
-    data_loader.y = data_loader.y[split:]
     valid_data_loader.x = data_loader.x[:split]
     valid_data_loader.y = data_loader.y[:split]
+    data_loader.x = data_loader.x[split:]
+    data_loader.y = data_loader.y[split:]
     return data_loader, valid_data_loader
