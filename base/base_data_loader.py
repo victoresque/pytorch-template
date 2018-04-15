@@ -15,6 +15,9 @@ class BaseDataLoader:
         self.shuffle = shuffle
 
     def __iter__(self):
+        """
+        :return: Iterator
+        """
         self.n_batch = self._n_samples() // self.batch_size
         self.batch_idx = 0
         assert self.n_batch > 0
@@ -24,7 +27,7 @@ class BaseDataLoader:
 
     def __next__(self):
         """
-        :return: next batch
+        :return: Next batch
         """
         packed = self._pack_data()
         if self.batch_idx < self.n_batch:
@@ -49,6 +52,7 @@ class BaseDataLoader:
     def _pack_data(self):
         """
         Pack all data into a list/tuple/ndarray/...
+
         :return: Packed data in the data loader
         """
         return NotImplementedError
@@ -56,6 +60,7 @@ class BaseDataLoader:
     def _unpack_data(self, packed):
         """
         Unpack packed data (from _pack_data())
+
         :param packed: Packed data
         :return: Unpacked data
         """
@@ -64,6 +69,7 @@ class BaseDataLoader:
     def _update_data(self, unpacked):
         """
         Update data member in the data loader
+
         :param unpacked: Unpacked data (from _update_data())
         """
         return NotImplementedError
@@ -80,12 +86,16 @@ class BaseDataLoader:
     def split_validation(self, validation_split, shuffle=False):
         """
         Validation data splitting
+
         :param validation_split: Ratio of validation data, 0.0 means no validation data
         :param shuffle: Shuffles all training samples before splitting
         :return: Validation data loader, which is the same class as original data loader
 
-        Note: After calling data_loader.split_validation(), data_loader will change
+        Note:
+            After calling data_loader.split_validation(), data_loader will be changed
         """
+        if validation_split == 0.0:
+            return None
         valid_data_loader = copy(self)
         if shuffle:
             self._shuffle_data()

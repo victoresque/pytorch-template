@@ -1,7 +1,5 @@
-import os
-import torch
+import logging
 import torch.nn as nn
-from torch.autograd import Variable
 import numpy as np
 
 
@@ -11,12 +9,21 @@ class BaseModel(nn.Module):
     """
     def __init__(self):
         super(BaseModel, self).__init__()
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def forward(self, x):
+        """
+        Forward pass logic
+
+        :return: Model output
+        """
         raise NotImplementedError
 
     def summary(self):
+        """
+        Model summary
+        """
         model_parameters = filter(lambda p: p.requires_grad, self.parameters())
         params = sum([np.prod(p.size()) for p in model_parameters])
-        print('Trainable parameters:', params)
-        print(self)
+        self.logger.info('Trainable parameters: {}'.format(params))
+        self.logger.info(self)

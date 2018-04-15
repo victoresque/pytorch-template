@@ -1,4 +1,5 @@
 import argparse
+import logging
 import torch.optim as optim
 from model.model import MnistModel
 from model.loss import my_loss
@@ -6,6 +7,8 @@ from model.metric import my_metric, my_metric2
 from data_loader import MnistDataLoader
 from trainer import Trainer
 from logger import Logger
+
+logging.basicConfig(level=logging.INFO, format='')
 
 parser = argparse.ArgumentParser(description='PyTorch Template')
 parser.add_argument('-b', '--batch-size', default=32, type=int,
@@ -34,7 +37,7 @@ def main(args):
     model.summary()
 
     # A logger to store training process information
-    logger = Logger()
+    train_logger = Logger()
 
     # Specifying loss function, metric(s), and optimizer
     loss = my_loss
@@ -54,19 +57,21 @@ def main(args):
                       valid_data_loader=valid_data_loader,
                       optimizer=optimizer,
                       epochs=args.epochs,
-                      logger=logger,
+                      train_logger=train_logger,
                       save_dir=args.save_dir,
                       save_freq=args.save_freq,
                       resume=args.resume,
                       verbosity=args.verbosity,
                       training_name=training_name,
-                      with_cuda=not args.no_cuda)
+                      with_cuda=not args.no_cuda,
+                      monitor='loss',
+                      monitor_mode='min')
 
     # Start training!
     trainer.train()
 
     # See training history
-    print(logger)
+    print(train_logger)
 
 
 if __name__ == '__main__':

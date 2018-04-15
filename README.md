@@ -1,7 +1,41 @@
 # PyTorch Template Project
-A simple template project using PyTorch which can be modified to fit many deep learning projects.
 
-## Basic Usage
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+
+<!-- code_chunk_output -->
+
+* [PyTorch Template Project](#pytorch-template-project)
+	* [Requirements](#requirements)
+	* [Features](#features)
+	* [Usage](#usage)
+	* [Folder Structure](#folder-structure)
+	* [Customization](#customization)
+		* [Data Loader](#data-loader)
+		* [Trainer](#trainer)
+		* [Model](#model)
+		* [Loss & Metrics](#loss-metrics)
+			* [Multiple metrics](#multiple-metrics)
+		* [Additional logging](#additional-logging)
+		* [Validation data](#validation-data)
+		* [Checkpoint naming](#checkpoint-naming)
+	* [Contributing](#contributing)
+	* [TODOs](#todos)
+	* [License](#license)
+	* [Acknowledgments](#acknowledgments)
+
+<!-- /code_chunk_output -->
+
+## Requirements
+* Python 3.x
+* PyTorch
+
+## Features
+* Clear folder structure which is suitable for many projects
+* Separate `trainer`, `model`, and `data_loader` for more structured code
+* `BaseDataLoader` handles batch loading, data shuffling, and validation data aplitting for you
+* `BaseTrainer` handles checkpoint saving/loading, training process logging
+
+## Usage
 The code in this repo is an MNIST example of the template, try run:
 ```
 python train.py
@@ -23,31 +57,29 @@ optional arguments:
                         number of total epochs (default: 32)
   --resume RESUME       path to latest checkpoint (default: none)
   --verbosity VERBOSITY
-                        verbosity, 0: quiet, 1: per epoch, 2: complete
-                        (default: 2)
+                        verbosity, 0: quiet, 1: per epoch, 2: complete (default: 2)
   --save-dir SAVE_DIR   directory of saved model (default: saved)
   --save-freq SAVE_FREQ
                         training checkpoint frequency (default: 1)
   --data-dir DATA_DIR   directory of training/testing data (default: datasets)
   --validation-split VALIDATION_SPLIT
-                        ratio of split validation data, [0.0, 1.0) (default:
-                        0.1)
+                        ratio of split validation data, [0.0, 1.0) (default: 0.1)
   --no-cuda             use CPU instead of GPU
 ```
 
-## Structure
+## Folder Structure
 ```
+pytorch-template/
+│
 ├── base/ - abstract base classes
-│   ├── base_data_loader.py - abstract base class for data loaders.
-│   ├── base_model.py - abstract base class for models.
+│   ├── base_data_loader.py - abstract base class for data loaders
+│   ├── base_model.py - abstract base class for models
 │   └── base_trainer.py - abstract base class for trainers
 │
 ├── data_loader/ - anything about data loading goes here
-│   └── data_loader.py
+│   └── data_loaders.py
 │
 ├── datasets/ - default datasets folder
-│
-├── saved/ - default checkpoint folder
 │
 ├── logger/ - for training process logging
 │   └── logger.py
@@ -58,74 +90,111 @@ optional arguments:
 │   ├── metric.py
 │   └── model.py
 │
-├── trainer/ - trainers for your project
+├── saved/ - default checkpoints folder
+│
+├── trainer/ - trainers
 │   └── trainer.py
 │
-└── utils
+└── utils/
     ├── util.py
     └── ...
 
 ```
 
 ## Customization
-### Training
-In most cases, you need to modify ```trainer/trainer.py``` to fit the training logic of your project
-### Data loading
-You can customize data loader to fit your project, just modify ```data_loader/data_loader.py``` or add other files.
+### Data Loader
+* **Writing your own data loader**
+  1. **Inherit ```BaseDataLoader```**
+  ```BaseDataLoader``` handles:
+     * Generating next batch
+     * Data shuffling
+     * Generating validation data loader ```BaseDataLoader.split_validation()```
+  2. **Implementing abstract methods**
+     There are some abstract methods you need to implement before using the methods in ```BaseDataLoader``` 
+     * ```_pack_data()```: pack data members into a list of tuples
+     * ```_unpack_data```: unpack packed data
+     * ```_update_data```: updata data members
+     * ```_n_samples```: total number of samples
+* **DataLoader Usage**
+  ```BaseDataLoader``` is an iterator, to iterate through batches:
+  ```python
+  for batch_idx, (x_batch, y_batch) in data_loader:
+      pass
+  ```
+* **Example**
+  Please refer to ```data_loader/data_loaders.py``` for an MNIST example
+
+### Trainer
+* **Writing your own trainer**
+  1. **Inherit ```BaseTrainer```**
+     ```BaseTrainer``` handles:
+     * Training process logging
+     * Checkpoint saving
+     * Checkpoint resuming
+     * Reconfigurable monitored value for saving current best 
+       - Controlled by the arguments ```monitor``` and ```monitor_mode```, if ```monitor_mode == 'min'``` then the trainer will save a checkpoint ```model_best.pth.tar``` when ```monitor``` is a current minimum
+  2. **Implementing abstract methods**
+     You need to implement ```_train_epoch()``` for your training process, if you need validation then you can implement ```_valid_epoch()``` as in ```trainer/trainer.py```
+* **Example**
+  Please refer to ```trainer/trainer.py```
+
 ### Model
-Implement your model under ```model/```
-### Loss/metrics
-If you need to change the loss function or metrics, first ```import``` those function in ```train.py```, then modify this part:
+* **Writing your own model**
+  1. **Inherit ```BaseModel```**
+     ```BaseModel``` handles:
+     * Inherited from ```torch.nn.Module```
+     * ```summary()```: Model summary
+  2. **Implementing abstract methods**
+     Implement the foward pass method ```forward()```
+* **Example**
+  Please refer to ```model/model.py```
+
+### Loss & Metrics
+If you need to change the loss function or metrics, first ```import``` those function in ```train.py```, then modify:
 ```python
 loss = my_loss
 metrics = [my_metric]
 ```
-You'll see the logging has changed during training:
-```
-⋯
-Train Epoch: 1 [53920/53984 (100%)] Loss: 0.033256
-{'epoch': 1, 'loss': 0.14182623870152963, 'my_metric': 0.9568761114404268, 'val_loss': 0.06394806604976841, 'val_my_metric': 0.9804478609625669}
-Saving checkpoint: model/saved/Model_checkpoint_epoch01_loss_0.14183.pth.tar ...
-Train Epoch: 2 [0/53984 (0%)] Loss: 0.013225
-⋯
-```
+They will appear in the logging during training
 #### Multiple metrics
-If you have multiple metrics in your project, just add it to the ```metrics``` list:
+If you have multiple metrics for your project, just add them to the ```metrics``` list:
 ```python
 loss = my_loss
 metrics = [my_metric, my_metric2]
 ```
-Now the logging shows two metrics:
-```
-⋯
-Train Epoch: 1 [53920/53984 (100%)] Loss: 0.003278
-{'epoch': 1, 'loss': 0.13541310020907665, 'my_metric': 0.9590804682868999, 'my_metric2': 1.9181609365737997, 'val_loss': 0.05264156081223173, 'val_my_metric': 0.9837901069518716, 'val_my_metric2': 1.9675802139037433}
-Saving checkpoint: model/saved/Model_checkpoint_epoch01_loss_0.13541.pth.tar ...
-Train Epoch: 2 [0/53984 (0%)] Loss: 0.023072
-⋯
-```
-Currently the name shown in log is the name of the function.
+Additional metric will be shown in the logging
 ### Additional logging
-If you have additional information to be logged, you can modify ```_train_epoch()``` in class ```Trainer```, for example, say you have an additional log saved as a dictionary:
+If you have additional information to be logged, in ```_train_epoch()``` of your trainer class, merge them with ```log``` as shown below before returning:
 ```python
-additional_log = {"x": x, "y": y}
-```
-just merge it with ```log``` as shown below before returning:
-```python
+additional_log = {"gradient_norm": g, "sensitivity": s}
 log = {**log, **additional_log}
 return log
 ```
 ### Validation data
-If you have separate validation data, try implement another data loader for validation, otherwise if you just want to split validation data from training data, try pass ```--validation-split 0.1```, in some cases you might need to modify ```utils/util.py```
+If you need to split validation data from a data loader, call ```BaseDataLoader.split_validation(validation_split)```, it will return a validation data loader, with the number of samples according to the specified ratio
+**Note**: the ```split_validation()``` method will modify the original data loader
 ### Checkpoint naming
-If you need to add prefix to your checkpoint, modify this line in ```train.py```
+You can specify the name of the training session in ```train.py```
 ```python
-identifier = type(model).__name__ + '_'
+training_name = type(model).__name__
 ```
-The prefix of the model will change, if you need to further change the naming of checkpoints, try modify ```_save_checkpoint()``` in class ```BaseTrainer```
+Then the checkpoints will be saved in ```saved/training_name```
 
 ## Contributing
 Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8
+
+## TODOs
+- [ ] Multi-GPU support
+- [ ] `TensorboardX` support
+- [ ] Support iteration-based training (instead of epoch)
+- [ ] Load settings from `config` files
+- [ ] Configurable logging layout
+- [ ] Configurable checkpoint naming
+- [ ] Options to save logs to file
+- [ ]
+
+## License
+This project is licensed under the MIT License. See  LICENSE for more details
 
 ## Acknowledgments
 This project is heavily inspired by the project [Tensorflow-Project-Template](https://github.com/MrGemy95/Tensorflow-Project-Template) by [Mahmoud Gemy](https://github.com/MrGemy95), be sure to star it!
