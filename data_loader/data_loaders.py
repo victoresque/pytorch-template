@@ -1,20 +1,15 @@
-from copy import copy
 import torch
 import numpy as np
 from torchvision import datasets, transforms
-from base.base_data_loader import BaseDataLoader
+from base import BaseDataLoader
 
 
-class DataLoader(BaseDataLoader):
-    def __init__(self, data_dir, batch_size):
+class MnistDataLoader(BaseDataLoader):
+    def __init__(self, data_dir, batch_size, shuffle=False):
         """
         :param data_dir: Data directory
-        :param batch_size: Batch size used in __next__()
-
-        Note:
-            Modify __init__() to fit your data
         """
-        super(DataLoader, self).__init__(batch_size)
+        super(MnistDataLoader, self).__init__(batch_size, shuffle)
         self.data_dir = data_dir
         self.data_loader = torch.utils.data.DataLoader(
             datasets.MNIST('../data', train=True, download=True,
@@ -32,25 +27,28 @@ class DataLoader(BaseDataLoader):
         self.n_batch = len(self.x) // self.batch_size
         self.batch_idx = 0
 
-    def __iter__(self):
-        self.n_batch = len(self.x) // self.batch_size
-        self.batch_idx = 0
-        assert self.n_batch > 0
-        return self
-
     def __next__(self):
-        if self.batch_idx < self.n_batch:
-            x_batch = self.x[self.batch_idx * self.batch_size:(self.batch_idx + 1) * self.batch_size]
-            y_batch = self.y[self.batch_idx * self.batch_size:(self.batch_idx + 1) * self.batch_size]
-            self.batch_idx = self.batch_idx + 1
-            return x_batch, y_batch
-        else:
-            raise StopIteration
+        batch = super(MnistDataLoader, self).__next__()
+        batch = [np.array(sample) for sample in batch]
+        return batch
+
+    def _pack_data(self):
+        packed = list(zip(self.x, self.y))
+        return packed
+
+    def _unpack_data(self, packed):
+        unpacked = list(zip(*packed))
+        unpacked = [list(item) for item in unpacked]
+        return unpacked
+
+    def _update_data(self, unpacked):
+        self.x = unpacked[0]
+        self.y = unpacked[1]
+
+    def _n_samples(self):
+        return len(self.x)
 
     def __len__(self):
-        """
-        :return: Total batch number
-        """
         self.n_batch = len(self.x) // self.batch_size
         return self.n_batch
 

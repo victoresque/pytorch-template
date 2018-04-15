@@ -1,6 +1,7 @@
 
 class Logger:
-    """ Logger
+    """
+    Training process logger
 
     Note:
         Used by BaseTrainer to save training history.
