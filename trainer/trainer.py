@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from torch.autograd import Variable
-from base.base_trainer import BaseTrainer
+from base import BaseTrainer
 
 
 class Trainer(BaseTrainer):
@@ -12,15 +12,15 @@ class Trainer(BaseTrainer):
         Modify __init__() if you have additional arguments to pass.
     """
     def __init__(self, model, loss, metrics, data_loader, optimizer, epochs,
-                 save_dir, save_freq, resume, with_cuda, verbosity, identifier='',
+                 save_dir, save_freq, resume, with_cuda, verbosity, training_name='',
                  valid_data_loader=None, logger=None):
         super(Trainer, self).__init__(model, loss, metrics, optimizer, epochs,
-                                      save_dir, save_freq, resume, verbosity, identifier, logger)
+                                      save_dir, save_freq, resume, verbosity, training_name,
+                                      with_cuda, logger)
         self.batch_size = data_loader.batch_size
         self.data_loader = data_loader
         self.valid_data_loader = valid_data_loader
         self.valid = True if self.valid_data_loader else False
-        self.with_cuda = with_cuda
 
     def _train_epoch(self, epoch):
         """ Train an epoch
@@ -29,7 +29,6 @@ class Trainer(BaseTrainer):
         :return: A log that contains all information you want to save.
 
         Note:
-            You should modify the data loading part in most cases.
             If you have additional information to record, for example:
                 > additional_log = {"x": x, "y": y}
             merge it with log before return. i.e.
@@ -81,9 +80,6 @@ class Trainer(BaseTrainer):
         """ Validate after training an epoch
 
         :return: A log that contains information about validation
-
-        Note:
-            Modify this part if you need to.
         """
         self.model.eval()
         total_val_loss = 0

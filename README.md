@@ -4,11 +4,11 @@ A simple template project using PyTorch which can be modified to fit many deep l
 ## Basic Usage
 The code in this repo is an MNIST example of the template, try run:
 ```
-python main.py
+python train.py
 ```
 The default arguments list is shown below:
 ```
-usage: main.py [-h] [-b BATCH_SIZE] [-e EPOCHS] [--resume RESUME]
+usage: train.py [-h] [-b BATCH_SIZE] [-e EPOCHS] [--resume RESUME]
                [--verbosity VERBOSITY] [--save-dir SAVE_DIR]
                [--save-freq SAVE_FREQ] [--data-dir DATA_DIR]
                [--validation-split VALIDATION_SPLIT] [--no-cuda]
@@ -16,26 +16,24 @@ usage: main.py [-h] [-b BATCH_SIZE] [-e EPOCHS] [--resume RESUME]
 PyTorch Template
 
 optional arguments:
-  -h, --help    show this help message and exit
+  -h, --help            show this help message and exit
   -b BATCH_SIZE, --batch-size BATCH_SIZE
                         mini-batch size (default: 32)
   -e EPOCHS, --epochs EPOCHS
                         number of total epochs (default: 32)
-  --resume RESUME
-                        path to latest checkpoint (default: none)
+  --resume RESUME       path to latest checkpoint (default: none)
   --verbosity VERBOSITY
-                        verbosity, 0: quiet, 1: per epoch, 2: complete (default: 2)
-  --save-dir SAVE_DIR
-                        directory of saved model (default: model/saved)
+                        verbosity, 0: quiet, 1: per epoch, 2: complete
+                        (default: 2)
+  --save-dir SAVE_DIR   directory of saved model (default: saved)
   --save-freq SAVE_FREQ
                         training checkpoint frequency (default: 1)
-  --data-dir DATA_DIR
-                        directory of training/testing data (default: datasets)
+  --data-dir DATA_DIR   directory of training/testing data (default: datasets)
   --validation-split VALIDATION_SPLIT
-                        ratio of split validation data, [0.0, 1.0) (default: 0.0)
-  --no-cuda   use CPU in case there's no GPU support
+                        ratio of split validation data, [0.0, 1.0) (default:
+                        0.1)
+  --no-cuda             use CPU instead of GPU
 ```
-You can add your own arguments.
 
 ## Structure
 ```
@@ -47,14 +45,15 @@ You can add your own arguments.
 ├── data_loader/ - anything about data loading goes here
 │   └── data_loader.py
 │
-├── datasets/ - default dataset folder
+├── datasets/ - default datasets folder
+│
+├── saved/ - default checkpoint folder
 │
 ├── logger/ - for training process logging
 │   └── logger.py
 │
 ├── model/ - models, losses, and metrics
 │   ├── modules/ - submodules of your model
-│   ├── saved/ - default checkpoint folder
 │   ├── loss.py
 │   ├── metric.py
 │   └── model.py
@@ -63,8 +62,8 @@ You can add your own arguments.
 │   └── trainer.py
 │
 └── utils
-     ├── utils.py
-     └── ...
+    ├── util.py
+    └── ...
 
 ```
 
@@ -76,7 +75,7 @@ You can customize data loader to fit your project, just modify ```data_loader/da
 ### Model
 Implement your model under ```model/```
 ### Loss/metrics
-If you need to change the loss function or metrics, first ```import``` those function in ```main.py```, then modify this part:
+If you need to change the loss function or metrics, first ```import``` those function in ```train.py```, then modify this part:
 ```python
 loss = my_loss
 metrics = [my_metric]
@@ -119,7 +118,7 @@ return log
 ### Validation data
 If you have separate validation data, try implement another data loader for validation, otherwise if you just want to split validation data from training data, try pass ```--validation-split 0.1```, in some cases you might need to modify ```utils/util.py```
 ### Checkpoint naming
-If you need to add prefix to your checkpoint, modify this line in ```main.py```
+If you need to add prefix to your checkpoint, modify this line in ```train.py```
 ```python
 identifier = type(model).__name__ + '_'
 ```
