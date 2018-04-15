@@ -105,48 +105,64 @@ pytorch-template/
 ### Data Loader
 * **Writing your own data loader**
   1. **Inherit ```BaseDataLoader```**
+
   ```BaseDataLoader``` handles:
      * Generating next batch
      * Data shuffling
      * Generating validation data loader ```BaseDataLoader.split_validation()```
+
   2. **Implementing abstract methods**
+
      There are some abstract methods you need to implement before using the methods in ```BaseDataLoader``` 
      * ```_pack_data()```: pack data members into a list of tuples
      * ```_unpack_data```: unpack packed data
      * ```_update_data```: updata data members
      * ```_n_samples```: total number of samples
+
 * **DataLoader Usage**
+
   ```BaseDataLoader``` is an iterator, to iterate through batches:
   ```python
   for batch_idx, (x_batch, y_batch) in data_loader:
       pass
   ```
 * **Example**
+
   Please refer to ```data_loader/data_loaders.py``` for an MNIST example
 
 ### Trainer
 * **Writing your own trainer**
   1. **Inherit ```BaseTrainer```**
+
      ```BaseTrainer``` handles:
      * Training process logging
      * Checkpoint saving
      * Checkpoint resuming
      * Reconfigurable monitored value for saving current best 
        - Controlled by the arguments ```monitor``` and ```monitor_mode```, if ```monitor_mode == 'min'``` then the trainer will save a checkpoint ```model_best.pth.tar``` when ```monitor``` is a current minimum
+
   2. **Implementing abstract methods**
+
      You need to implement ```_train_epoch()``` for your training process, if you need validation then you can implement ```_valid_epoch()``` as in ```trainer/trainer.py```
+
 * **Example**
+
   Please refer to ```trainer/trainer.py```
 
 ### Model
 * **Writing your own model**
   1. **Inherit ```BaseModel```**
+
      ```BaseModel``` handles:
      * Inherited from ```torch.nn.Module```
      * ```summary()```: Model summary
+
   2. **Implementing abstract methods**
+
      Implement the foward pass method ```forward()```
+     
 * **Example**
+
   Please refer to ```model/model.py```
 
 ### Loss & Metrics
@@ -191,7 +207,6 @@ Feel free to contribute any kind of function or enhancement, here the coding sty
 - [ ] Configurable logging layout
 - [ ] Configurable checkpoint naming
 - [ ] Options to save logs to file
-- [ ]
 
 ## License
 This project is licensed under the MIT License. See  LICENSE for more details
