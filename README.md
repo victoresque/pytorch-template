@@ -106,7 +106,7 @@ pytorch-template/
 * **Writing your own data loader**
   1. **Inherit ```BaseDataLoader```**
 
-  ```BaseDataLoader``` handles:
+     ```BaseDataLoader``` handles:
      * Generating next batch
      * Data shuffling
      * Generating validation data loader ```BaseDataLoader.split_validation()```
@@ -212,4 +212,4 @@ Feel free to contribute any kind of function or enhancement, here the coding sty
 This project is licensed under the MIT License. See  LICENSE for more details
 
 ## Acknowledgments
-This project is heavily inspired by the project [Tensorflow-Project-Template](https://github.com/MrGemy95/Tensorflow-Project-Template) by [Mahmoud Gemy](https://github.com/MrGemy95), be sure to star it!
+This project is inspired by the project [Tensorflow-Project-Template](https://github.com/MrGemy95/Tensorflow-Project-Template) by [Mahmoud Gemy](https://github.com/MrGemy95)
