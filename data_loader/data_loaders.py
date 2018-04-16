@@ -24,8 +24,6 @@ class MnistDataLoader(BaseDataLoader):
             self.y += [i for i in target.numpy()]
         self.x = np.array(self.x)
         self.y = np.array(self.y)
-        self.n_batch = len(self.x) // self.batch_size
-        self.batch_idx = 0
 
     def __next__(self):
         batch = super(MnistDataLoader, self).__next__()
@@ -47,8 +45,3 @@ class MnistDataLoader(BaseDataLoader):
 
     def _n_samples(self):
         return len(self.x)
-
-    def __len__(self):
-        self.n_batch = len(self.x) // self.batch_size
-        return self.n_batch
-

@@ -13,14 +13,14 @@ class BaseDataLoader:
         """
         self.batch_size = batch_size
         self.shuffle = shuffle
+        self.batch_idx = 0
 
     def __iter__(self):
         """
         :return: Iterator
         """
-        self.n_batch = self._n_samples() // self.batch_size
+        assert self.__len__() > 0
         self.batch_idx = 0
-        assert self.n_batch > 0
         if self.shuffle:
             self._shuffle_data()
         return self
@@ -30,7 +30,7 @@ class BaseDataLoader:
         :return: Next batch
         """
         packed = self._pack_data()
-        if self.batch_idx < self.n_batch:
+        if self.batch_idx < self.__len__():
             batch = packed[self.batch_idx * self.batch_size:(self.batch_idx + 1) * self.batch_size]
             self.batch_idx = self.batch_idx + 1
             return self._unpack_data(batch)
@@ -41,7 +41,7 @@ class BaseDataLoader:
         """
         :return: Total number of batches
         """
-        return NotImplementedError
+        return self._n_samples() // self.batch_size
 
     def _n_samples(self):
         """
@@ -106,4 +106,3 @@ class BaseDataLoader:
         valid_data_loader._update_data(val_data)
         self._update_data(train_data)
         return valid_data_loader
-

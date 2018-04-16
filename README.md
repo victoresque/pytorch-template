@@ -207,6 +207,7 @@ Feel free to contribute any kind of function or enhancement, here the coding sty
 - [ ] Configurable logging layout
 - [ ] Configurable checkpoint naming
 - [ ] Options to save logs to file
+- [ ] More clear trainer structure
 
 ## License
 This project is licensed under the MIT License. See  LICENSE for more details

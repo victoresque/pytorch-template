@@ -45,7 +45,7 @@ def main(args):
     optimizer = optim.Adam(model.parameters())
 
     # Data loader and validation split
-    data_loader = MnistDataLoader(args.data_dir, args.batch_size)
+    data_loader = MnistDataLoader(args.data_dir, args.batch_size, shuffle=True)
     valid_data_loader = data_loader.split_validation(args.validation_split)
 
     # An identifier for this training session
@@ -64,8 +64,8 @@ def main(args):
                       verbosity=args.verbosity,
                       training_name=training_name,
                       with_cuda=not args.no_cuda,
-                      monitor='loss',
-                      monitor_mode='min')
+                      monitor='val_my_metric',
+                      monitor_mode='max')
 
     # Start training!
     trainer.train()

@@ -1,3 +1,5 @@
+import json
+
 
 class Logger:
     """
@@ -13,4 +15,4 @@ class Logger:
         self.entries[len(self.entries) + 1] = entry
 
     def __str__(self):
-        return str(self.entries)
+        return json.dumps(self.entries, sort_keys=True, indent=4)

@@ -21,7 +21,14 @@ class Trainer(BaseTrainer):
         self.batch_size = data_loader.batch_size
         self.data_loader = data_loader
         self.valid_data_loader = valid_data_loader
-        self.valid = True if self.valid_data_loader else False
+        self.valid = True if self.valid_data_loader is not None else False
+
+    def _to_variable(self, data, target):
+        data, target = torch.FloatTensor(data), torch.LongTensor(target)
+        data, target = Variable(data), Variable(target)
+        if self.with_cuda:
+            data, target = data.cuda(), target.cuda()
+        return data, target
 
     def _train_epoch(self, epoch):
         """
@@ -44,10 +51,7 @@ class Trainer(BaseTrainer):
         total_loss = 0
         total_metrics = np.zeros(len(self.metrics))
         for batch_idx, (data, target) in enumerate(self.data_loader):
-            data, target = torch.FloatTensor(data), torch.LongTensor(target)
-            data, target = Variable(data), Variable(target)
-            if self.with_cuda:
-                data, target = data.cuda(), target.cuda()
+            data, target = self._to_variable(data, target)
 
             self.optimizer.zero_grad()
             output = self.model(data)
@@ -88,10 +92,7 @@ class Trainer(BaseTrainer):
         total_val_loss = 0
         total_val_metrics = np.zeros(len(self.metrics))
         for batch_idx, (data, target) in enumerate(self.valid_data_loader):
-            data, target = torch.FloatTensor(data), torch.LongTensor(target)
-            data, target = Variable(data), Variable(target)
-            if self.with_cuda:
-                data, target = data.cuda(), target.cuda()
+            data, target = self._to_variable(data, target)
 
             output = self.model(data)
             loss = self.loss(output, target)

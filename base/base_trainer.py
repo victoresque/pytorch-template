@@ -42,27 +42,27 @@ class BaseTrainer:
         """
         for epoch in range(self.start_epoch, self.epochs+1):
             result = self._train_epoch(epoch)
-            if self.train_logger:
-                log = {'epoch': epoch}
-                for key, value in result.items():
-                    if key == 'metrics':
-                        for i, metric in enumerate(self.metrics):
-                            log[metric.__name__] = result['metrics'][i]
-                    elif key == 'val_metrics':
-                        for i, metric in enumerate(self.metrics):
-                            log['val_'+metric.__name__] = result['val_metrics'][i]
-                    else:
-                        log[key] = value
+            log = {'epoch': epoch}
+            for key, value in result.items():
+                if key == 'metrics':
+                    for i, metric in enumerate(self.metrics):
+                        log[metric.__name__] = result['metrics'][i]
+                elif key == 'val_metrics':
+                    for i, metric in enumerate(self.metrics):
+                        log['val_'+metric.__name__] = result['val_metrics'][i]
+                else:
+                    log[key] = value
+            if self.train_logger is not None:
                 self.train_logger.add_entry(log)
                 if self.verbosity >= 1:
                     for key, value in log.items():
                         self.logger.info('    {:15s}: {}'.format(str(key), value))
-            if (self.monitor_mode == 'min' and result[self.monitor] < self.monitor_best)\
-                    or (self.monitor_mode == 'max' and result[self.monitor] > self.monitor_best):
-                self.monitor_best = result[self.monitor]
-                self._save_checkpoint(epoch, result['loss'], save_best=True)
+            if (self.monitor_mode == 'min' and log[self.monitor] < self.monitor_best)\
+                    or (self.monitor_mode == 'max' and log[self.monitor] > self.monitor_best):
+                self.monitor_best = log[self.monitor]
+                self._save_checkpoint(epoch, log['loss'], save_best=True)
             if epoch % self.save_freq == 0:
-                self._save_checkpoint(epoch, result['loss'])
+                self._save_checkpoint(epoch, log['loss'])
 
     def _train_epoch(self, epoch):
         """
