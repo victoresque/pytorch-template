@@ -1,78 +1,60 @@
-import argparse
+import os
+import json
 import logging
-import torch.optim as optim
-from model.model import MnistModel
-from model.loss import my_loss
-from model.metric import my_metric, my_metric2
+import argparse
+import torch
+from model.model import *
+from model.loss import *
+from model.metric import *
 from data_loader import MnistDataLoader
 from trainer import Trainer
 from logger import Logger
 
 logging.basicConfig(level=logging.INFO, format='')
 
-parser = argparse.ArgumentParser(description='PyTorch Template')
-parser.add_argument('-b', '--batch-size', default=32, type=int,
-                    help='mini-batch size (default: 32)')
-parser.add_argument('-e', '--epochs', default=32, type=int,
-                    help='number of total epochs (default: 32)')
-parser.add_argument('--resume', default='', type=str,
-                    help='path to latest checkpoint (default: none)')
-parser.add_argument('--verbosity', default=2, type=int,
-                    help='verbosity, 0: quiet, 1: per epoch, 2: complete (default: 2)')
-parser.add_argument('--save-dir', default='saved', type=str,
-                    help='directory of saved model (default: saved)')
-parser.add_argument('--save-freq', default=1, type=int,
-                    help='training checkpoint frequency (default: 1)')
-parser.add_argument('--data-dir', default='datasets', type=str,
-                    help='directory of training/testing data (default: datasets)')
-parser.add_argument('--validation-split', default=0.1, type=float,
-                    help='ratio of split validation data, [0.0, 1.0) (default: 0.1)')
-parser.add_argument('--no-cuda', action="store_true",
-                    help='use CPU instead of GPU')
 
-
-def main(args):
-    # Model
-    model = MnistModel()
-    model.summary()
-
-    # A logger to store training process information
+def main(config, resume):
     train_logger = Logger()
 
-    # Specifying loss function, metric(s), and optimizer
-    loss = my_loss
-    metrics = [my_metric, my_metric2]
-    optimizer = optim.Adam(model.parameters())
+    data_loader = MnistDataLoader(config)
+    valid_data_loader = data_loader.split_validation()
 
-    # Data loader and validation split
-    data_loader = MnistDataLoader(args.data_dir, args.batch_size, shuffle=True)
-    valid_data_loader = data_loader.split_validation(args.validation_split)
+    model = eval(config['arch'])(config['model'])
+    model.summary()
 
-    # An identifier for this training session
-    training_name = type(model).__name__
+    loss = eval(config['loss'])
+    metrics = [eval(metric) for metric in config['metrics']]
 
-    # Trainer instance
     trainer = Trainer(model, loss, metrics,
+                      resume=resume,
+                      config=config,
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
-                      optimizer=optimizer,
-                      epochs=args.epochs,
-                      train_logger=train_logger,
-                      save_dir=args.save_dir,
-                      save_freq=args.save_freq,
-                      resume=args.resume,
-                      verbosity=args.verbosity,
-                      training_name=training_name,
-                      with_cuda=not args.no_cuda,
-                      monitor='val_my_metric',
-                      monitor_mode='max')
+                      train_logger=train_logger)
 
-    # Start training!
     trainer.train()
-
-    # See training history
-    print(train_logger)
 
 
 if __name__ == '__main__':
-    main(parser.parse_args())
+    logger = logging.getLogger()
+
+    parser = argparse.ArgumentParser(description='PyTorch Template')
+    parser.add_argument('-c', '--config', default=None, type=str,
+                        help='config file path (default: None)')
+    parser.add_argument('-r', '--resume', default=None, type=str,
+                        help='path to latest checkpoint (default: None)')
+
+    args = parser.parse_args()
+
+    config = None
+    if args.resume is not None:
+        if args.config is not None:
+            logger.warning('Warning: --config overridden by --resume')
+        config = torch.load(args.resume)['config']
+    elif args.config is not None:
+        config = json.load(open(args.config))
+        path = os.path.join(config['trainer']['save_dir'], config['name'])
+        assert not os.path.exists(path), "Path {} already exists!".format(path)
+    assert config is not None
+
+    main(config, args.resume)
