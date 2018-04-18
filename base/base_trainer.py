@@ -1,5 +1,6 @@
 import os
 import math
+import json
 import logging
 import torch
 from utils.util import ensure_dir
@@ -11,7 +12,7 @@ class BaseTrainer:
     """
     def __init__(self, model, loss, metrics, optimizer, epochs,
                  save_dir, save_freq, resume, verbosity, training_name,
-                 with_cuda, train_logger=None, monitor='loss', monitor_mode='min'):
+                 with_cuda, config=None, train_logger=None, monitor='loss', monitor_mode='min'):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = model
         self.loss = loss
@@ -33,6 +34,10 @@ class BaseTrainer:
         self.start_epoch = 1
         self.checkpoint_dir = os.path.join(save_dir, training_name)
         ensure_dir(self.checkpoint_dir)
+        self.config = config
+        if self.config is not None:
+            json.dump(config, open(os.path.join(self.checkpoint_dir, 'config.json'), 'w'), 
+                    indent=4, sort_keys=False)
         if resume:
             self._resume_checkpoint(resume)
 
@@ -49,7 +54,7 @@ class BaseTrainer:
                         log[metric.__name__] = result['metrics'][i]
                 elif key == 'val_metrics':
                     for i, metric in enumerate(self.metrics):
-                        log['val_'+metric.__name__] = result['val_metrics'][i]
+                        log['val_' + metric.__name__] = result['val_metrics'][i]
                 else:
                     log[key] = value
             if self.train_logger is not None:
@@ -60,9 +65,9 @@ class BaseTrainer:
             if (self.monitor_mode == 'min' and log[self.monitor] < self.monitor_best)\
                     or (self.monitor_mode == 'max' and log[self.monitor] > self.monitor_best):
                 self.monitor_best = log[self.monitor]
-                self._save_checkpoint(epoch, log['loss'], save_best=True)
+                self._save_checkpoint(epoch, log, save_best=True)
             if epoch % self.save_freq == 0:
-                self._save_checkpoint(epoch, log['loss'])
+                self._save_checkpoint(epoch, log)
 
     def _train_epoch(self, epoch):
         """
@@ -72,7 +77,7 @@ class BaseTrainer:
         """
         raise NotImplementedError
 
-    def _save_checkpoint(self, epoch, loss, save_best=False):
+    def _save_checkpoint(self, epoch, log, save_best=False):
         """
         Saving checkpoints
 
@@ -88,9 +93,11 @@ class BaseTrainer:
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'monitor_best': self.monitor_best,
+            'config': self.config
         }
         filename = os.path.join(self.checkpoint_dir,
-                                'checkpoint_epoch{:02d}_loss_{:.5f}.pth.tar'.format(epoch, loss))
+                                'checkpoint-epoch{:03d}-loss-{:.4f}.pth.tar'.format(
+                                    epoch, log['loss']))
         torch.save(state, filename)
         if save_best:
             os.rename(filename, os.path.join(self.checkpoint_dir, 'model_best.pth.tar'))
@@ -111,4 +118,5 @@ class BaseTrainer:
         self.model.load_state_dict(checkpoint['state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.train_logger = checkpoint['logger']
+        self.config = checkpoint['config']
         self.logger.info("Checkpoint '{}' (epoch {}) loaded".format(resume_path, self.start_epoch))

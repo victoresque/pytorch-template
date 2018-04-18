@@ -1,0 +1,32 @@
+{
+    "name": "Mnist_LeNet",
+    "cuda": true,
+    "data_loader": {
+        "data_dir": "datasets/",
+        "batch_size": 32,
+        "shuffle": true
+    },
+    "validation": {
+        "validation_split": 0.1,
+        "shuffle": true
+    },
+    "optimizer_type": "Adam",
+    "optimizer": {
+        "lr": 0.001,
+        "weight_decay": 0
+    },
+    "loss": "my_loss",
+    "metrics": ["my_metric", "my_metric2"],
+    "trainer": {
+        "epochs": 1000,
+        "save_dir": "saved/",
+        "save_freq": 1,
+        "verbosity": 2,
+        "monitor": "val_loss",
+        "monitor_mode": "min"
+    },
+    "arch": "MnistModel", 
+    "model": {
+
+    }
+}

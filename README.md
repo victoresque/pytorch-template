@@ -8,6 +8,7 @@
 	* [Requirements](#requirements)
 	* [Features](#features)
 	* [Usage](#usage)
+		* [Using config files](#using-config-files)
 	* [Folder Structure](#folder-structure)
 	* [Customization](#customization)
 		* [Data Loader](#data-loader)
@@ -37,6 +38,19 @@
 
 ## Usage
 The code in this repo is an MNIST example of the template, try run:
+
+### Using config files
+It is recommended to use ```.json``` config files.
+
+```train_config.py``` is an example using config files:
+```
+python train_config.py --config config.json
+```
+
+Please refer to ```config.json``` for more details.
+
+### Passing arguments
+```train.py``` is an example using ```argparse```
 ```
 python train.py
 ```
@@ -70,6 +84,10 @@ optional arguments:
 ## Folder Structure
 ```
 pytorch-template/
+│
+├── train.py - example using arguments
+├── train_config.py - example using config files
+├── config.json - example config file
 │
 ├── base/ - abstract base classes
 │   ├── base_data_loader.py - abstract base class for data loaders
@@ -115,9 +133,9 @@ pytorch-template/
 
      There are some abstract methods you need to implement before using the methods in ```BaseDataLoader``` 
      * ```_pack_data()```: pack data members into a list of tuples
-     * ```_unpack_data```: unpack packed data
-     * ```_update_data```: updata data members
-     * ```_n_samples```: total number of samples
+     * ```_unpack_data()```: unpack packed data
+     * ```_update_data()```: updata data members
+     * ```_n_samples()```: total number of samples
 
 * **DataLoader Usage**
 
@@ -203,11 +221,10 @@ Feel free to contribute any kind of function or enhancement, here the coding sty
 - [ ] Multi-GPU support
 - [ ] `TensorboardX` support
 - [ ] Support iteration-based training (instead of epoch)
-- [ ] Load settings from `config` files
 - [ ] Configurable logging layout
 - [ ] Configurable checkpoint naming
 - [ ] Options to save logs to file
-- [ ] More clear trainer structure
+- [x] Load settings from `config` files
 
 ## License
 This project is licensed under the MIT License. See  LICENSE for more details
