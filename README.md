@@ -178,7 +178,7 @@ You can resume from a previously saved checkpoint by:
     * Checkpoint saving
     * Checkpoint resuming
     * Reconfigurable monitored value for saving current best
-      - Controlled by the configs ```monitor``` and ```monitor_mode```, if ```monitor_mode == 'min'``` then the trainer will save a checkpoint ```model_best.pth.tar``` when ```monitor``` is a current minimum
+      * Controlled by the configs ```monitor``` and ```monitor_mode```, if ```monitor_mode == 'min'``` then the trainer will save a checkpoint ```model_best.pth.tar``` when ```monitor``` is a current minimum
 
 2. **Implementing abstract methods**
 
@@ -206,7 +206,7 @@ You can resume from a previously saved checkpoint by:
   Please refer to ```model/model.py``` for a LeNet example.
 
 ### Loss and metrics
-If you need to change the loss function or metrics, first ```import``` those function in ```train.py```, then modify ```"loss"``` and ```"metrics"``` in ```.json``` config files
+If you need to change the loss function or metrics, first ```import``` those function in ```train.py```, then modify ```"loss"``` and ```"metrics"``` in ```.json``` config files
 
 #### Multiple metrics
 You can add multiple metrics in your config files:
