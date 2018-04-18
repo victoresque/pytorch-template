@@ -5,12 +5,12 @@ from base import BaseDataLoader
 
 
 class MnistDataLoader(BaseDataLoader):
-    def __init__(self, data_dir, batch_size, shuffle=False):
-        """
-        :param data_dir: Data directory
-        """
-        super(MnistDataLoader, self).__init__(batch_size, shuffle)
-        self.data_dir = data_dir
+    """
+    MNIST data loading demo using BaseDataLoader
+    """
+    def __init__(self, config):
+        super(MnistDataLoader, self).__init__(config)
+        self.data_dir = config['data_loader']['data_dir']
         self.data_loader = torch.utils.data.DataLoader(
             datasets.MNIST('../data', train=True, download=True,
                            transform=transforms.Compose([
@@ -40,8 +40,7 @@ class MnistDataLoader(BaseDataLoader):
         return unpacked
 
     def _update_data(self, unpacked):
-        self.x = unpacked[0]
-        self.y = unpacked[1]
+        self.x, self.y = unpacked
 
     def _n_samples(self):
         return len(self.x)

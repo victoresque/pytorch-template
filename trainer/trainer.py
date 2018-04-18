@@ -10,14 +10,12 @@ class Trainer(BaseTrainer):
 
     Note:
         Inherited from BaseTrainer.
-        Modify __init__() if you have additional arguments to pass.
+        self.optimizer is by default handled by BaseTrainer based on config.
     """
-    def __init__(self, model, loss, metrics, data_loader, optimizer, epochs,
-                 save_dir, save_freq, resume, with_cuda, verbosity, config=None, training_name='',
-                 valid_data_loader=None, train_logger=None, monitor='loss', monitor_mode='min'):
-        super(Trainer, self).__init__(model, loss, metrics, optimizer, epochs,
-                                      save_dir, save_freq, resume, verbosity, training_name,
-                                      with_cuda, config, train_logger, monitor, monitor_mode)
+    def __init__(self, model, loss, metrics, resume, config,
+                 data_loader, valid_data_loader=None, train_logger=None):
+        super(Trainer, self).__init__(model, loss, metrics, resume, config, train_logger)
+        self.config = config
         self.batch_size = data_loader.batch_size
         self.data_loader = data_loader
         self.valid_data_loader = valid_data_loader
@@ -53,6 +51,8 @@ class Trainer(BaseTrainer):
             merge it with log before return. i.e.
                 > log = {**log, **additional_log}
                 > return log
+
+            The metrics in log must have the key 'metrics'.
         """
         self.model.train()
         if self.with_cuda:
@@ -96,6 +96,9 @@ class Trainer(BaseTrainer):
         Validate after training an epoch
 
         :return: A log that contains information about validation
+
+        Note:
+            The validation metrics in log must have the key 'val_metrics'.
         """
         self.model.eval()
         total_val_loss = 0

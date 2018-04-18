@@ -3,6 +3,7 @@ import math
 import json
 import logging
 import torch
+import torch.optim as optim
 from utils.util import ensure_dir
 
 
@@ -10,34 +11,32 @@ class BaseTrainer:
     """
     Base class for all trainers
     """
-    def __init__(self, model, loss, metrics, optimizer, epochs,
-                 save_dir, save_freq, resume, verbosity, training_name,
-                 with_cuda, config=None, train_logger=None, monitor='loss', monitor_mode='min'):
+    def __init__(self, model, loss, metrics, resume, config, train_logger=None):
+        self.config = config
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = model
         self.loss = loss
         self.metrics = metrics
-        self.optimizer = optimizer
-        self.epochs = epochs
-        self.save_freq = save_freq
-        self.verbosity = verbosity
-        self.training_name = training_name
-        self.train_logger = train_logger
-        self.with_cuda = with_cuda and torch.cuda.is_available()
-        if with_cuda and not torch.cuda.is_available():
+        self.name = config['name']
+        self.epochs = config['trainer']['epochs']
+        self.save_freq = config['trainer']['save_freq']
+        self.verbosity = config['trainer']['verbosity']
+        self.with_cuda = config['cuda'] and torch.cuda.is_available()
+        if config['cuda'] and not torch.cuda.is_available():
             self.logger.warning('Warning: There\'s no CUDA support on this machine, '
                                 'training is performed on CPU.')
-        self.monitor = monitor
-        self.monitor_mode = monitor_mode
-        assert monitor_mode == 'min' or monitor_mode == 'max'
-        self.monitor_best = math.inf if monitor_mode == 'min' else -math.inf
+        self.train_logger = train_logger
+        self.optimizer = getattr(optim, config['optimizer_type'])(model.parameters(),
+                                                                  **config['optimizer'])
+        self.monitor = config['trainer']['monitor']
+        self.monitor_mode = config['trainer']['monitor_mode']
+        assert self.monitor_mode == 'min' or self.monitor_mode == 'max'
+        self.monitor_best = math.inf if self.monitor_mode == 'min' else -math.inf
         self.start_epoch = 1
-        self.checkpoint_dir = os.path.join(save_dir, training_name)
+        self.checkpoint_dir = os.path.join(config['trainer']['save_dir'], self.name)
         ensure_dir(self.checkpoint_dir)
-        self.config = config
-        if self.config is not None:
-            json.dump(config, open(os.path.join(self.checkpoint_dir, 'config.json'), 'w'), 
-                    indent=4, sort_keys=False)
+        json.dump(config, open(os.path.join(self.checkpoint_dir, 'config.json'), 'w'),
+                  indent=4, sort_keys=False)
         if resume:
             self._resume_checkpoint(resume)
 
@@ -81,23 +80,22 @@ class BaseTrainer:
         """
         Saving checkpoints
 
-        :param epoch: Current epoch number
-        :param loss: Prefix of checkpoint name
-        :param save_best: If True, rename the saved checkpoint to 'model_best.pth.tar'
+        :param epoch: current epoch number
+        :param log: logging information of the epoch
+        :param save_best: if True, rename the saved checkpoint to 'model_best.pth.tar'
         """
         arch = type(self.model).__name__
         state = {
+            'arch': arch,
             'epoch': epoch,
             'logger': self.train_logger,
-            'arch': arch,
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'monitor_best': self.monitor_best,
             'config': self.config
         }
-        filename = os.path.join(self.checkpoint_dir,
-                                'checkpoint-epoch{:03d}-loss-{:.4f}.pth.tar'.format(
-                                    epoch, log['loss']))
+        filename = os.path.join(self.checkpoint_dir, 'checkpoint-epoch{:03d}-loss-{:.4f}.pth.tar'
+                                .format(epoch, log['loss']))
         torch.save(state, filename)
         if save_best:
             os.rename(filename, os.path.join(self.checkpoint_dir, 'model_best.pth.tar'))

@@ -1,4 +1,5 @@
 # PyTorch Template Project
+PyTorch deep learning project made easy.
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
 
@@ -7,10 +8,11 @@
 * [PyTorch Template Project](#pytorch-template-project)
 	* [Requirements](#requirements)
 	* [Features](#features)
-	* [Usage](#usage)
-		* [Using config files](#using-config-files)
-		* [Passing arguments](#passing-arguments)
 	* [Folder Structure](#folder-structure)
+	* [Usage](#usage)
+		* [Config file format](#config-file-format)
+		* [Using config files](#using-config-files)
+		* [Resuming from checkpoints](#resuming-from-checkpoints)
 	* [Customization](#customization)
 		* [Data Loader](#data-loader)
 		* [Trainer](#trainer)
@@ -19,7 +21,7 @@
 			* [Multiple metrics](#multiple-metrics)
 		* [Additional logging](#additional-logging)
 		* [Validation data](#validation-data)
-		* [Checkpoint naming](#checkpoint-naming)
+		* [Checkpoints](#checkpoints)
 	* [Contributing](#contributing)
 	* [TODOs](#todos)
 	* [License](#license)
@@ -27,72 +29,25 @@
 
 <!-- /code_chunk_output -->
 
+
 ## Requirements
 * Python 3.x
 * PyTorch
 
 ## Features
-* Config file support for more convenient parameter tuning
-* Clear folder structure which is suitable for many projects
-* Separate `trainer`, `model`, and `data_loader` for more structured code
-* `BaseDataLoader` handles batch loading, data shuffling, and validation data aplitting for you
-* `BaseTrainer` handles checkpoint saving/loading, training process logging
-
-## Usage
-The code in this repo is an MNIST example of the template, try run:
-
-### Using config files
-It is recommended to use ```.json``` config files.
-
-  ```train_config.py``` is an example using config files:
-
-  ```
-  python train_config.py --config config.json
-  ```
-
-Please refer to ```config.json``` for more details.
-
-### Passing arguments
-  ```train.py``` is an example using ```argparse```
-
-  ```
-  python train.py
-  ```
-
-The default arguments list is shown below:
-
-  ```
-  usage: train.py [-h] [-b BATCH_SIZE] [-e EPOCHS] [--resume RESUME]
-                [--verbosity VERBOSITY] [--save-dir SAVE_DIR]
-                [--save-freq SAVE_FREQ] [--data-dir DATA_DIR]
-                [--validation-split VALIDATION_SPLIT] [--no-cuda]
-
-  PyTorch Template
-
-  optional arguments:
-    -h, --help            show this help message and exit
-    -b BATCH_SIZE, --batch-size BATCH_SIZE
-                          mini-batch size (default: 32)
-    -e EPOCHS, --epochs EPOCHS
-                          number of total epochs (default: 32)
-    --resume RESUME       path to latest checkpoint (default: none)
-    --verbosity VERBOSITY
-                          verbosity, 0: quiet, 1: per epoch, 2: complete (default: 2)
-    --save-dir SAVE_DIR   directory of saved model (default: saved)
-    --save-freq SAVE_FREQ
-                          training checkpoint frequency (default: 1)
-    --data-dir DATA_DIR   directory of training/testing data (default: datasets)
-    --validation-split VALIDATION_SPLIT
-                          ratio of split validation data, [0.0, 1.0) (default: 0.1)
-    --no-cuda             use CPU instead of GPU
-  ```
+* Clear folder structure which is suitable for many deep learning projects.
+* `.json` config file support for more convenient parameter tuning.
+* Checkpoint saving and resuming.
+* Abstract base classes for faster development:
+  * `BaseTrainer` handles checkpoint saving/resuming, training process logging, and more.
+  * `BaseDataLoader` handles batch generation, data shuffling, and validation data splitting.
+  * `BaseModel` provides basic model summary.
 
 ## Folder Structure
   ```
   pytorch-template/
   │
-  ├── train.py - example using arguments
-  ├── train_config.py - example using config files
+  ├── train.py - example main
   ├── config.json - example config file
   │
   ├── base/ - abstract base classes
@@ -124,20 +79,80 @@ The default arguments list is shown below:
       └── ...
   ```
 
+## Usage
+The code in this repo is an MNIST example of the template.
+
+### Config file format
+Config files are in ```.json``` format:
+  ```json
+  {
+    "name": "Mnist_LeNet",        // training session name
+    "cuda": true,                 // use cuda
+    "data_loader": {
+        "data_dir": "datasets/",  // dataset path
+        "batch_size": 32,         // batch size
+        "shuffle": true           // shuffle data each time calling __iter__()
+    },
+    "validation": {
+        "validation_split": 0.1,  // validation data ratio
+        "shuffle": true           // shuffle training data before splitting
+    },
+    "optimizer_type": "Adam",
+    "optimizer": {
+        "lr": 0.001,              // (optional) learning rate
+        "weight_decay": 0         // (optional) weight decay
+    },
+    "loss": "my_loss",            // loss
+    "metrics": [                  // metrics
+      "my_metric",
+      "my_metric2"
+    ],
+    "trainer": {
+        "epochs": 1000,           // number of training epochs
+        "save_dir": "saved/",     // checkpoints are saved in save_dir/name
+        "save_freq": 1,           // save checkpoints every save_freq epochs
+        "verbosity": 2,           // 0: quiet, 1: per epoch, 2: full
+        "monitor": "val_loss",    // monitor value for best model
+        "monitor_mode": "min"     // "min" if monitor value the lower the better, otherwise "max" 
+    },
+    "arch": "MnistModel",         // model architecture
+    "model": {}                   // model configs
+  }
+  ```
+
+Add addional configurations if you need.
+
+### Using config files
+Modify the configurations in ```.json``` config files, then run:
+
+  ```
+  python train.py --config config.json
+  ```
+
+### Resuming from checkpoints
+You can resume from a previously saved checkpoint by:
+
+  ```
+  python train.py --resume path/to/checkpoint
+  ```
+
 ## Customization
 ### Data Loader
 * **Writing your own data loader**
 
 1. **Inherit ```BaseDataLoader```**
 
+    ```BaseDataLoader``` is similar to ```torch.utils.data.DataLoader```, you can use either of them.
+
     ```BaseDataLoader``` handles:
     * Generating next batch
     * Data shuffling
-    * Generating validation data loader ```BaseDataLoader.split_validation()```
+    * Generating validation data loader by calling
+    ```BaseDataLoader.split_validation()```
 
 2. **Implementing abstract methods**
 
-    There are some abstract methods you need to implement before using the methods in ```BaseDataLoader``` 
+    **You need to implement these abstract methods:**
     * ```_pack_data()```: pack data members into a list of tuples
     * ```_unpack_data()```: unpack packed data
     * ```_update_data()```: updata data members
@@ -152,7 +167,7 @@ The default arguments list is shown below:
   ```
 * **Example**
 
-  Please refer to ```data_loader/data_loaders.py``` for an MNIST example
+  Please refer to ```data_loader/data_loaders.py``` for an MNIST data loading example.
 
 ### Trainer
 * **Writing your own trainer**
@@ -163,8 +178,8 @@ The default arguments list is shown below:
     * Training process logging
     * Checkpoint saving
     * Checkpoint resuming
-    * Reconfigurable monitored value for saving current best 
-      - Controlled by the arguments ```monitor``` and ```monitor_mode```, if ```monitor_mode == 'min'``` then the trainer will save a checkpoint ```model_best.pth.tar``` when ```monitor``` is a current minimum
+    * Reconfigurable monitored value for saving current best
+      - Controlled by the configs ```monitor``` and ```monitor_mode```, if ```monitor_mode == 'min'``` then the trainer will save a checkpoint ```model_best.pth.tar``` when ```monitor``` is a current minimum
 
 2. **Implementing abstract methods**
 
@@ -172,7 +187,7 @@ The default arguments list is shown below:
 
 * **Example**
 
-  Please refer to ```trainer/trainer.py```
+  Please refer to ```trainer/trainer.py``` for MNIST training.
 
 ### Model
 * **Writing your own model**
@@ -186,28 +201,19 @@ The default arguments list is shown below:
 2. **Implementing abstract methods**
 
     Implement the foward pass method ```forward()```
-     
+
 * **Example**
 
-  Please refer to ```model/model.py```
+  Please refer to ```model/model.py``` for a LeNet example.
 
 ### Loss & Metrics
-If you need to change the loss function or metrics, first ```import``` those function in ```train.py```, then modify:
-
-  ```python
-  loss = my_loss
-  metrics = [my_metric]
-  ```
-They will appear in the logging during training
+If you need to change the loss function or metrics, first ```import``` those function in ```train.py```, then modify ```"loss"``` and ```"metrics"``` in ```.json``` config files
 
 #### Multiple metrics
-If you have multiple metrics for your project, just add them to the ```metrics``` list:
-
-  ```python
-  loss = my_loss
-  metrics = [my_metric, my_metric2]
+You can add multiple metrics in your config files:
+  ```json
+  "metrics": ["my_metric", "my_metric2"],
   ```
-Additional metric will be shown in the logging
 
 ### Additional logging
 If you have additional information to be logged, in ```_train_epoch()``` of your trainer class, merge them with ```log``` as shown below before returning:
@@ -219,29 +225,42 @@ If you have additional information to be logged, in ```_train_epoch()``` of your
   ```
 
 ### Validation data
-If you need to split validation data from a data loader, call ```BaseDataLoader.split_validation(validation_split)```, it will return a validation data loader, with the number of samples according to the specified ratio
+To split validation data from a data loader, call ```BaseDataLoader.split_validation()```, it will return a validation data loader, with the number of samples according to the specified ratio in your config file.
 
 **Note**: the ```split_validation()``` method will modify the original data loader
+**Note**: ```split_validation()``` will return ```None``` if ```"validation_split"``` is set to `0`
 
-### Checkpoint naming
-You can specify the name of the training session in ```train.py```
-
-  ```python
-  training_name = type(model).__name__
+### Checkpoints
+You can specify the name of the training session in config files:
+  ```json
+  "name": "MNIST_LeNet",
   ```
 
-Then the checkpoints will be saved in ```saved/training_name```
+The checkpoints will be saved in ```save_dir/name```.
+
+The config file is saved in the same folder.
+
+**Note**: checkpoints contain:
+  ```python
+  {
+    'arch': arch,
+    'epoch': epoch,
+    'logger': self.train_logger,
+    'state_dict': self.model.state_dict(),
+    'optimizer': self.optimizer.state_dict(),
+    'monitor_best': self.monitor_best,
+    'config': self.config
+  }
+  ```
 
 ## Contributing
 Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8
 
 ## TODOs
 - [ ] Multi-GPU support
-- [ ] `TensorboardX` support
+- [ ] `TensorboardX` or `visdom` support
 - [ ] Support iteration-based training (instead of epoch)
-- [ ] Configurable logging layout
-- [ ] Configurable checkpoint naming
-- [ ] Options to save logs to file
+- [ ] Configurable logging layout, checkpoint naming
 - [x] Load settings from `config` files
 
 ## License
