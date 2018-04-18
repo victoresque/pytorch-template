@@ -17,7 +17,7 @@ PyTorch deep learning project made easy.
 		* [Data Loader](#data-loader)
 		* [Trainer](#trainer)
 		* [Model](#model)
-		* [Loss & Metrics](#loss-metrics)
+		* [Loss and metrics](#loss-and-metrics)
 			* [Multiple metrics](#multiple-metrics)
 		* [Additional logging](#additional-logging)
 		* [Validation data](#validation-data)
@@ -28,7 +28,6 @@ PyTorch deep learning project made easy.
 	* [Acknowledgments](#acknowledgments)
 
 <!-- /code_chunk_output -->
-
 
 ## Requirements
 * Python 3.x
@@ -84,7 +83,7 @@ The code in this repo is an MNIST example of the template.
 
 ### Config file format
 Config files are in ```.json``` format:
-  ```json
+  ```
   {
     "name": "Mnist_LeNet",        // training session name
     "cuda": true,                 // use cuda
@@ -206,7 +205,7 @@ You can resume from a previously saved checkpoint by:
 
   Please refer to ```model/model.py``` for a LeNet example.
 
-### Loss & Metrics
+### Loss and metrics
 If you need to change the loss function or metrics, first ```import``` those function in ```train.py```, then modify ```"loss"``` and ```"metrics"``` in ```.json``` config files
 
 #### Multiple metrics
