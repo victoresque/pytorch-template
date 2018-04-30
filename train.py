@@ -15,6 +15,8 @@ parser.add_argument('-b', '--batch-size', default=32, type=int,
                     help='mini-batch size (default: 32)')
 parser.add_argument('-e', '--epochs', default=32, type=int,
                     help='number of total epochs (default: 32)')
+parser.add_argument('--lr', default=0.001, type=float,
+                    help='learning rate (default: 0.001)')
 parser.add_argument('--resume', default='', type=str,
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('--verbosity', default=2, type=int,
@@ -42,7 +44,7 @@ def main(args):
     # Specifying loss function, metric(s), and optimizer
     loss = my_loss
     metrics = [my_metric, my_metric2]
-    optimizer = optim.Adam(model.parameters())
+    optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     # Data loader and validation split
     data_loader = MnistDataLoader(args.data_dir, args.batch_size, shuffle=True)
