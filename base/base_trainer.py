@@ -25,6 +25,9 @@ class BaseTrainer:
         if config['cuda'] and not torch.cuda.is_available():
             self.logger.warning('Warning: There\'s no CUDA support on this machine, '
                                 'training is performed on CPU.')
+        else:
+            self.gpu = 'cuda:' + str(config['gpu'])
+
         self.train_logger = train_logger
         self.optimizer = getattr(optim, config['optimizer_type'])(model.parameters(),
                                                                   **config['optimizer'])

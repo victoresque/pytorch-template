@@ -1,6 +1,7 @@
 {
     "name": "Mnist_LeNet",
     "cuda": true,
+    "gpu": 0,
     "data_loader": {
         "data_dir": "datasets/",
         "batch_size": 32,
