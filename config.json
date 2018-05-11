@@ -11,6 +11,12 @@
         "validation_split": 0.1,
         "shuffle": true
     },
+
+    "lr_scheduler_type": "ExponentialLR",
+    "lr_scheduler": {
+            "gamma": 0.8685113737513527
+    },
+ 
     "optimizer_type": "Adam",
     "optimizer": {
         "lr": 0.001,
