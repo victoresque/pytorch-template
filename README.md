@@ -257,6 +257,8 @@ Feel free to contribute any kind of function or enhancement, here the coding sty
 
 ## TODOs
 - [ ] Multi-GPU support
+- [ ] Update the example to PyTorch 0.4 (or 1.0)
+- [ ] Deprecate `BaseDataLoader`, use `torch.utils.data instesad`
 - [ ] `TensorboardX` or `visdom` support
 - [ ] Support iteration-based training (instead of epoch)
 - [ ] Configurable logging layout, checkpoint naming
