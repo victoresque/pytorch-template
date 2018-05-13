@@ -53,8 +53,6 @@ class Trainer(BaseTrainer):
             The metrics in log must have the key 'metrics'.
         """
         self.model.train()
-        if self.with_cuda:
-            self.model.cuda()
 
         total_loss = 0
         total_metrics = np.zeros(len(self.metrics))
@@ -67,7 +65,7 @@ class Trainer(BaseTrainer):
             loss.backward()
             self.optimizer.step()
 
-            total_loss += loss.data[0]
+            total_loss += loss.item()
             total_metrics += self._eval_metrics(output, target)
 
             if self.verbosity >= 2 and batch_idx % self.log_step == 0:
@@ -76,7 +74,7 @@ class Trainer(BaseTrainer):
                     batch_idx * self.data_loader.batch_size,
                     len(self.data_loader) * self.data_loader.batch_size,
                     100.0 * batch_idx / len(self.data_loader), 
-                    loss.data[0]))
+                    loss.item()))
 
         log = {
             'loss': total_loss / len(self.data_loader), 
@@ -86,6 +84,8 @@ class Trainer(BaseTrainer):
         if self.valid:
             val_log = self._valid_epoch()
             log = {**log, **val_log}
+
+
 
         return log
 
@@ -101,14 +101,15 @@ class Trainer(BaseTrainer):
         self.model.eval()
         total_val_loss = 0
         total_val_metrics = np.zeros(len(self.metrics))
-        for batch_idx, (data, target) in enumerate(self.valid_data_loader):
-            data, target = self._to_tensor(data, target)
+        with torch.no_grad():
+            for batch_idx, (data, target) in enumerate(self.valid_data_loader):
+                data, target = self._to_tensor(data, target)
 
-            output = self.model(data)
-            loss = self.loss(output, target)
+                output = self.model(data)
+                loss = self.loss(output, target)
 
-            total_val_loss += loss.data[0]
-            total_val_metrics += self._eval_metrics(output, target)
+                total_val_loss += loss.item()
+                total_val_metrics += self._eval_metrics(output, target)
 
         return {
             'val_loss': total_val_loss / len(self.valid_data_loader), 
