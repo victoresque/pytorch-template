@@ -24,8 +24,8 @@ class Trainer(BaseTrainer):
         self.valid = True if self.valid_data_loader is not None else False
 
     def _to_variable(self, data, target):
+        # data, target = Variable(data), Variable(target)
         data, target = torch.FloatTensor(data), torch.LongTensor(target)
-        data, target = Variable(data), Variable(target)
         if self.with_cuda:
             data, target = data.cuda(), target.cuda()
         return data, target
@@ -65,12 +65,12 @@ class Trainer(BaseTrainer):
                 y_target = target.data.cpu().numpy()
                 total_metrics[i] += metric(y_output, y_target)
 
-            total_loss += loss.data[0]
+            total_loss += loss.item()
             log_step = int(np.sqrt(self.batch_size))
             if self.verbosity >= 2 and batch_idx % log_step == 0:
                 self.logger.info('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
                     epoch, batch_idx * len(data), len(self.data_loader) * len(data),
-                    100.0 * batch_idx / len(self.data_loader), loss.data[0]))
+                    100.0 * batch_idx / len(self.data_loader), loss.item()))
 
         avg_loss = total_loss / len(self.data_loader)
         avg_metrics = (total_metrics / len(self.data_loader)).tolist()
@@ -96,7 +96,7 @@ class Trainer(BaseTrainer):
 
             output = self.model(data)
             loss = self.loss(output, target)
-            total_val_loss += loss.data[0]
+            total_val_loss += loss.item()
 
             for i, metric in enumerate(self.metrics):
                 y_output = output.data.cpu().numpy()

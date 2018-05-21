@@ -1,5 +1,6 @@
 import argparse
 import logging
+import tensorboardX
 import torch.optim as optim
 from model.model import MnistModel
 from model.loss import my_loss
@@ -8,7 +9,9 @@ from data_loader import MnistDataLoader
 from trainer import Trainer
 from logger import Logger
 
+
 logging.basicConfig(level=logging.INFO, format='')
+
 
 parser = argparse.ArgumentParser(description='PyTorch Template')
 parser.add_argument('-b', '--batch-size', default=32, type=int,
@@ -17,6 +20,8 @@ parser.add_argument('-e', '--epochs', default=32, type=int,
                     help='number of total epochs (default: 32)')
 parser.add_argument('--lr', default=0.001, type=float,
                     help='learning rate (default: 0.001)')
+parser.add_argument('--wd', default=0.001, type=float,
+                    help='weight decay (default: 0.001)')
 parser.add_argument('--resume', default='', type=str,
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('--verbosity', default=2, type=int,
@@ -44,11 +49,11 @@ def main(args):
     # Specifying loss function, metric(s), and optimizer
     loss = my_loss
     metrics = [my_metric, my_metric2]
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd, amsgrad=True)
 
     # Data loader and validation split
-    data_loader = MnistDataLoader(args.data_dir, args.batch_size, shuffle=True)
-    valid_data_loader = data_loader.split_validation(args.validation_split)
+    data_loader = MnistDataLoader(args.data_dir, args.batch_size, args.validation_split, shuffle=True, num_workers=4)
+    valid_data_loader = data_loader.get_valid_loader()
 
     # An identifier for this training session
     training_name = type(model).__name__
