@@ -76,7 +76,7 @@ def main(args):
                       training_name=training_name,
                       with_cuda=not args.no_cuda,
                       lr_scheduler=lr_scheduler,
-                      monitor='val_my_metric',
+                      monitor='accuracy',
                       monitor_mode='max')
 
     # Start training!
