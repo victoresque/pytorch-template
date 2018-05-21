@@ -17,11 +17,12 @@ class Trainer(BaseTrainer):
                  valid_data_loader=None, train_logger=None, monitor='loss', monitor_mode='min'):
         super(Trainer, self).__init__(model, loss, metrics, optimizer, epochs,
                                       save_dir, save_freq, resume, verbosity, training_name,
-                                      with_cuda, train_logger, monitor, monitor_mode)
+                                      with_cuda, train_logger, lr_scheduler, monitor, monitor_mode)
         self.batch_size = data_loader.batch_size
         self.data_loader = data_loader
         self.valid_data_loader = valid_data_loader
         self.valid = True if self.valid_data_loader is not None else False
+        self.scheduler = lr_scheduler
 
     def _to_variable(self, data, target):
         # data, target = Variable(data), Variable(target)
@@ -60,10 +61,8 @@ class Trainer(BaseTrainer):
             self.optimizer.step()
 
             for i, metric in enumerate(self.metrics):
-                y_output = output.data.cpu().numpy()
-                y_output = np.argmax(y_output, axis=1)
-                y_target = target.data.cpu().numpy()
-                total_metrics[i] += metric(y_output, y_target)
+                score = metric(output, target)
+                total_metrics[i] += score
 
             total_loss += loss.item()
             log_step = int(np.sqrt(self.batch_size))
@@ -99,11 +98,10 @@ class Trainer(BaseTrainer):
             total_val_loss += loss.item()
 
             for i, metric in enumerate(self.metrics):
-                y_output = output.data.cpu().numpy()
-                y_output = np.argmax(y_output, axis=1)
-                y_target = target.data.cpu().numpy()
-                total_val_metrics[i] += metric(y_output, y_target)
+                score = metric(output, target)
+                total_val_metrics[i] += score
 
         avg_val_loss = total_val_loss / len(self.valid_data_loader)
+        self.scheduler.step(avg_val_loss)
         avg_val_metrics = (total_val_metrics / len(self.valid_data_loader)).tolist()
         return {'val_loss': avg_val_loss, 'val_metrics': avg_val_metrics}

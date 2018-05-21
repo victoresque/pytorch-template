@@ -2,9 +2,10 @@ import argparse
 import logging
 import tensorboardX
 import torch.optim as optim
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from model.model import MnistModel
 from model.loss import my_loss
-from model.metric import my_metric, my_metric2
+from model.metric import accuracy
 from data_loader import MnistDataLoader
 from trainer import Trainer
 from logger import Logger
@@ -34,6 +35,8 @@ parser.add_argument('--data-dir', default='datasets', type=str,
                     help='directory of training/testing data (default: datasets)')
 parser.add_argument('--validation-split', default=0.1, type=float,
                     help='ratio of split validation data, [0.0, 1.0) (default: 0.1)')
+parser.add_argument('--validation-fold', default=0, type=int,
+                    help='select part of data to be used as validation set (default: 0)')
 parser.add_argument('--no-cuda', action="store_true",
                     help='use CPU instead of GPU')
 
@@ -48,11 +51,12 @@ def main(args):
 
     # Specifying loss function, metric(s), and optimizer
     loss = my_loss
-    metrics = [my_metric, my_metric2]
+    metrics = [accuracy]
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd, amsgrad=True)
+    lr_scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10)
 
     # Data loader and validation split
-    data_loader = MnistDataLoader(args.data_dir, args.batch_size, args.validation_split, shuffle=True, num_workers=4)
+    data_loader = MnistDataLoader(args.data_dir, args.batch_size, args.validation_split, args.validation_fold, shuffle=True, num_workers=4)
     valid_data_loader = data_loader.get_valid_loader()
 
     # An identifier for this training session
@@ -71,6 +75,7 @@ def main(args):
                       verbosity=args.verbosity,
                       training_name=training_name,
                       with_cuda=not args.no_cuda,
+                      lr_scheduler=lr_scheduler,
                       monitor='val_my_metric',
                       monitor_mode='max')
 
