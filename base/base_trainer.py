@@ -11,7 +11,7 @@ class BaseTrainer:
     """
     def __init__(self, model, loss, metrics, optimizer, epochs,
                  save_dir, save_freq, resume, verbosity, training_name,
-                 with_cuda, train_logger=None, monitor='loss', monitor_mode='min'):
+                 train_logger=None, monitor='loss', monitor_mode='min'):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = model
         self.loss = loss
@@ -22,10 +22,7 @@ class BaseTrainer:
         self.verbosity = verbosity
         self.training_name = training_name
         self.train_logger = train_logger
-        self.with_cuda = with_cuda and torch.cuda.is_available()
-        if with_cuda and not torch.cuda.is_available():
-            self.logger.warning('Warning: There\'s no CUDA support on this machine, '
-                                'training is performed on CPU.')
+        # self.device = device
         self.monitor = monitor
         self.monitor_mode = monitor_mode
         assert monitor_mode == 'min' or monitor_mode == 'max'

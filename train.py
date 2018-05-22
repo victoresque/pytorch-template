@@ -1,6 +1,7 @@
 import argparse
 import logging
 import tensorboardX
+import torch
 import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from model.model import MnistModel
@@ -42,6 +43,7 @@ parser.add_argument('--no-cuda', action="store_true",
 
 
 def main(args):
+    device = torch.device('cuda:0' if torch.cuda.is_available() and not args.no_cuda else 'cpu')
     # Model
     model = MnistModel()
     model.summary()
@@ -74,7 +76,7 @@ def main(args):
                       resume=args.resume,
                       verbosity=args.verbosity,
                       training_name=training_name,
-                      with_cuda=not args.no_cuda,
+                      device=device,
                       lr_scheduler=lr_scheduler,
                       monitor='accuracy',
                       monitor_mode='max')

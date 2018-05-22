@@ -13,23 +13,17 @@ class Trainer(BaseTrainer):
         Modify __init__() if you have additional arguments to pass.
     """
     def __init__(self, model, loss, metrics, data_loader, optimizer, epochs,
-                 save_dir, save_freq, resume, with_cuda, verbosity, training_name='',
+                 save_dir, save_freq, resume, device, verbosity, training_name='',
                  valid_data_loader=None, train_logger=None, lr_scheduler=None, monitor='loss', monitor_mode='min'):
         super(Trainer, self).__init__(model, loss, metrics, optimizer, epochs,
                                       save_dir, save_freq, resume, verbosity, training_name,
-                                      with_cuda, train_logger, monitor, monitor_mode)
+                                      train_logger, monitor, monitor_mode)
+        self.device = device
         self.batch_size = data_loader.batch_size
         self.data_loader = data_loader
         self.valid_data_loader = valid_data_loader
         self.valid = True if self.valid_data_loader is not None else False
         self.scheduler = lr_scheduler
-
-    def _to_variable(self, data, target):
-        # data, target = Variable(data), Variable(target)
-        data, target = torch.FloatTensor(data), torch.LongTensor(target)
-        if self.with_cuda:
-            data, target = data.cuda(), target.cuda()
-        return data, target
 
     def _train_epoch(self, epoch):
         """
@@ -46,13 +40,12 @@ class Trainer(BaseTrainer):
                 > return log
         """
         self.model.train()
-        if self.with_cuda:
-            self.model.cuda()
+        self.model.to(self.device)
 
         total_loss = 0
         total_metrics = np.zeros(len(self.metrics))
         for batch_idx, (data, target) in enumerate(self.data_loader):
-            data, target = self._to_variable(data, target)
+            data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
             output = self.model(data)
@@ -88,11 +81,11 @@ class Trainer(BaseTrainer):
         :return: A log that contains information about validation
         """
         self.model.eval()
+
         total_val_loss = 0
         total_val_metrics = np.zeros(len(self.metrics))
         for batch_idx, (data, target) in enumerate(self.valid_data_loader):
-            data, target = self._to_variable(data, target)
-
+            data, target = data.to(self.device), target.to(self.device)
             output = self.model(data)
             loss = self.loss(output, target)
             total_val_loss += loss.item()
