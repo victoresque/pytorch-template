@@ -256,11 +256,12 @@ The config file is saved in the same folder.
 Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8
 
 ## TODOs
+- [ ] Iteration-based training (instead of epoch-based)
+- [ ] Deprecate `BaseDataLoader`, use `torch.utils.data` instesad
 - [ ] Multi-GPU support
+- [ ] Multiple optimizers and lr scheduler
 - [ ] Update the example to PyTorch 0.4 (or 1.0)
-- [ ] Deprecate `BaseDataLoader`, use `torch.utils.data instesad`
-- [ ] `TensorboardX` or `visdom` support
-- [ ] Support iteration-based training (instead of epoch)
+- [ ] `TensorboardX` or `visdom` logger support
 - [ ] Configurable logging layout, checkpoint naming
 - [x] Load settings from `config` files
 
