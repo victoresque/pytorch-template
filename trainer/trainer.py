@@ -81,20 +81,20 @@ class Trainer(BaseTrainer):
         :return: A log that contains information about validation
         """
         self.model.eval()
+        with torch.no_grad():
+            total_val_loss = 0
+            total_val_metrics = np.zeros(len(self.metrics))
+            for batch_idx, (data, target) in enumerate(self.valid_data_loader):
+                data, target = data.to(self.device), target.to(self.device)
+                output = self.model(data)
+                loss = self.loss(output, target)
+                total_val_loss += loss.item()
 
-        total_val_loss = 0
-        total_val_metrics = np.zeros(len(self.metrics))
-        for batch_idx, (data, target) in enumerate(self.valid_data_loader):
-            data, target = data.to(self.device), target.to(self.device)
-            output = self.model(data)
-            loss = self.loss(output, target)
-            total_val_loss += loss.item()
+                for i, metric in enumerate(self.metrics):
+                    score = metric(output, target)
+                    total_val_metrics[i] += score
 
-            for i, metric in enumerate(self.metrics):
-                score = metric(output, target)
-                total_val_metrics[i] += score
-
-        avg_val_loss = total_val_loss / len(self.valid_data_loader)
-        self.scheduler.step(avg_val_loss)
-        avg_val_metrics = (total_val_metrics / len(self.valid_data_loader)).tolist()
+            avg_val_loss = total_val_loss / len(self.valid_data_loader)
+            self.scheduler.step(avg_val_loss)
+            avg_val_metrics = (total_val_metrics / len(self.valid_data_loader)).tolist()
         return {'val_loss': avg_val_loss, 'val_metrics': avg_val_metrics}

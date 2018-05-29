@@ -22,8 +22,8 @@ parser.add_argument('-e', '--epochs', default=32, type=int,
                     help='number of total epochs (default: 32)')
 parser.add_argument('--lr', default=0.001, type=float,
                     help='learning rate (default: 0.001)')
-parser.add_argument('--wd', default=0.001, type=float,
-                    help='weight decay (default: 0.001)')
+parser.add_argument('--wd', default=0.0, type=float,
+                    help='weight decay (default: 0.0)')
 parser.add_argument('--resume', default='', type=str,
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('--verbosity', default=2, type=int,
@@ -34,6 +34,8 @@ parser.add_argument('--save-freq', default=1, type=int,
                     help='training checkpoint frequency (default: 1)')
 parser.add_argument('--data-dir', default='datasets', type=str,
                     help='directory of training/testing data (default: datasets)')
+parser.add_argument('--valid-batch-size', default=1000, type=int,
+                    help='mini-batch size (default: 1000)')
 parser.add_argument('--validation-split', default=0.1, type=float,
                     help='ratio of split validation data, [0.0, 1.0) (default: 0.1)')
 parser.add_argument('--validation-fold', default=0, type=int,
@@ -58,7 +60,7 @@ def main(args):
     lr_scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10)
 
     # Data loader and validation split
-    data_loader = MnistDataLoader(args.data_dir, args.batch_size, args.validation_split, args.validation_fold, shuffle=True, num_workers=4)
+    data_loader = MnistDataLoader(args.data_dir, args.batch_size, args.valid_batch_size, args.validation_split, args.validation_fold, shuffle=True, num_workers=4)
     valid_data_loader = data_loader.get_valid_loader()
 
     # An identifier for this training session

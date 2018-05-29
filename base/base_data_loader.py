@@ -8,12 +8,13 @@ class BaseDataLoader(DataLoader):
     """
     Base class for all data loaders
     """
-    def __init__(self, dataset, batch_size, shuffle, validation_split, validation_fold, num_workers, collate_fn=default_collate):
+    def __init__(self, dataset, batch_size, valid_batch_size, shuffle, validation_split, validation_fold, num_workers, collate_fn=default_collate):
         """
         :param batch_size: Mini-batch size
         """
         self.dataset = dataset
         self.batch_size = batch_size
+        self.valid_batch_size = valid_batch_size
         self.shuffle = shuffle
         self._n_samples = len(self.dataset)
         self.num_workers = num_workers
@@ -26,12 +27,11 @@ class BaseDataLoader(DataLoader):
 
         self.init_kwargs = {
             'dataset': self.dataset,
-            'batch_size': self.batch_size,
             'num_workers': self.num_workers,
             'shuffle': self.shuffle,
             'collate_fn': self.collate_fn
             }
-        super(BaseDataLoader, self).__init__(**self.init_kwargs, sampler=self.sampler)
+        super(BaseDataLoader, self).__init__(**self.init_kwargs, sampler=self.sampler, batch_size=self.batch_size)
 
     def __len__(self):
         """
@@ -65,5 +65,5 @@ class BaseDataLoader(DataLoader):
         if self.valid_sampler is None:
             return None
         else:
-            valid_loader = DataLoader(**self.init_kwargs, sampler=self.valid_sampler)
+            valid_loader = DataLoader(**self.init_kwargs, sampler=self.valid_sampler, batch_size=self.valid_batch_size)
             return valid_loader
