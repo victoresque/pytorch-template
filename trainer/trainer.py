@@ -17,8 +17,7 @@ class Trainer(BaseTrainer):
                  valid_data_loader=None, train_logger=None, lr_scheduler=None, monitor='loss', monitor_mode='min'):
         super(Trainer, self).__init__(model, loss, metrics, optimizer, epochs,
                                       save_dir, save_freq, resume, verbosity, training_name,
-                                      train_logger, monitor, monitor_mode)
-        self.device = device
+                                      device, train_logger, monitor, monitor_mode)
         self.batch_size = data_loader.batch_size
         self.data_loader = data_loader
         self.valid_data_loader = valid_data_loader

@@ -10,7 +10,7 @@ class BaseTrainer:
     Base class for all trainers
     """
     def __init__(self, model, loss, metrics, optimizer, epochs,
-                 save_dir, save_freq, resume, verbosity, training_name,
+                 save_dir, save_freq, resume, verbosity, training_name, device
                  train_logger=None, monitor='loss', monitor_mode='min'):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = model
@@ -22,7 +22,7 @@ class BaseTrainer:
         self.verbosity = verbosity
         self.training_name = training_name
         self.train_logger = train_logger
-        # self.device = device
+        self.device = device
         self.monitor = monitor
         self.monitor_mode = monitor_mode
         assert monitor_mode == 'min' or monitor_mode == 'max'
@@ -107,5 +107,9 @@ class BaseTrainer:
         self.monitor_best = checkpoint['monitor_best']
         self.model.load_state_dict(checkpoint['state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer'])
+        for state in self.optimizer.state.values():
+            for k, v in state.items():
+                if isinstance(v, torch.Tensor):
+                    state[k] = v.to(self.device)
         self.train_logger = checkpoint['logger']
         self.logger.info("Checkpoint '{}' (epoch {}) loaded".format(resume_path, self.start_epoch))
