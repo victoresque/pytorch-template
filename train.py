@@ -1,6 +1,5 @@
 import argparse
 import logging
-import tensorboardX
 import torch
 import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -10,9 +9,10 @@ from model.metric import accuracy
 from data_loader import MnistDataLoader
 from trainer import Trainer
 from logger import Logger
-
+from tensorboardX import SummaryWriter
 
 logging.basicConfig(level=logging.INFO, format='')
+writer = SummaryWriter('/data1/home/hmroh/projects2018/SunQ/runs')
 
 
 parser = argparse.ArgumentParser(description='PyTorch Template')
@@ -73,6 +73,7 @@ def main(args):
                       optimizer=optimizer,
                       epochs=args.epochs,
                       train_logger=train_logger,
+                      writer=writer,
                       save_dir=args.save_dir,
                       save_freq=args.save_freq,
                       resume=args.resume,

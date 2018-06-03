@@ -9,29 +9,44 @@ class BaseTrainer:
     """
     Base class for all trainers
     """
-    def __init__(self, model, loss, metrics, optimizer, epochs,
-                 save_dir, save_freq, resume, verbosity, training_name, device
-                 train_logger=None, monitor='loss', monitor_mode='min'):
+    def __init__(self, model, loss, metrics, data_loader, valid_data_loader, optimizer, epochs,
+                 save_dir, save_freq, resume, verbosity, training_name, device,
+                 train_logger=None, writer=None, monitor='loss', monitor_mode='min'):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = model
         self.loss = loss
         self.metrics = metrics
+
+        self.data_loader = data_loader
+        self.batch_size = data_loader.batch_size
+        self.valid_data_loader = valid_data_loader
+        self.valid = True if self.valid_data_loader is not None else False
+
         self.optimizer = optimizer
         self.epochs = epochs
         self.save_freq = save_freq
         self.verbosity = verbosity
+
         self.training_name = training_name
-        self.train_logger = train_logger
+        self.train_logger = train_logger        
+        self.writer = writer
+        self.train_iter = 0
+        self.valid_iter = 0
+
         self.device = device
         self.monitor = monitor
         self.monitor_mode = monitor_mode
         assert monitor_mode == 'min' or monitor_mode == 'max'
         self.monitor_best = math.inf if monitor_mode == 'min' else -math.inf
         self.start_epoch = 1
+
+
         self.checkpoint_dir = os.path.join(save_dir, training_name)
         ensure_dir(self.checkpoint_dir)
         if resume:
             self._resume_checkpoint(resume)
+
+        
 
     def train(self):
         """
@@ -104,6 +119,9 @@ class BaseTrainer:
         self.logger.info("Loading checkpoint: {} ...".format(resume_path))
         checkpoint = torch.load(resume_path)
         self.start_epoch = checkpoint['epoch'] + 1
+        self.train_iter = self.start_epoch * len(self.data_loader)
+        self.valid_iter = self.start_epoch * len(self.valid_data_loader)
+
         self.monitor_best = checkpoint['monitor_best']
         self.model.load_state_dict(checkpoint['state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer'])
