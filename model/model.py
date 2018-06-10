@@ -3,11 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-models = {
-    "MnistModel": MnistModel
-}
-
-
 class MnistModel(BaseModel):
     def __init__(self, config):
         super(MnistModel, self).__init__(config)
@@ -26,3 +21,8 @@ class MnistModel(BaseModel):
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
+
+
+models = {
+    "MnistModel": MnistModel
+}
