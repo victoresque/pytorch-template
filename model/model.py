@@ -3,6 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+models = {
+    "MnistModel": MnistModel
+}
+
+
 class MnistModel(BaseModel):
     def __init__(self, config):
         super(MnistModel, self).__init__(config)
