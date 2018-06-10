@@ -13,7 +13,7 @@ class Trainer(BaseTrainer):
     """
     def __init__(self, model, loss, metrics, resume, config,
                  data_loader, valid_data_loader=None, train_logger=None):
-        super(Trainer, self).__init__(model, loss, metrics, resume, config, train_logger)
+        super().__init__(model, loss, metrics, resume, config, train_logger)
         self.config = config
         self.batch_size = data_loader.batch_size
         self.data_loader = data_loader
@@ -69,23 +69,24 @@ class Trainer(BaseTrainer):
             total_metrics += self._eval_metrics(output, target)
 
             if self.verbosity >= 2 and batch_idx % self.log_step == 0:
-                self.logger.info('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
-                    epoch, 
-                    batch_idx * self.data_loader.batch_size,
-                    len(self.data_loader) * self.data_loader.batch_size,
-                    100.0 * batch_idx / len(self.data_loader), 
-                    loss.item()))
+                self.logger.info(
+                    'Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
+                        epoch,
+                        batch_idx * self.data_loader.batch_size,
+                        len(self.data_loader) * self.data_loader.batch_size,
+                        100.0 * batch_idx / len(self.data_loader),
+                        loss.item()
+                    )
+                )
 
         log = {
-            'loss': total_loss / len(self.data_loader), 
+            'loss': total_loss / len(self.data_loader),
             'metrics': (total_metrics / len(self.data_loader)).tolist()
         }
 
         if self.valid:
             val_log = self._valid_epoch()
             log = {**log, **val_log}
-
-
 
         return log
 
@@ -112,6 +113,8 @@ class Trainer(BaseTrainer):
                 total_val_metrics += self._eval_metrics(output, target)
 
         return {
-            'val_loss': total_val_loss / len(self.valid_data_loader), 
-            'val_metrics': (total_val_metrics / len(self.valid_data_loader)).tolist()
+            'val_loss': total_val_loss / len(self.valid_data_loader),
+            'val_metrics': (
+                total_val_metrics / len(self.valid_data_loader)
+            ).tolist()
         }
