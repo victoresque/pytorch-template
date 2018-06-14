@@ -255,6 +255,8 @@ The config file is saved in the same folder.
 ## Contributing
 Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8
 
+Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before committing.
+
 ## TODOs
 - [ ] Multi-GPU support
 - [ ] `TensorboardX` or `visdom` support
