@@ -21,3 +21,8 @@ class MnistModel(BaseModel):
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
+
+
+models = {
+    "MnistModel": MnistModel
+}

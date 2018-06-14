@@ -28,7 +28,10 @@ class BaseDataLoader:
         """
         packed = self._pack_data()
         if self.batch_idx < self.__len__():
-            batch = packed[self.batch_idx * self.batch_size:(self.batch_idx + 1) * self.batch_size]
+            batch = packed[
+                self.batch_idx * self.batch_size:
+                (self.batch_idx + 1) * self.batch_size
+            ]
             self.batch_idx = self.batch_idx + 1
             return self._unpack_data(batch)
         else:
@@ -82,7 +85,8 @@ class BaseDataLoader:
 
     def split_validation(self):
         """
-        Split validation data from data loader based on self.config['validation']
+        Split validation data from data loader based on
+        self.config['validation']
         """
         validation_split = self.config['validation']['validation_split']
         shuffle = self.config['validation']['shuffle']

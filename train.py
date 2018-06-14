@@ -2,13 +2,13 @@ import os
 import json
 import logging
 import argparse
+
 import torch
-from model.model import *
-from model.loss import *
-from model.metric import *
+
 from data_loader import MnistDataLoader
 from trainer import Trainer
 from logger import Logger
+from utils import get_model, get_loss, get_metrics
 
 logging.basicConfig(level=logging.INFO, format='')
 
@@ -19,11 +19,10 @@ def main(config, resume):
     data_loader = MnistDataLoader(config)
     valid_data_loader = data_loader.split_validation()
 
-    model = eval(config['arch'])(config['model'])
+    model = get_model(config)
+    loss = get_loss(config)
+    metrics = get_metrics(config)
     model.summary()
-
-    loss = eval(config['loss'])
-    metrics = [eval(metric) for metric in config['metrics']]
 
     trainer = Trainer(model, loss, metrics,
                       resume=resume,
