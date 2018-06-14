@@ -82,7 +82,7 @@ PyTorch deep learning project made easy.
 The code in this repo is an MNIST example of the template.
 
 ### Config file format
-Config files are in ```.json``` format:
+Config files are in `.json` format:
   ```
   {
     "name": "Mnist_LeNet",        // training session name
@@ -122,7 +122,7 @@ Config files are in ```.json``` format:
 Add addional configurations if you need.
 
 ### Using config files
-Modify the configurations in ```.json``` config files, then run:
+Modify the configurations in `.json` config files, then run:
 
   ```
   python train.py --config config.json
@@ -141,72 +141,72 @@ You can resume from a previously saved checkpoint by:
 
 1. **Inherit ```BaseDataLoader```**
 
-    ```BaseDataLoader``` is similar to ```torch.utils.data.DataLoader```, you can use either of them.
+    `BaseDataLoader` is similar to `torch.utils.data.DataLoader`, you can use either of them.
 
-    ```BaseDataLoader``` handles:
+    `BaseDataLoader` handles:
     * Generating next batch
     * Data shuffling
     * Generating validation data loader by calling
-    ```BaseDataLoader.split_validation()```
+    `BaseDataLoader.split_validation()`
 
 2. **Implementing abstract methods**
 
     **You need to implement these abstract methods:**
-    * ```_pack_data()```: pack data members into a list of tuples
-    * ```_unpack_data()```: unpack packed data
-    * ```_update_data()```: updata data members
-    * ```_n_samples()```: total number of samples
+    * `_pack_data()`: pack data members into a list of tuples
+    * `_unpack_data()`: unpack packed data
+    * `_update_data()`: updata data members
+    * `_n_samples()`: total number of samples
 
 * **DataLoader Usage**
 
-  ```BaseDataLoader``` is an iterator, to iterate through batches:
+  `BaseDataLoader` is an iterator, to iterate through batches:
   ```python
   for batch_idx, (x_batch, y_batch) in data_loader:
       pass
   ```
 * **Example**
 
-  Please refer to ```data_loader/data_loaders.py``` for an MNIST data loading example.
+  Please refer to `data_loader/data_loaders.py` for an MNIST data loading example.
 
 ### Trainer
 * **Writing your own trainer**
 
 1. **Inherit ```BaseTrainer```**
 
-    ```BaseTrainer``` handles:
+    `BaseTrainer` handles:
     * Training process logging
     * Checkpoint saving
     * Checkpoint resuming
     * Reconfigurable monitored value for saving current best
-      * Controlled by the configs ```monitor``` and ```monitor_mode```, if ```monitor_mode == 'min'``` then the trainer will save a checkpoint ```model_best.pth.tar``` when ```monitor``` is a current minimum
+      * Controlled by the configs `monitor` and `monitor_mode`, if `monitor_mode == 'min'` then the trainer will save a checkpoint `model_best.pth.tar` when `monitor` is a current minimum
 
 2. **Implementing abstract methods**
 
-    You need to implement ```_train_epoch()``` for your training process, if you need validation then you can implement ```_valid_epoch()``` as in ```trainer/trainer.py```
+    You need to implement `_train_epoch()` for your training process, if you need validation then you can implement `_valid_epoch()` as in `trainer/trainer.py`
 
 * **Example**
 
-  Please refer to ```trainer/trainer.py``` for MNIST training.
+  Please refer to `trainer/trainer.py` for MNIST training.
 
 ### Model
 * **Writing your own model**
 
-1. **Inherit ```BaseModel```**
+1. **Inherit `BaseModel`**
 
-    ```BaseModel``` handles:
-    * Inherited from ```torch.nn.Module```
-    * ```summary()```: Model summary
+    `BaseModel` handles:
+    * Inherited from `torch.nn.Module`
+    * `summary()`: Model summary
 
 2. **Implementing abstract methods**
 
-    Implement the foward pass method ```forward()```
+    Implement the foward pass method `forward()`
 
 * **Example**
 
-  Please refer to ```model/model.py``` for a LeNet example.
+  Please refer to `model/model.py` for a LeNet example.
 
 ### Loss and metrics
-If you need to change the loss function or metrics, first ```import``` those function in ```train.py```, then modify ```"loss"``` and ```"metrics"``` in ```.json``` config files
+If you need to change the loss function or metrics, first `import` those function in `train.py`, then modify `"loss"` and `"metrics"` in `.json` config files
 
 #### Multiple metrics
 You can add multiple metrics in your config files:
@@ -215,7 +215,7 @@ You can add multiple metrics in your config files:
   ```
 
 ### Additional logging
-If you have additional information to be logged, in ```_train_epoch()``` of your trainer class, merge them with ```log``` as shown below before returning:
+If you have additional information to be logged, in `_train_epoch()` of your trainer class, merge them with `log` as shown below before returning:
 
   ```python
   additional_log = {"gradient_norm": g, "sensitivity": s}
@@ -224,10 +224,10 @@ If you have additional information to be logged, in ```_train_epoch()``` of your
   ```
 
 ### Validation data
-To split validation data from a data loader, call ```BaseDataLoader.split_validation()```, it will return a validation data loader, with the number of samples according to the specified ratio in your config file.
+To split validation data from a data loader, call `BaseDataLoader.split_validation()`, it will return a validation data loader, with the number of samples according to the specified ratio in your config file.
 
-**Note**: the ```split_validation()``` method will modify the original data loader
-**Note**: ```split_validation()``` will return ```None``` if ```"validation_split"``` is set to `0`
+**Note**: the `split_validation()` method will modify the original data loader
+**Note**: `split_validation()` will return `None` if `"validation_split"` is set to `0`
 
 ### Checkpoints
 You can specify the name of the training session in config files:
@@ -235,7 +235,7 @@ You can specify the name of the training session in config files:
   "name": "MNIST_LeNet",
   ```
 
-The checkpoints will be saved in ```save_dir/name```.
+The checkpoints will be saved in `save_dir/name`.
 
 The config file is saved in the same folder.
 
