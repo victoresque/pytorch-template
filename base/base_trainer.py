@@ -25,9 +25,19 @@ class BaseTrainer:
         if config['cuda'] and not torch.cuda.is_available():
             self.logger.warning('Warning: There\'s no CUDA support on this machine, '
                                 'training is performed on CPU.')
+        else:
+            self.gpu = torch.device('cuda:' + str(config['gpu']))
+            self.model = self.model.to(self.gpu)
+            
+
         self.train_logger = train_logger
         self.optimizer = getattr(optim, config['optimizer_type'])(model.parameters(),
                                                                   **config['optimizer'])
+        self.lr_scheduler = getattr(optim.lr_scheduler,
+                config['lr_scheduler_type'], None)
+        if self.lr_scheduler:
+            self.lr_scheduler = self.lr_scheduler(self.optimizer, **config['lr_scheduler'])
+            self.lr_scheduler_freq = config['lr_scheduler_freq']
         self.monitor = config['trainer']['monitor']
         self.monitor_mode = config['trainer']['monitor_mode']
         assert self.monitor_mode == 'min' or self.monitor_mode == 'max'
@@ -67,6 +77,10 @@ class BaseTrainer:
                 self._save_checkpoint(epoch, log, save_best=True)
             if epoch % self.save_freq == 0:
                 self._save_checkpoint(epoch, log)
+            if self.lr_scheduler and  epoch % self.lr_scheduler_freq == 0:
+                self.lr_scheduler.step(epoch)
+                lr = self.lr_scheduler.get_lr()[0]
+                self.logger.info('New Learning Rate: {:.6f}'.format(lr))
 
     def _train_epoch(self, epoch):
         """
@@ -115,6 +129,11 @@ class BaseTrainer:
         self.monitor_best = checkpoint['monitor_best']
         self.model.load_state_dict(checkpoint['state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer'])
+        if self.with_cuda:
+            for state in self.optimizer.state.values():
+                for k, v in state.items():
+                    if isinstance(v, torch.Tensor):
+                        state[k] = v.cuda(self.gpu)
         self.train_logger = checkpoint['logger']
         self.config = checkpoint['config']
         self.logger.info("Checkpoint '{}' (epoch {}) loaded".format(resume_path, self.start_epoch))

@@ -1,6 +1,7 @@
 {
     "name": "Mnist_LeNet",
     "cuda": true,
+    "gpu": 0,
     "data_loader": {
         "data_dir": "datasets/",
         "batch_size": 32,
@@ -10,6 +11,13 @@
         "validation_split": 0.1,
         "shuffle": true
     },
+
+    "lr_scheduler_type": "ExponentialLR",
+    "lr_scheduler_freq": 1,
+    "lr_scheduler": {
+            "gamma": 0.8685113737513527
+    },
+ 
     "optimizer_type": "Adam",
     "optimizer": {
         "lr": 0.001,

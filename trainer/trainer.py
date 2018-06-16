@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-from torch.autograd import Variable
 from base import BaseTrainer
 
 
@@ -22,11 +21,10 @@ class Trainer(BaseTrainer):
         self.valid = True if self.valid_data_loader is not None else False
         self.log_step = int(np.sqrt(self.batch_size))
 
-    def _to_variable(self, data, target):
+    def _to_tensor(self, data, target):
         data, target = torch.FloatTensor(data), torch.LongTensor(target)
-        data, target = Variable(data), Variable(target)
         if self.with_cuda:
-            data, target = data.cuda(), target.cuda()
+            data, target = data.to(self.gpu), target.to(self.gpu)
         return data, target
 
     def _eval_metrics(self, output, target):
@@ -55,13 +53,11 @@ class Trainer(BaseTrainer):
             The metrics in log must have the key 'metrics'.
         """
         self.model.train()
-        if self.with_cuda:
-            self.model.cuda()
 
         total_loss = 0
         total_metrics = np.zeros(len(self.metrics))
         for batch_idx, (data, target) in enumerate(self.data_loader):
-            data, target = self._to_variable(data, target)
+            data, target = self._to_tensor(data, target)
 
             self.optimizer.zero_grad()
             output = self.model(data)
@@ -69,7 +65,7 @@ class Trainer(BaseTrainer):
             loss.backward()
             self.optimizer.step()
 
-            total_loss += loss.data[0]
+            total_loss += loss.item()
             total_metrics += self._eval_metrics(output, target)
 
             if self.verbosity >= 2 and batch_idx % self.log_step == 0:
@@ -78,7 +74,7 @@ class Trainer(BaseTrainer):
                     batch_idx * self.data_loader.batch_size,
                     len(self.data_loader) * self.data_loader.batch_size,
                     100.0 * batch_idx / len(self.data_loader), 
-                    loss.data[0]))
+                    loss.item()))
 
         log = {
             'loss': total_loss / len(self.data_loader), 
@@ -88,6 +84,8 @@ class Trainer(BaseTrainer):
         if self.valid:
             val_log = self._valid_epoch()
             log = {**log, **val_log}
+
+
 
         return log
 
@@ -103,14 +101,15 @@ class Trainer(BaseTrainer):
         self.model.eval()
         total_val_loss = 0
         total_val_metrics = np.zeros(len(self.metrics))
-        for batch_idx, (data, target) in enumerate(self.valid_data_loader):
-            data, target = self._to_variable(data, target)
+        with torch.no_grad():
+            for batch_idx, (data, target) in enumerate(self.valid_data_loader):
+                data, target = self._to_tensor(data, target)
 
-            output = self.model(data)
-            loss = self.loss(output, target)
+                output = self.model(data)
+                loss = self.loss(output, target)
 
-            total_val_loss += loss.data[0]
-            total_val_metrics += self._eval_metrics(output, target)
+                total_val_loss += loss.item()
+                total_val_metrics += self._eval_metrics(output, target)
 
         return {
             'val_loss': total_val_loss / len(self.valid_data_loader), 
