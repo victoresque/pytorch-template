@@ -70,22 +70,20 @@ class Trainer(BaseTrainer):
 
             if self.verbosity >= 2 and batch_idx % self.log_step == 0:
                 self.logger.info('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
-                    epoch, 
+                    epoch,
                     batch_idx * self.data_loader.batch_size,
                     len(self.data_loader) * self.data_loader.batch_size,
-                    100.0 * batch_idx / len(self.data_loader), 
+                    100.0 * batch_idx / len(self.data_loader),
                     loss.item()))
 
         log = {
-            'loss': total_loss / len(self.data_loader), 
+            'loss': total_loss / len(self.data_loader),
             'metrics': (total_metrics / len(self.data_loader)).tolist()
         }
 
         if self.valid:
             val_log = self._valid_epoch()
             log = {**log, **val_log}
-
-
 
         return log
 
@@ -112,6 +110,6 @@ class Trainer(BaseTrainer):
                 total_val_metrics += self._eval_metrics(output, target)
 
         return {
-            'val_loss': total_val_loss / len(self.valid_data_loader), 
+            'val_loss': total_val_loss / len(self.valid_data_loader),
             'val_metrics': (total_val_metrics / len(self.valid_data_loader)).tolist()
         }
