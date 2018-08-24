@@ -20,12 +20,7 @@ class BaseDataLoader(DataLoader):
         self.batch_idx = 0
         self._n_samples = len(self.dataset)
 
-        if self.validation_split == 0.0:
-            self.sampler, self.valid_sampler = None, None
-        else:
-            self.sampler, self.valid_sampler = self._split_sampler(self.validation_split)
-            # turn off shuffle option which is mutually exclusive with sampler
-            self.shuffle = False
+        self.sampler, self.valid_sampler = self._split_sampler(self.validation_split)
 
         self.init_kwargs = {
             'dataset': self.dataset,
@@ -42,9 +37,10 @@ class BaseDataLoader(DataLoader):
         return self._n_samples // self.batch_size
 
     def _split_sampler(self, split):
-        assert split > 0.0
-        idx_full = np.arange(self._n_samples)
+        if split == 0.0:
+            return None, None
 
+        idx_full = np.arange(self._n_samples)
         # TODO: make sure that this seed does not influence other sampling
         np.random.seed(0) 
         np.random.shuffle(idx_full)
@@ -56,7 +52,11 @@ class BaseDataLoader(DataLoader):
         
         train_sampler = SubsetRandomSampler(train_idx)
         valid_sampler = SubsetRandomSampler(valid_idx)
+        
+        # turn off shuffle option which is mutually exclusive with sampler
+        self.shuffle = False
         self._n_samples = len(train_idx)
+
         return train_sampler, valid_sampler
         
     def split_validation(self):
