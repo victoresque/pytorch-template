@@ -149,14 +149,6 @@ You can resume from a previously saved checkpoint by:
     * Generating validation data loader by calling
     `BaseDataLoader.split_validation()`
 
-2. **Implementing abstract methods**
-
-    **You need to implement these abstract methods:**
-    * `_pack_data()`: pack data members into a list of tuples
-    * `_unpack_data()`: unpack packed data
-    * `_update_data()`: updata data members
-    * `_n_samples()`: total number of samples
-
 * **DataLoader Usage**
 
   `BaseDataLoader` is an iterator, to iterate through batches:
@@ -259,12 +251,13 @@ Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before c
 
 ## TODOs
 - [ ] Iteration-based training (instead of epoch-based)
-- [ ] Deprecate `BaseDataLoader`, use `torch.utils.data` instesad
 - [ ] Multi-GPU support
-- [ ] Multiple optimizers and lr scheduler
-- [ ] Update the example to PyTorch 0.4 (or 1.0)
+- [ ] Multiple optimizers
 - [ ] `TensorboardX` or `visdom` logger support
 - [ ] Configurable logging layout, checkpoint naming
+- [x] Update the example to PyTorch 0.4
+- [x] Learning rate scheduler
+- [x] Deprecate `BaseDataLoader`, use `torch.utils.data` instesad
 - [x] Load settings from `config` files
 
 ## License
