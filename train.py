@@ -39,22 +39,19 @@ if __name__ == '__main__':
     logger = logging.getLogger()
 
     parser = argparse.ArgumentParser(description='PyTorch Template')
-    parser.add_argument('-c', '--config', default=None, type=str,
-                        help='config file path (default: None)')
-    parser.add_argument('-r', '--resume', default=None, type=str,
-                        help='path to latest checkpoint (default: None)')
+    arg_group = parser.add_mutually_exclusive_group(required=True)
+    arg_group.add_argument('-c', '--config', default=None, type=str,
+                           help='config file path (default: None)')
+    arg_group.add_argument('-r', '--resume', default=None, type=str,
+                           help='path to latest checkpoint (default: None)')
 
     args = parser.parse_args()
 
-    config = None
-    if args.resume is not None:
-        if args.config is not None:
-            logger.warning('Warning: --config overridden by --resume')
+    if args.resume:
         config = torch.load(args.resume)['config']
-    elif args.config is not None:
+    else:
         config = json.load(open(args.config))
         path = os.path.join(config['trainer']['save_dir'], config['name'])
         assert not os.path.exists(path), "Path {} already exists!".format(path)
-    assert config is not None
 
     main(config, args.resume)
