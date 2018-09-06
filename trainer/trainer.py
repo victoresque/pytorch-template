@@ -18,7 +18,7 @@ class Trainer(BaseTrainer):
         self.batch_size = data_loader.batch_size
         self.data_loader = data_loader
         self.valid_data_loader = valid_data_loader
-        self.valid = True if self.valid_data_loader is not None else False
+        self.do_validation = self.valid_data_loader is not None
         self.log_step = int(np.sqrt(self.batch_size))
 
     def _to_tensor(self, data, target):
@@ -81,7 +81,7 @@ class Trainer(BaseTrainer):
             'metrics': (total_metrics / len(self.data_loader)).tolist()
         }
 
-        if self.valid:
+        if self.do_validation:
             val_log = self._valid_epoch()
             log = {**log, **val_log}
 
