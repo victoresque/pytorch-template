@@ -6,6 +6,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 from utils.util import ensure_dir
+from tensorboardX import SummaryWriter
 
 
 class BaseTrainer:
@@ -14,6 +15,7 @@ class BaseTrainer:
     """
     def __init__(self, model, loss, metrics, resume, config, train_logger=None):
         self.config = config
+        self.writer = SummaryWriter('tensorboardX')
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = model
         self.loss = loss

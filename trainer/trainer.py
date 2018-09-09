@@ -20,6 +20,7 @@ class Trainer(BaseTrainer):
         self.valid_data_loader = valid_data_loader
         self.do_validation = self.valid_data_loader is not None
         self.log_step = int(np.sqrt(self.batch_size))
+        self.val_step = 0
 
     def _to_tensor(self, data, target):
         data, target = torch.FloatTensor(data), torch.LongTensor(target)
@@ -66,7 +67,12 @@ class Trainer(BaseTrainer):
             self.optimizer.step()
 
             total_loss += loss.item()
-            total_metrics += self._eval_metrics(output, target)
+
+            # Add the variables you want to observe, the format as following
+            """self.writer.add_scalar('Name', Variable, step)"""
+            step = (epoch - 1) * len(self.data_loader) + batch_idx
+            # For example, adding loss variable
+            self.writer.add_scalar('Train/loss', loss.item(), step)
 
             if self.verbosity >= 2 and batch_idx % self.log_step == 0:
                 self.logger.info('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
@@ -108,6 +114,12 @@ class Trainer(BaseTrainer):
 
                 total_val_loss += loss.item()
                 total_val_metrics += self._eval_metrics(output, target)
+
+                # Add the variables you want to observe, the format as following
+                """self.writer.add_scalar('Name', Variable, step)"""
+                # For example, adding loss variable
+                self.writer.add_scalar('Val/loss', total_val_loss / len(self.valid_data_loader), self.val_step)
+                self.val_step += 1
 
         return {
             'val_loss': total_val_loss / len(self.valid_data_loader),
