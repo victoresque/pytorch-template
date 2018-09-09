@@ -118,7 +118,7 @@ class Trainer(BaseTrainer):
                 # Add the variables you want to observe, the format as following
                 """self.writer.add_scalar('Name', Variable, step)"""
                 # For example, adding loss variable
-                self.writer.add_scalar('Val/loss', total_val_loss / len(self.valid_data_loader), self.val_step)
+                self.writer.add_scalar('Val/loss', loss.item(), self.val_step)
                 self.val_step += 1
 
         return {
