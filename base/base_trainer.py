@@ -4,6 +4,7 @@ import json
 import logging
 import torch
 import torch.optim as optim
+import torch.nn as nn
 from utils.util import ensure_dir
 
 
@@ -26,7 +27,9 @@ class BaseTrainer:
             self.logger.warning('Warning: There\'s no CUDA support on this machine, '
                                 'training is performed on CPU.')
         else:
-            self.gpu = torch.device('cuda:' + str(config['gpu']))
+            if torch.cuda.device_count() > 1:
+                self.gpu = torch.device('cuda:' + str(config['gpu']))
+                self.model = nn.DataParallel(self.model)
             self.model = self.model.to(self.gpu)
 
         self.train_logger = train_logger
