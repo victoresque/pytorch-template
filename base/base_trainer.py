@@ -28,8 +28,8 @@ class BaseTrainer:
                                 'training is performed on CPU.')
         else:
             if torch.cuda.device_count() > 1:
-                self.gpu = torch.device('cuda:' + str(config['gpu']))
                 self.model = nn.DataParallel(self.model)
+            self.gpu = torch.device('cuda:' + str(config['gpu']))
             self.model = self.model.to(self.gpu)
 
         self.train_logger = train_logger
