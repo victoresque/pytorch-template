@@ -3,6 +3,7 @@
     "cuda": true,
     "gpu": 0,
     "data_loader": {
+        "type": "MnistDataLoader",
         "data_dir": "datasets/",
         "batch_size": 32,
         "shuffle": true

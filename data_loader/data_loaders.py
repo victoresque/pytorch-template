@@ -4,6 +4,16 @@ from torchvision import datasets, transforms
 from base import BaseDataLoader
 
 
+def get_data_loader(config):
+    """Returns data loader as specified in configuration."""
+    loader_type = config['data_loader']['type']
+
+    if loader_type == 'MnistDataLoader':
+        return MnistDataLoader(config)
+    else:
+        raise NotImplementedError(f"Loader {loader_type} not implemented.")
+
+
 class MnistDataLoader(BaseDataLoader):
     """
     MNIST data loading demo using BaseDataLoader

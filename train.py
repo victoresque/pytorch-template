@@ -6,7 +6,7 @@ import torch
 from model.model import *
 from model.loss import *
 from model.metric import *
-from data_loader import MnistDataLoader
+from data_loader import get_data_loader
 from trainer import Trainer
 from logger import Logger
 
@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='')
 def main(config, resume):
     train_logger = Logger()
 
-    data_loader = MnistDataLoader(config)
+    data_loader = get_data_loader(config)
     valid_data_loader = data_loader.split_validation()
 
     model = eval(config['arch'])(config['model'])
