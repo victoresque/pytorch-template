@@ -3,9 +3,9 @@ import json
 import logging
 import argparse
 import torch
-from model.model import *
-from model.loss import *
-from model.metric import *
+from model.model import get_model_instance
+from model.loss import get_loss_function
+from model.metric import get_metric_functions
 from data_loader import get_data_loader
 from trainer import Trainer
 from logger import Logger
@@ -19,11 +19,12 @@ def main(config, resume):
     data_loader = get_data_loader(config)
     valid_data_loader = data_loader.split_validation()
 
-    model = eval(config['arch'])(config['model'])
+    model = get_model_instance(model_arch=config['arch'],
+                               model_params=config['model'])
     model.summary()
 
-    loss = eval(config['loss'])
-    metrics = [eval(metric) for metric in config['metrics']]
+    loss = get_loss_function(config['loss'])
+    metrics = get_metric_functions(config['metrics'])
 
     trainer = Trainer(model, loss, metrics,
                       resume=resume,
