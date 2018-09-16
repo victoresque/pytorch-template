@@ -71,8 +71,8 @@ class Trainer(BaseTrainer):
             if self.verbosity >= 2 and batch_idx % self.log_step == 0:
                 self.logger.info('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
                     epoch,
+                    batch_idx * self.data_loader.batch_size,
                     self.data_loader.n_samples,
-                    len(self.data_loader) * self.data_loader.batch_size,
                     100.0 * batch_idx / len(self.data_loader),
                     loss.item()))
 
