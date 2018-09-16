@@ -1,12 +1,14 @@
-from datetime import datetime
+import os
 import importlib
+from datetime import datetime
 
 
 class WriterTensorboardX():
     def __init__(self, config):
         self.writer = None
         if config['visualization']['tensorboardX']:
-            log_path = f"saved/{config['name']}/{datetime.now().strftime('%y%m%d%H%M%S')}"
+            logdir = config['visualization']['log_dir']
+            log_path = os.path.join(logdir, f"{config['name']}/{datetime.now().strftime('%y%m%d%H%M%S')}")
             try:
                 self.writer = importlib.import_module('tensorboardX').SummaryWriter(log_path)
             except ModuleNotFoundError:
