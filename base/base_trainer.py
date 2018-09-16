@@ -5,6 +5,7 @@ import logging
 import torch
 import torch.optim as optim
 from utils.util import ensure_dir
+from logger.visualization import WriterTensorboardX
 
 
 class BaseTrainer:
@@ -29,6 +30,8 @@ class BaseTrainer:
         self.model = self.model.to(self.device)
 
         self.train_logger = train_logger
+        self.writer = WriterTensorboardX(config)
+
         self.optimizer = getattr(optim, config['optimizer_type'])(filter(lambda p: p.requires_grad, model.parameters()),
                                                                   **config['optimizer'])
         self.lr_scheduler = getattr(

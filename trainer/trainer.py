@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from torchvision.utils import make_grid
 from base import BaseTrainer
 
 
@@ -25,6 +26,7 @@ class Trainer(BaseTrainer):
         acc_metrics = np.zeros(len(self.metrics))
         for i, metric in enumerate(self.metrics):
             acc_metrics[i] += metric(output, target)
+            self.writer.add_scalar(f'{metric.__name__}', acc_metrics[i])
         return acc_metrics
 
     def _train_epoch(self, epoch):
@@ -44,7 +46,7 @@ class Trainer(BaseTrainer):
             The metrics in log must have the key 'metrics'.
         """
         self.model.train()
-
+    
         total_loss = 0
         total_metrics = np.zeros(len(self.metrics))
         for batch_idx, (data, target) in enumerate(self.data_loader):
@@ -56,6 +58,8 @@ class Trainer(BaseTrainer):
             loss.backward()
             self.optimizer.step()
 
+            self.writer.set_step(epoch * len(self.data_loader) + batch_idx)
+            self.writer.add_scalar('loss', loss.item())
             total_loss += loss.item()
             total_metrics += self._eval_metrics(output, target)
 
@@ -66,6 +70,7 @@ class Trainer(BaseTrainer):
                     self.data_loader.n_samples,
                     100.0 * batch_idx / len(self.data_loader),
                     loss.item()))
+                self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
         log = {
             'loss': total_loss / len(self.data_loader),
@@ -73,12 +78,12 @@ class Trainer(BaseTrainer):
         }
 
         if self.do_validation:
-            val_log = self._valid_epoch()
+            val_log = self._valid_epoch(epoch)
             log = {**log, **val_log}
 
         return log
 
-    def _valid_epoch(self):
+    def _valid_epoch(self, epoch):
         """
         Validate after training an epoch
 
@@ -97,8 +102,11 @@ class Trainer(BaseTrainer):
                 output = self.model(data)
                 loss = self.loss(output, target)
 
+                self.writer.set_step(epoch * len(self.data_loader) + batch_idx, 'valid')
+                self.writer.add_scalar('loss', loss.item())
                 total_val_loss += loss.item()
                 total_val_metrics += self._eval_metrics(output, target)
+                self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
         return {
             'val_loss': total_val_loss / len(self.valid_data_loader),

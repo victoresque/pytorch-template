@@ -33,6 +33,9 @@
         "monitor": "val_loss",
         "monitor_mode": "min"
     },
+    "visualization":{
+        "tensorboardX": true
+    },
     "arch": "MnistModel", 
     "model": {
 
