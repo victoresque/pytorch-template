@@ -22,6 +22,7 @@ PyTorch deep learning project made easy.
 		* [Additional logging](#additional-logging)
 		* [Validation data](#validation-data)
 		* [Checkpoints](#checkpoints)
+    * [TensorboardX Visualization](#tensorboardx-visualization)
 	* [Contributing](#contributing)
 	* [TODOs](#todos)
 	* [License](#license)
@@ -69,6 +70,7 @@ PyTorch deep learning project made easy.
   │   └── model.py
   │
   ├── saved/ - default checkpoints folder
+  │   └── runs/ - default logdir for tensorboardX
   │
   ├── trainer/ - trainers
   │   └── trainer.py
@@ -113,6 +115,10 @@ Config files are in `.json` format:
         "verbosity": 2,           // 0: quiet, 1: per epoch, 2: full
         "monitor": "val_loss",    // monitor value for best model
         "monitor_mode": "min"     // "min" if monitor value the lower the better, otherwise "max" 
+    },
+    "visualization":{
+        "tensorboardX": false,
+        "log_dir": "saved/runs"
     },
     "arch": "MnistModel",         // model architecture
     "model": {}                   // model configs
@@ -214,7 +220,7 @@ If you have additional information to be logged, in `_train_epoch()` of your tra
   log = {**log, **additional_log}
   return log
   ```
-
+  
 ### Validation data
 To split validation data from a data loader, call `BaseDataLoader.split_validation()`, it will return a validation data loader, with the number of samples according to the specified ratio in your config file.
 
@@ -243,6 +249,29 @@ The config file is saved in the same folder.
     'config': self.config
   }
   ```
+
+### TensorboardX Visualization
+This template supports [TensorboardX](https://github.com/lanpa/tensorboardX) visualization.
+* **TensorboardX Usage**
+
+1. **Install**
+
+  * Follow installation guide in [TensorboardX](https://github.com/lanpa/tensorboardX).
+
+2. **Run training** 
+
+  * Set `tensorboardX` option in config file true.
+  * By default, values of loss and metrics specified in config file, and input image will be logged.
+
+3. **Open tensorboard server** 
+
+  * Type `tensorboard --logdir saved/runs/` command at the project root.
+  * tensorboard server will open at `http://localhost:6006`
+
+If you need more visualizations, use `add_scalar('tag', data)`, `add_image('tag', image)`, etc in the `trainer._train_epoch` method.
+`add_something()` methods in this template are basically wrappers for those of `tensorboardX.SummaryWriter` module. 
+
+**Note**: You don't have to specify current steps, since `WriterTensorboardX` class defined at `logger/visualization.py` will track current steps.
 
 ## Contributing
 Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8
