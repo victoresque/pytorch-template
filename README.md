@@ -256,18 +256,17 @@ This template supports [TensorboardX](https://github.com/lanpa/tensorboardX) vis
 
 1. **Install**
 
-  * Follow installation guide in [TensorboardX](https://github.com/lanpa/tensorboardX).
+    Follow installation guide in [TensorboardX](https://github.com/lanpa/tensorboardX).
 
 2. **Run training** 
 
-  * Set `tensorboardX` option in config file true.
-  * By default, values of loss and metrics specified in config file, and input image will be logged.
+    Set `tensorboardX` option in config file true.
 
 3. **Open tensorboard server** 
 
-  * Type `tensorboard --logdir saved/runs/` command at the project root.
-  * tensorboard server will open at `http://localhost:6006`
+    Type `tensorboard --logdir saved/runs/` at the project root, then server will open at `http://localhost:6006`
 
+By default, values of loss and metrics specified in config file, and input image will be logged.
 If you need more visualizations, use `add_scalar('tag', data)`, `add_image('tag', image)`, etc in the `trainer._train_epoch` method.
 `add_something()` methods in this template are basically wrappers for those of `tensorboardX.SummaryWriter` module. 
 
