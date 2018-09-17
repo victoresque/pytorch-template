@@ -4,7 +4,9 @@ import json
 import logging
 import torch
 import torch.optim as optim
+import torch.nn as nn
 from utils.util import ensure_dir
+from tensorboardX import SummaryWriter
 
 
 class BaseTrainer:
@@ -13,6 +15,7 @@ class BaseTrainer:
     """
     def __init__(self, model, loss, metrics, resume, config, train_logger=None):
         self.config = config
+        self.writer = SummaryWriter('tensorboardX')
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = model
         self.loss = loss
@@ -26,6 +29,8 @@ class BaseTrainer:
             self.logger.warning('Warning: There\'s no CUDA support on this machine, '
                                 'training is performed on CPU.')
         else:
+            if torch.cuda.device_count() > 1:
+                self.model = nn.DataParallel(self.model)
             self.gpu = torch.device('cuda:' + str(config['gpu']))
             self.model = self.model.to(self.gpu)
 
