@@ -2,6 +2,16 @@ from base import BaseModel
 import torch.nn as nn
 import torch.nn.functional as F
 
+def get_model_instance(model_arch, model_params):
+    try:
+        model = eval(model_arch)
+    except NameError:
+        raise NameError(f"Model '{model_arch}' not found.")
+
+    model_instance = model(model_params)
+
+    return model_instance
+
 
 class MnistModel(BaseModel):
     def __init__(self, config):
