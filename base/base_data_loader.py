@@ -18,7 +18,7 @@ class BaseDataLoader(DataLoader):
         self.shuffle = config['data_loader']['shuffle']
         
         self.batch_idx = 0
-        self._n_samples = len(self.dataset)
+        self.n_samples = len(self.dataset)
 
         self.sampler, self.valid_sampler = self._split_sampler(self.validation_split)
 
@@ -34,18 +34,18 @@ class BaseDataLoader(DataLoader):
         """
         :return: Total number of batches
         """
-        return self._n_samples // self.batch_size
+        return self.n_samples // self.batch_size
 
     def _split_sampler(self, split):
         if split == 0.0:
             return None, None
 
-        idx_full = np.arange(self._n_samples)
+        idx_full = np.arange(self.n_samples)
         # TODO: make sure that this seed does not influence other sampling
         np.random.seed(0) 
         np.random.shuffle(idx_full)
 
-        len_valid = int(self._n_samples * split)
+        len_valid = int(self.n_samples * split)
 
         valid_idx = idx_full[0:len_valid]
         train_idx = np.delete(idx_full, np.arange(0, len_valid))
@@ -55,7 +55,7 @@ class BaseDataLoader(DataLoader):
         
         # turn off shuffle option which is mutually exclusive with sampler
         self.shuffle = False
-        self._n_samples = len(train_idx)
+        self.n_samples = len(train_idx)
 
         return train_sampler, valid_sampler
         
