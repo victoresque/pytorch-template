@@ -31,8 +31,13 @@ PyTorch deep learning project made easy.
 <!-- /code_chunk_output -->
 
 ## Requirements
-* Python 3.x
-* PyTorch
+* Python >= 3.5
+* PyTorch >= 0.4
+
+If TensorboardX is used:
+
+* tensorboard >= 1.7.0
+* tensorboardX >= 1.2
 
 ## Features
 * Clear folder structure which is suitable for many deep learning projects.
@@ -281,8 +286,9 @@ Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before c
 - [ ] Iteration-based training (instead of epoch-based)
 - [ ] Multi-GPU support
 - [ ] Multiple optimizers
-- [ ] `TensorboardX` or `visdom` logger support
 - [ ] Configurable logging layout, checkpoint naming
+- [ ] `visdom` logger support
+- [x] `tensorboardX` logger support
 - [x] Update the example to PyTorch 0.4
 - [x] Learning rate scheduler
 - [x] Deprecate `BaseDataLoader`, use `torch.utils.data` instesad

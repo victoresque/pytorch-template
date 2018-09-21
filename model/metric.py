@@ -1,6 +1,14 @@
 import torch
 
 
+def get_metric_functions(metric_names):
+    try:
+        metric_fns = [eval(metric) for metric in metric_names]
+    except NameError as e:
+        raise NameError(f"One of metric functions ({metric_names}) not found.")
+
+    return metric_fns
+
 def my_metric(output, target):
     with torch.no_grad():
         pred = torch.argmax(output, dim=1)
