@@ -31,7 +31,7 @@ class WriterTensorboardX():
                 if attr is None:
                     pass
                 else:
-                    attr(f'{self.mode}/{tag}', data, self.step, *args, **kwargs)
+                    attr('{}/{}'.format(self.mode, tag), data, self.step, *args, **kwargs)
             return wrapper
         else:
             return super(WriterTensorboardX, self).__getattr__(name)
