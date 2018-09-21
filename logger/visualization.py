@@ -16,58 +16,22 @@ class WriterTensorboardX():
         self.step = 0
         self.mode = ''
 
+        self.tensorboard_writer_ftns = ['add_scalar', 'add_scalars', 'add_image', 'add_audio', 'add_text', 'add_histogram', 'add_pr_curve', 'add_embedding']
+
     def set_step(self, step, mode='train'):
         self.mode = mode
         self.step = step
 
-    def add_image(self, tag, image):
-        if self.writer is None:
-            pass
+    def __getattr__(self, name):
+        if name in self.tensorboard_writer_ftns:
+            # get add_something method of tensorboard summary writer
+            attr = getattr(self.writer, name, None)
+            # wrap default methods to be harmless when writer is not set
+            def wrapper(tag, data, *args, **kwargs):
+                if attr is None:
+                    pass
+                else:
+                    attr(f'{self.mode}/{tag}', data, self.step, *args, **kwargs)
+            return wrapper
         else:
-            self.writer.add_image(f'{self.mode}/{tag}', image, self.step)
-
-    def add_scalar(self, tag, data):
-        if self.writer is None:
-            pass
-        else:
-            self.writer.add_scalar(f'{self.mode}/{tag}', data, self.step)
-
-    def add_scalars(self, tag, data):
-        if self.writer is None:
-            pass
-        else:
-            self.writer.add_scalars(f'{self.mode}/{tag}', data, self.step)   
-
-    def add_audio(self, tag, audio, sample_rate=44100):
-        if self.writer is None:
-            pass
-        else:
-            self.writer.add_audio(f'{self.mode}/{tag}', audio, self.step, sample_rate=sample_rate)
-
-    def add_text(self, tag, data):
-        if self.writer is None:
-            pass
-        else:
-            self.writer.add_text(f'{self.mode}/{tag}', data, self.step)   
-
-    def add_histogram(self, tag, data):
-        if self.writer is None:
-            pass
-        else:
-            self.writer.add_histogram(f'{self.mode}/{tag}', data, self.step)
-
-    def add_pr_curve(self, tag, pred, data=None):
-        if self.writer is None:
-            pass
-        else:
-            self.writer.add_pr_curve(f'{self.mode}/{tag}', pred, data, self.step)
-
-    def add_embedding(self, tag, features, metadata=None, label_img=None):
-        if self.writer is None:
-            pass
-        else:
-            self.writer.add_embedding(features, metadata=metadata, label_img=label_img)
-
-
-if __name__ == '__main__':
-    pass
+            return super(WriterTensorboardX, self).__getattr__(name)
