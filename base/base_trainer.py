@@ -44,9 +44,12 @@ class BaseTrainer:
         self.monitor_best = math.inf if self.monitor_mode == 'min' else -math.inf
         self.start_epoch = 1
         self.checkpoint_dir = os.path.join(config['trainer']['save_dir'], self.name)
+
+        # Save configuration into checkpoint directory:
         ensure_dir(self.checkpoint_dir)
-        json.dump(config, open(os.path.join(self.checkpoint_dir, 'config.json'), 'w'),
-                  indent=4, sort_keys=False)
+        with open(self.checkpoint_dir, 'config.json', 'w') as handle:
+            json.dump(config, handle, indent=4, sort_keys=False)
+
         if resume:
             self._resume_checkpoint(resume)
 
