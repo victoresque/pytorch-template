@@ -67,6 +67,7 @@ If TensorboardX is used:
   │
   ├── logger/ - for training process logging
   │   └── logger.py
+  │   └── visualization.py
   │
   ├── model/ - models, losses, and metrics
   │   ├── modules/ - submodules of your model
