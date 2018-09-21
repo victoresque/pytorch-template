@@ -123,8 +123,8 @@ Config files are in `.json` format:
         "monitor_mode": "min"     // "min" if monitor value the lower the better, otherwise "max" 
     },
     "visualization":{
-        "tensorboardX": false,
-        "log_dir": "saved/runs"
+        "tensorboardX": false,    // enable tensorboardX visualization support
+        "log_dir": "saved/runs"   // directory to save log files for visualization
     },
     "arch": "MnistModel",         // model architecture
     "model": {}                   // model configs
