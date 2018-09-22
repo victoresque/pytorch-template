@@ -38,4 +38,8 @@ class WriterTensorboardX():
             return wrapper
         else:
             # default action for returning methods defined in this class, set_step() for instance.
-            return object.__getattr__(name)
+            try:
+                attr = object.__getattr__(name)
+            except AttributeError:
+                raise AttributeError("type object 'WriterTensorboardX' has no attribute '{}'".format(name))
+            return attr
