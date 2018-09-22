@@ -1,5 +1,6 @@
 import os
 import importlib
+import warnings
 from datetime import datetime
 
 
@@ -12,8 +13,8 @@ class WriterTensorboardX():
             try:
                 self.writer = importlib.import_module('tensorboardX').SummaryWriter(log_path)
             except ModuleNotFoundError:
-                print('Package tensorboardX is not installed.')
-                # TODO: make a proper warning or raise exception here
+                message = """TensorboardX visualization is configured to use, but currently not installed on this machine. Please install the package by 'pip install tensorboardx' command or turn off the option in the 'config.json' file."""
+                warnings.warn(message, UserWarning)
         self.step = 0
         self.mode = ''
 
