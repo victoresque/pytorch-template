@@ -13,6 +13,7 @@ class WriterTensorboardX():
                 self.writer = importlib.import_module('tensorboardX').SummaryWriter(log_path)
             except ModuleNotFoundError:
                 print('Package tensorboardX is not installed.')
+                # TODO: make a proper warning or raise exception here
         self.step = 0
         self.mode = ''
 
@@ -23,15 +24,18 @@ class WriterTensorboardX():
         self.step = step
 
     def __getattr__(self, name):
+        """
+        If visualization is configured to use:
+            return add_data() methods of tensorboard with additional information (step, tag) added.
+        Otherwise:
+            return blank function handle that does nothing
+        """
         if name in self.tensorboard_writer_ftns:
-            # get add_something method of tensorboard summary writer
-            attr = getattr(self.writer, name, None)
-            # wrap default methods to be harmless when writer is not set
+            add_data = getattr(self.writer, name, None)
             def wrapper(tag, data, *args, **kwargs):
-                if attr is None:
-                    pass
-                else:
-                    attr('{}/{}'.format(self.mode, tag), data, self.step, *args, **kwargs)
+                if add_data:
+                    add_data('{}/{}'.format(self.mode, tag), data, self.step, *args, **kwargs)
             return wrapper
         else:
+            # default action for returning methods defined in this class, set_step() for instance.
             return super(WriterTensorboardX, self).__getattr__(name)
