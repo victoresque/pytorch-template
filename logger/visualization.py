@@ -38,4 +38,4 @@ class WriterTensorboardX():
             return wrapper
         else:
             # default action for returning methods defined in this class, set_step() for instance.
-            return super(WriterTensorboardX, self).__getattr__(name)
+            return object.__getattr__(name)
