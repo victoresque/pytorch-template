@@ -23,7 +23,7 @@ def main(config, resume):
                                model_params=config['model'])
     model.summary()
 
-    loss = get_loss_function(config['loss'])
+    loss = get_loss_function(config['loss'], **config['loss_args'])
     metrics = get_metric_functions(config['metrics'])
 
     trainer = Trainer(model, loss, metrics,

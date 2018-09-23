@@ -111,6 +111,9 @@ Config files are in `.json` format:
         "weight_decay": 0         // (optional) weight decay
     },
     "loss": "NLLLoss",            // loss
+    "loss_args": {
+        "reduction": "elementwise_mean"
+    },                            // elements in "loss_args" will be passed as kwargs to loss object
     "metrics": [                  // metrics
       "my_metric",
       "my_metric2"
@@ -211,7 +214,9 @@ You can resume from a previously saved checkpoint by:
   Please refer to `model/model.py` for a LeNet example.
 
 ### Loss
-Valid values for 'loss' in the configuration file are all class names inside 'torch.nn.modules.loss' (see [PyTorch documentation](https://pytorch.org/docs/stable/nn.html#loss-functions)).
+Valid values for 'loss' in the configuration file are all class names inside 'torch.nn.modules.loss' (see [PyTorch documentation](https://pytorch.org/docs/stable/nn.html#loss-functions)). 
+The configuration key 'loss_args' is a dictionary that is passed dictionary that is passed as keyword arguments during loss object
+initialization.
 
 Custom loss functions can be implemented in 'model/loss.py', however using them currently requires explicitly importing the custom loss function manually in 'train.py'.
 
