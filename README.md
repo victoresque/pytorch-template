@@ -22,6 +22,7 @@ PyTorch deep learning project made easy.
 		* [Additional logging](#additional-logging)
 		* [Validation data](#validation-data)
 		* [Checkpoints](#checkpoints)
+    * [TensorboardX Visualization](#tensorboardx-visualization)
 	* [Contributing](#contributing)
 	* [TODOs](#todos)
 	* [License](#license)
@@ -30,8 +31,13 @@ PyTorch deep learning project made easy.
 <!-- /code_chunk_output -->
 
 ## Requirements
-* Python 3.x
-* PyTorch
+* Python >= 3.5
+* PyTorch >= 0.4
+
+If TensorboardX is used:
+
+* tensorboard >= 1.7.0
+* tensorboardX >= 1.2
 
 ## Features
 * Clear folder structure which is suitable for many deep learning projects.
@@ -61,6 +67,7 @@ PyTorch deep learning project made easy.
   │
   ├── logger/ - for training process logging
   │   └── logger.py
+  │   └── visualization.py
   │
   ├── model/ - models, losses, and metrics
   │   ├── modules/ - submodules of your model
@@ -69,6 +76,7 @@ PyTorch deep learning project made easy.
   │   └── model.py
   │
   ├── saved/ - default checkpoints folder
+  │   └── runs/ - default logdir for tensorboardX
   │
   ├── trainer/ - trainers
   │   └── trainer.py
@@ -114,6 +122,10 @@ Config files are in `.json` format:
         "verbosity": 2,           // 0: quiet, 1: per epoch, 2: full
         "monitor": "val_loss",    // monitor value for best model
         "monitor_mode": "min"     // "min" if monitor value the lower the better, otherwise "max" 
+    },
+    "visualization":{
+        "tensorboardX": false,    // enable tensorboardX visualization support
+        "log_dir": "saved/runs"   // directory to save log files for visualization
     },
     "arch": "MnistModel",         // model architecture
     "model": {}                   // model configs
@@ -219,7 +231,7 @@ If you have additional information to be logged, in `_train_epoch()` of your tra
   log = {**log, **additional_log}
   return log
   ```
-
+  
 ### Validation data
 To split validation data from a data loader, call `BaseDataLoader.split_validation()`, it will return a validation data loader, with the number of samples according to the specified ratio in your config file.
 
@@ -249,6 +261,28 @@ The config file is saved in the same folder.
   }
   ```
 
+### TensorboardX Visualization
+This template supports [TensorboardX](https://github.com/lanpa/tensorboardX) visualization.
+* **TensorboardX Usage**
+
+1. **Install**
+
+    Follow installation guide in [TensorboardX](https://github.com/lanpa/tensorboardX).
+
+2. **Run training** 
+
+    Set `tensorboardX` option in config file true.
+
+3. **Open tensorboard server** 
+
+    Type `tensorboard --logdir saved/runs/` at the project root, then server will open at `http://localhost:6006`
+
+By default, values of loss and metrics specified in config file, and input image will be logged.
+If you need more visualizations, use `add_scalar('tag', data)`, `add_image('tag', image)`, etc in the `trainer._train_epoch` method.
+`add_something()` methods in this template are basically wrappers for those of `tensorboardX.SummaryWriter` module. 
+
+**Note**: You don't have to specify current steps, since `WriterTensorboardX` class defined at `logger/visualization.py` will track current steps.
+
 ## Contributing
 Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8
 
@@ -258,8 +292,9 @@ Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before c
 - [ ] Iteration-based training (instead of epoch-based)
 - [ ] Multi-GPU support
 - [ ] Multiple optimizers
-- [ ] `TensorboardX` or `visdom` logger support
 - [ ] Configurable logging layout, checkpoint naming
+- [ ] `visdom` logger support
+- [x] `tensorboardX` logger support
 - [x] Update the example to PyTorch 0.4
 - [x] Learning rate scheduler
 - [x] Deprecate `BaseDataLoader`, use `torch.utils.data` instesad
