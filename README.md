@@ -102,7 +102,7 @@ Config files are in `.json` format:
         "lr": 0.001,              // (optional) learning rate
         "weight_decay": 0         // (optional) weight decay
     },
-    "loss": "my_loss",            // loss
+    "loss": "NLLLoss",            // loss
     "metrics": [                  // metrics
       "my_metric",
       "my_metric2"
@@ -198,11 +198,15 @@ You can resume from a previously saved checkpoint by:
 
   Please refer to `model/model.py` for a LeNet example.
 
-### Loss and metrics
-If you need to change the loss function or metrics, first `import` those function in `train.py`, then modify `"loss"` and `"metrics"` in `.json` config files
+### Loss
+Valid values for 'loss' in the configuration file are all class names inside 'torch.nn.modules.loss' (see [PyTorch documentation](https://pytorch.org/docs/stable/nn.html#loss-functions)).
 
-#### Multiple metrics
-You can add multiple metrics in your config files:
+Custom loss functions can be implemented in 'model/loss.py', however using them currently requires explicitly importing the custom loss function manually in 'train.py'.
+
+#### Metrics
+Metric functions are located in 'model/metric.py'.
+
+You can monitor multiple metrics by providing a list in the configuration file, e.g.:
   ```json
   "metrics": ["my_metric", "my_metric2"],
   ```
