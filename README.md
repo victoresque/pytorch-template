@@ -96,6 +96,7 @@ Config files are in `.json` format:
     "name": "Mnist_LeNet",        // training session name
     "cuda": true,                 // use cuda
     "data_loader": {
+		"type": "MnistDataLoader" // selecting data loader
         "data_dir": "datasets/",  // dataset path
         "batch_size": 32,         // batch size
         "shuffle": true           // shuffle data each time calling __iter__()
