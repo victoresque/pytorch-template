@@ -5,6 +5,7 @@ import logging
 import torch
 import torch.optim as optim
 from utils.util import ensure_dir
+from logger.visualization import WriterTensorboardX
 
 
 class BaseTrainer:
@@ -25,12 +26,13 @@ class BaseTrainer:
         if config['cuda'] and not torch.cuda.is_available():
             self.logger.warning('Warning: There\'s no CUDA support on this machine, '
                                 'training is performed on CPU.')
-        else:
-            self.gpu = torch.device('cuda:' + str(config['gpu']))
-            self.model = self.model.to(self.gpu)
+        self.device = torch.device('cuda:' + str(config['gpu']) if self.with_cuda else 'cpu')
+        self.model = self.model.to(self.device)
 
         self.train_logger = train_logger
-        self.optimizer = getattr(optim, config['optimizer_type'])(model.parameters(),
+        self.writer = WriterTensorboardX(config)
+
+        self.optimizer = getattr(optim, config['optimizer_type'])(filter(lambda p: p.requires_grad, model.parameters()),
                                                                   **config['optimizer'])
         self.lr_scheduler = getattr(
             optim.lr_scheduler,
@@ -115,7 +117,7 @@ class BaseTrainer:
                                 .format(epoch, log['loss']))
         torch.save(state, filename)
         if save_best:
-            os.rename(filename, os.path.join(self.checkpoint_dir, 'model_best.pth.tar'))
+            os.replace(filename, os.path.join(self.checkpoint_dir, 'model_best.pth.tar'))
             self.logger.info("Saving current best: {} ...".format('model_best.pth.tar'))
         else:
             self.logger.info("Saving checkpoint: {} ...".format(filename))
@@ -136,7 +138,7 @@ class BaseTrainer:
             for state in self.optimizer.state.values():
                 for k, v in state.items():
                     if isinstance(v, torch.Tensor):
-                        state[k] = v.cuda(self.gpu)
+                        state[k] = v.cuda(self.device)
         self.train_logger = checkpoint['logger']
         self.config = checkpoint['config']
         self.logger.info("Checkpoint '{}' (epoch {}) loaded".format(resume_path, self.start_epoch))

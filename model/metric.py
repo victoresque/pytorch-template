@@ -1,4 +1,4 @@
-import numpy as np
+import torch
 
 
 def get_metric_functions(metric_names):
@@ -6,23 +6,21 @@ def get_metric_functions(metric_names):
         metric_fns = [eval(metric) for metric in metric_names]
     except NameError as e:
         raise NameError(f"One of metric functions ({metric_names}) not found.")
-
     return metric_fns
 
+def my_metric(output, target):
+    with torch.no_grad():
+        pred = torch.argmax(output, dim=1)
+        assert pred.shape[0] == len(target)
+        correct = 0
+        correct += torch.sum(pred == target).item()
+    return correct / len(target)
 
-def my_metric(y_input, y_target):
-    assert len(y_input) == len(y_target)
-    correct = 0
-    for y0, y1 in zip(y_input, y_target):
-        if np.array_equal(y0, y1):
-            correct += 1
-    return correct / len(y_input)
-
-
-def my_metric2(y_input, y_target):
-    assert len(y_input) == len(y_target)
-    correct = 0
-    for y0, y1 in zip(y_input, y_target):
-        if np.array_equal(y0, y1):
-            correct += 1
-    return correct / len(y_input) * 2
+def my_metric2(output, target, k=3):
+    with torch.no_grad():
+        pred = torch.topk(output, k, dim=1)[1]
+        assert pred.shape[0] == len(target)
+        correct = 0
+        for i in range(k):
+            correct += torch.sum(pred[:, i] == target).item()
+    return correct / len(target)

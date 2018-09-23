@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from torchvision.utils import make_grid
 from base import BaseTrainer
 
 
@@ -21,19 +22,11 @@ class Trainer(BaseTrainer):
         self.do_validation = self.valid_data_loader is not None
         self.log_step = int(np.sqrt(self.batch_size))
 
-    def _to_tensor(self, data, target):
-        data, target = torch.FloatTensor(data), torch.LongTensor(target)
-        if self.with_cuda:
-            data, target = data.to(self.gpu), target.to(self.gpu)
-        return data, target
-
     def _eval_metrics(self, output, target):
         acc_metrics = np.zeros(len(self.metrics))
-        output = output.cpu().data.numpy()
-        target = target.cpu().data.numpy()
-        output = np.argmax(output, axis=1)
         for i, metric in enumerate(self.metrics):
             acc_metrics[i] += metric(output, target)
+            self.writer.add_scalar(f'{metric.__name__}', acc_metrics[i])
         return acc_metrics
 
     def _train_epoch(self, epoch):
@@ -53,11 +46,11 @@ class Trainer(BaseTrainer):
             The metrics in log must have the key 'metrics'.
         """
         self.model.train()
-
+    
         total_loss = 0
         total_metrics = np.zeros(len(self.metrics))
         for batch_idx, (data, target) in enumerate(self.data_loader):
-            data, target = self._to_tensor(data, target)
+            data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
             output = self.model(data)
@@ -65,6 +58,8 @@ class Trainer(BaseTrainer):
             loss.backward()
             self.optimizer.step()
 
+            self.writer.set_step((epoch - 1) * len(self.data_loader) + batch_idx)
+            self.writer.add_scalar('loss', loss.item())
             total_loss += loss.item()
             total_metrics += self._eval_metrics(output, target)
 
@@ -72,9 +67,10 @@ class Trainer(BaseTrainer):
                 self.logger.info('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
                     epoch,
                     batch_idx * self.data_loader.batch_size,
-                    len(self.data_loader) * self.data_loader.batch_size,
+                    self.data_loader.n_samples,
                     100.0 * batch_idx / len(self.data_loader),
                     loss.item()))
+                self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
         log = {
             'loss': total_loss / len(self.data_loader),
@@ -82,12 +78,12 @@ class Trainer(BaseTrainer):
         }
 
         if self.do_validation:
-            val_log = self._valid_epoch()
+            val_log = self._valid_epoch(epoch)
             log = {**log, **val_log}
 
         return log
 
-    def _valid_epoch(self):
+    def _valid_epoch(self, epoch):
         """
         Validate after training an epoch
 
@@ -101,13 +97,16 @@ class Trainer(BaseTrainer):
         total_val_metrics = np.zeros(len(self.metrics))
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(self.valid_data_loader):
-                data, target = self._to_tensor(data, target)
+                data, target = data.to(self.device), target.to(self.device)
 
                 output = self.model(data)
                 loss = self.loss(output, target)
 
+                self.writer.set_step((epoch - 1) * len(self.data_loader) + batch_idx, 'valid')
+                self.writer.add_scalar('loss', loss.item())
                 total_val_loss += loss.item()
                 total_val_metrics += self._eval_metrics(output, target)
+                self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
         return {
             'val_loss': total_val_loss / len(self.valid_data_loader),
