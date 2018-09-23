@@ -24,7 +24,10 @@
         "lr": 0.001,
         "weight_decay": 0
     },
-    "loss": "my_loss",
+    "loss": "NLLLoss",
+    "loss_args": {
+        "reduction": "elementwise_mean"
+    },
     "metrics": ["my_metric", "my_metric2"],
     "trainer": {
         "epochs": 1000,
