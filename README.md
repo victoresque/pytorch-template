@@ -60,10 +60,12 @@ If TensorboardX is used:
   │   ├── base_model.py - abstract base class for models
   │   └── base_trainer.py - abstract base class for trainers
   │
-  ├── data_loader/ - anything about data loading goes here
-  │   └── data_loaders.py
+  ├── data_utilsr/ - anything about data loading goes here
+  │   ├── data_loaders.py - data loaders (both training and validation)
+  │   ├── datasets.py - dataset class instances 
+  │   └── transforms.py - handles composing transforms (for datasets)
   │
-  ├── datasets/ - default datasets folder
+  ├── datasets/ - default location for datasets files
   │
   ├── logger/ - for training process logging
   │   └── logger.py
