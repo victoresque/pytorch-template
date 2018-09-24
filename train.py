@@ -6,7 +6,7 @@ import torch
 from model.model import get_model_instance
 from model.loss import get_loss_function
 from model.metric import get_metric_functions
-from data_utils import get_data_loader
+from data_utils.data_loaders import get_data_loaders
 from trainer import Trainer
 from logger import Logger
 
@@ -16,8 +16,20 @@ logging.basicConfig(level=logging.INFO, format='')
 def main(config, resume):
     train_logger = Logger()
 
-    data_loader = get_data_loader(config)
-    valid_data_loader = data_loader.split_validation()
+    # TODO NOTE: Temporarily included here, to split pull request in smaller parts:
+    # --------------------------------------------------------------------
+    from torchvision import datasets, transforms
+    trsfm = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,))
+    ])
+    data_dir = config['dataset']['data_dir']
+    dataset = datasets.MNIST(data_dir, train=True, download=True, transform=trsfm)
+    # --------------------------------------------------------------------
+
+    loader_train, loader_val = get_data_loaders(config['data_loader'],
+                                                 dataset,
+                                                 config_full=config)
 
     model = get_model_instance(model_arch=config['arch'],
                                model_params=config['model'])
@@ -29,8 +41,8 @@ def main(config, resume):
     trainer = Trainer(model, loss, metrics,
                       resume=resume,
                       config=config,
-                      data_loader=data_loader,
-                      valid_data_loader=valid_data_loader,
+                      data_loader=loader_train,
+                      valid_data_loader=loader_val,
                       train_logger=train_logger)
 
     trainer.train()

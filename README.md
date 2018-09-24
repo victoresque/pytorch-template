@@ -95,11 +95,23 @@ Config files are in `.json` format:
   {
     "name": "Mnist_LeNet",        // training session name
     "cuda": true,                 // use cuda
-    "data_loader": {
-		"type": "MnistDataLoader" // selecting data loader
-        "data_dir": "datasets/",  // dataset path
-        "batch_size": 32,         // batch size
-        "shuffle": true           // shuffle data each time calling __iter__()
+
+    "data_loader": {              // Contain all data loader parameters
+        "type": "MnistDataLoader",// Either 'PyTorch' (for default) or name of data loader
+                                  // class implemented in 'data_utils/data_loaders.py'
+        "shuffle_data": true,     // Shuffle data in data loader per epoch (NB: only valid for
+                                  // custom loaders. **PyTorch data loader will alway shuffle**)                                  
+        "train": {                // Training parameters
+            "kwargs": {           // Arguments passed as **kwargs to training set data loader
+                "batch_size": 32
+            }
+        },
+        "validation": {           // Validation parameters
+            "split": 0.1,         // Fraction of samples used for validation set
+            "kwargs": {           // Arguments passed as **kwargs to validation set data loader
+                "batch_size": 32
+            }
+        }
     },
     "validation": {
         "validation_split": 0.1,  // validation data ratio
@@ -150,6 +162,14 @@ You can resume from a previously saved checkpoint by:
 
 ## Customization
 ### Data Loader
+**NB:** Work in progress to enable selecting the standard PyTorch dataloader
+from the configuration file. This is done by setting:
+
+    ["data_loader"]["type"]: "PyTorch"
+
+Note that the implementation usage of the PyTorch data loader use
+'SubsetRandomSampler', which shuffles the dataset in each epoch.
+
 * **Writing your own data loader**
 
 1. **Inherit ```BaseDataLoader```**

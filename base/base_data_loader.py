@@ -13,9 +13,9 @@ class BaseDataLoader(DataLoader):
         self.config = config
         self.collate_fn = collate_fn
 
-        self.batch_size = config['data_loader']['batch_size']
-        self.validation_split = config['validation']['validation_split']
-        self.shuffle = config['data_loader']['shuffle']
+        self.batch_size = config['data_loader']['train']['kwargs']['batch_size']
+        self.validation_split = config['data_loader']['validation']['split']
+        self.shuffle = config['data_loader']['shuffle_data']
         
         self.batch_idx = 0
         self.n_samples = len(self.dataset)

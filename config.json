@@ -2,15 +2,23 @@
     "name": "Mnist_LeNet",
     "cuda": true,
     "gpu": 0,
+    "dataset": {
+        "data_dir": "datasets/"
+    },
     "data_loader": {
         "type": "MnistDataLoader",
-        "data_dir": "datasets/",
-        "batch_size": 32,
-        "shuffle": true
-    },
-    "validation": {
-        "validation_split": 0.1,
-        "shuffle": true
+        "shuffle_data": true,
+         "train": {
+            "kwargs": {
+                "batch_size": 32
+            }
+        },
+        "validation": {
+            "split": 0.1,
+            "kwargs": {
+                "batch_size": 32
+            }
+        }
     },
 
     "lr_scheduler_type": "ExponentialLR",
