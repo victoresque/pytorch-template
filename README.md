@@ -96,26 +96,36 @@ Config files are in `.json` format:
     "name": "Mnist_LeNet",        // training session name
     "cuda": true,                 // use cuda
 
-    "data_loader": {              // Contain all data loader parameters
+	"dataset": {				  // Contains all dataset settings
+        "type": "MnistDataset",   // Match name in 'data_utils/datasets.py'
+        "transforms": [			  // List of valid PyTorch transforms that are to be applied
+            {"op": "ToTensor"},   // to the data samples
+            {"op": "Normalize",
+                "mean": "(0.1307,)",
+                "std": "(0.3081,)"}
+        ],
+        "kwargs": {				  // Arguments passed as **kwargs to the dataset class initialization
+            "root": "./datasets/mnist/",
+            "train": true,
+            "download": true
+        }
+    },
+    "data_loader": {              // Contains all data loader settings
         "type": "MnistDataLoader",// Either 'PyTorch' (for default) or name of data loader
                                   // class implemented in 'data_utils/data_loaders.py'
         "shuffle_data": true,     // Shuffle data in data loader per epoch (NB: only valid for
                                   // custom loaders. **PyTorch data loader will alway shuffle**)                                  
         "train": {                // Training parameters
-            "kwargs": {           // Arguments passed as **kwargs to training set data loader
+            "kwargs": {           // Arguments passed as **kwargs to training set data loader initialization
                 "batch_size": 32
             }
         },
         "validation": {           // Validation parameters
             "split": 0.1,         // Fraction of samples used for validation set
-            "kwargs": {           // Arguments passed as **kwargs to validation set data loader
+            "kwargs": {           // Arguments passed as **kwargs to validation set data loader initialization
                 "batch_size": 32
             }
         }
-    },
-    "validation": {
-        "validation_split": 0.1,  // validation data ratio
-        "shuffle": true           // shuffle training data before splitting
     },
     "optimizer_type": "Adam",
     "optimizer": {

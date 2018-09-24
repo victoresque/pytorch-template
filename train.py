@@ -7,6 +7,7 @@ from model.model import get_model_instance
 from model.loss import get_loss_function
 from model.metric import get_metric_functions
 from data_utils.data_loaders import get_data_loaders
+from data_utils.datasets import get_dataset
 from trainer import Trainer
 from logger import Logger
 
@@ -16,20 +17,11 @@ logging.basicConfig(level=logging.INFO, format='')
 def main(config, resume):
     train_logger = Logger()
 
-    # TODO NOTE: Temporarily included here, to split pull request in smaller parts:
-    # --------------------------------------------------------------------
-    from torchvision import datasets, transforms
-    trsfm = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
-    ])
-    data_dir = config['dataset']['data_dir']
-    dataset = datasets.MNIST(data_dir, train=True, download=True, transform=trsfm)
-    # --------------------------------------------------------------------
+    dataset = get_dataset(ds_config=config['dataset'])
 
     loader_train, loader_val = get_data_loaders(config['data_loader'],
-                                                 dataset,
-                                                 config_full=config)
+                                                dataset,
+                                                config_full=config)
 
     model = get_model_instance(model_arch=config['arch'],
                                model_params=config['model'])

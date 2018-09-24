@@ -3,7 +3,18 @@
     "cuda": true,
     "gpu": 0,
     "dataset": {
-        "data_dir": "datasets/"
+        "type": "MnistDataset",
+        "transforms": [
+            {"op": "ToTensor"},
+            {"op": "Normalize",
+                "mean": "(0.1307,)",
+                "std": "(0.3081,)"}
+        ],
+        "kwargs": {
+            "root": "./datasets/mnist/",
+            "train": true,
+            "download": true
+        }
     },
     "data_loader": {
         "type": "MnistDataLoader",
