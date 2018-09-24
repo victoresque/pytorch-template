@@ -6,7 +6,7 @@ import torch
 from model.model import get_model_instance
 from model.loss import get_loss_function
 from model.metric import get_metric_functions
-from data_loader import get_data_loader
+from data_utils import get_data_loader
 from trainer import Trainer
 from logger import Logger
 

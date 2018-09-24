@@ -49,7 +49,8 @@ class BaseTrainer:
 
         # Save configuration into checkpoint directory:
         ensure_dir(self.checkpoint_dir)
-        with open(self.checkpoint_dir, 'config.json', 'w') as handle:
+        config_save_path = os.path.join(self.checkpoint_dir, 'config.json')
+        with open(config_save_path, 'w') as handle:
             json.dump(config, handle, indent=4, sort_keys=False)
 
         if resume:
