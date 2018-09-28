@@ -96,6 +96,7 @@ Config files are in `.json` format:
     "name": "Mnist_LeNet",        // training session name
     "cuda": true,                 // use cuda
     "data_loader": {
+		"type": "MnistDataLoader" // selecting data loader
         "data_dir": "datasets/",  // dataset path
         "batch_size": 32,         // batch size
         "shuffle": true           // shuffle data each time calling __iter__()
@@ -109,7 +110,10 @@ Config files are in `.json` format:
         "lr": 0.001,              // (optional) learning rate
         "weight_decay": 0         // (optional) weight decay
     },
-    "loss": "my_loss",            // loss
+    "loss": "NLLLoss",            // loss
+    "loss_args": {
+        "reduction": "elementwise_mean"
+    },                            // elements in "loss_args" will be passed as kwargs to loss object
     "metrics": [                  // metrics
       "my_metric",
       "my_metric2"
@@ -209,11 +213,17 @@ You can resume from a previously saved checkpoint by:
 
   Please refer to `model/model.py` for a LeNet example.
 
-### Loss and metrics
-If you need to change the loss function or metrics, first `import` those function in `train.py`, then modify `"loss"` and `"metrics"` in `.json` config files
+### Loss
+Valid values for 'loss' in the configuration file are all class names inside 'torch.nn.modules.loss' (see [PyTorch documentation](https://pytorch.org/docs/stable/nn.html#loss-functions)). 
+The configuration key 'loss_args' is a dictionary that is passed dictionary that is passed as keyword arguments during loss object
+initialization.
 
-#### Multiple metrics
-You can add multiple metrics in your config files:
+Custom loss functions can be implemented in 'model/loss.py', however using them currently requires explicitly importing the custom loss function manually in 'train.py'.
+
+#### Metrics
+Metric functions are located in 'model/metric.py'.
+
+You can monitor multiple metrics by providing a list in the configuration file, e.g.:
   ```json
   "metrics": ["my_metric", "my_metric2"],
   ```

@@ -6,7 +6,6 @@ def get_metric_functions(metric_names):
         metric_fns = [eval(metric) for metric in metric_names]
     except NameError as e:
         raise NameError(f"One of metric functions ({metric_names}) not found.")
-
     return metric_fns
 
 def my_metric(output, target):
