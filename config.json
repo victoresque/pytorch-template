@@ -2,15 +2,34 @@
     "name": "Mnist_LeNet",
     "cuda": true,
     "gpu": 0,
+    "dataset": {
+        "type": "MnistDataset",
+        "transforms": [
+            {"op": "ToTensor"},
+            {"op": "Normalize",
+                "mean": "(0.1307,)",
+                "std": "(0.3081,)"}
+        ],
+        "kwargs": {
+            "root": "./datasets/mnist/",
+            "train": true,
+            "download": true
+        }
+    },
     "data_loader": {
         "type": "MnistDataLoader",
-        "data_dir": "datasets/",
-        "batch_size": 32,
-        "shuffle": true
-    },
-    "validation": {
-        "validation_split": 0.1,
-        "shuffle": true
+        "shuffle_data": true,
+         "train": {
+            "kwargs": {
+                "batch_size": 32
+            }
+        },
+        "validation": {
+            "split": 0.1,
+            "kwargs": {
+                "batch_size": 32
+            }
+        }
     },
 
     "lr_scheduler_type": "ExponentialLR",

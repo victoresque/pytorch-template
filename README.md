@@ -60,10 +60,12 @@ If TensorboardX is used:
   │   ├── base_model.py - abstract base class for models
   │   └── base_trainer.py - abstract base class for trainers
   │
-  ├── data_loader/ - anything about data loading goes here
-  │   └── data_loaders.py
+  ├── data_utilsr/ - anything about data loading goes here
+  │   ├── data_loaders.py - data loaders (both training and validation)
+  │   ├── datasets.py - dataset class instances 
+  │   └── transforms.py - handles composing transforms (for datasets)
   │
-  ├── datasets/ - default datasets folder
+  ├── datasets/ - default location for datasets files
   │
   ├── logger/ - for training process logging
   │   └── logger.py
@@ -95,15 +97,37 @@ Config files are in `.json` format:
   {
     "name": "Mnist_LeNet",        // training session name
     "cuda": true,                 // use cuda
-    "data_loader": {
-		"type": "MnistDataLoader" // selecting data loader
-        "data_dir": "datasets/",  // dataset path
-        "batch_size": 32,         // batch size
-        "shuffle": true           // shuffle data each time calling __iter__()
+
+	"dataset": {				  // Contains all dataset settings
+        "type": "MnistDataset",   // Match name in 'data_utils/datasets.py'
+        "transforms": [			  // List of valid PyTorch transforms that are to be applied
+            {"op": "ToTensor"},   // to the data samples
+            {"op": "Normalize",
+                "mean": "(0.1307,)",
+                "std": "(0.3081,)"}
+        ],
+        "kwargs": {				  // Arguments passed as **kwargs to the dataset class initialization
+            "root": "./datasets/mnist/",
+            "train": true,
+            "download": true
+        }
     },
-    "validation": {
-        "validation_split": 0.1,  // validation data ratio
-        "shuffle": true           // shuffle training data before splitting
+    "data_loader": {              // Contains all data loader settings
+        "type": "MnistDataLoader",// Either 'PyTorch' (for default) or name of data loader
+                                  // class implemented in 'data_utils/data_loaders.py'
+        "shuffle_data": true,     // Shuffle data in data loader per epoch (NB: only valid for
+                                  // custom loaders. **PyTorch data loader will alway shuffle**)                                  
+        "train": {                // Training parameters
+            "kwargs": {           // Arguments passed as **kwargs to training set data loader initialization
+                "batch_size": 32
+            }
+        },
+        "validation": {           // Validation parameters
+            "split": 0.1,         // Fraction of samples used for validation set
+            "kwargs": {           // Arguments passed as **kwargs to validation set data loader initialization
+                "batch_size": 32
+            }
+        }
     },
     "optimizer_type": "Adam",
     "optimizer": {
@@ -153,6 +177,14 @@ You can resume from a previously saved checkpoint by:
 
 ## Customization
 ### Data Loader
+**NB:** Work in progress to enable selecting the standard PyTorch dataloader
+from the configuration file. This is done by setting:
+
+    ["data_loader"]["type"]: "PyTorch"
+
+Note that the implementation usage of the PyTorch data loader use
+'SubsetRandomSampler', which shuffles the dataset in each epoch.
+
 * **Writing your own data loader**
 
 1. **Inherit ```BaseDataLoader```**
