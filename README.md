@@ -63,11 +63,7 @@ If TensorboardX is used:
   ├── data_loader/ - anything about data loading goes here
   │   └── data_loaders.py
   │
-  ├── datasets/ - default datasets folder
-  │
-  ├── logger/ - for training process logging
-  │   └── logger.py
-  │   └── visualization.py
+  ├── data/ - default directory where input data is stored
   │
   ├── model/ - models, losses, and metrics
   │   ├── modules/ - submodules of your model
@@ -83,6 +79,8 @@ If TensorboardX is used:
   │
   └── utils/
       ├── util.py
+      ├── logger.py
+      ├── visualization.py
       └── ...
   ```
 
@@ -91,49 +89,60 @@ The code in this repo is an MNIST example of the template.
 
 ### Config file format
 Config files are in `.json` format:
-  ```
-  {
-    "name": "Mnist_LeNet",        // training session name
-    "cuda": true,                 // use cuda
-    "data_loader": {
-		"type": "MnistDataLoader" // selecting data loader
-        "data_dir": "datasets/",  // dataset path
-        "batch_size": 32,         // batch size
-        "shuffle": true           // shuffle data each time calling __iter__()
-    },
-    "validation": {
-        "validation_split": 0.1,  // validation data ratio
-        "shuffle": true           // shuffle training data before splitting
-    },
-    "optimizer_type": "Adam",
-    "optimizer": {
-        "lr": 0.001,              // (optional) learning rate
-        "weight_decay": 0         // (optional) weight decay
-    },
-    "loss": "NLLLoss",            // loss
-    "loss_args": {
-        "reduction": "elementwise_mean"
-    },                            // elements in "loss_args" will be passed as kwargs to loss object
-    "metrics": [                  // metrics
-      "my_metric",
-      "my_metric2"
-    ],
-    "trainer": {
-        "epochs": 1000,           // number of training epochs
-        "save_dir": "saved/",     // checkpoints are saved in save_dir/name
-        "save_freq": 1,           // save checkpoints every save_freq epochs
-        "verbosity": 2,           // 0: quiet, 1: per epoch, 2: full
-        "monitor": "val_loss",    // monitor value for best model
-        "monitor_mode": "min"     // "min" if monitor value the lower the better, otherwise "max" 
-    },
-    "visualization":{
-        "tensorboardX": false,    // enable tensorboardX visualization support
-        "log_dir": "saved/runs"   // directory to save log files for visualization
-    },
-    "arch": "MnistModel",         // model architecture
-    "model": {}                   // model configs
+```json
+{
+  "name": "Mnist_LeNet",        // training session name
+  "cuda": true,                 // use cuda
+  "gpu": 0,
+  
+  "arch": {
+    "type": "MnistModel",       // name of model architecture to train
+    "args": {
+
+    }                
+  },
+  "data_loader": {
+    "type": "MnistDataLoader",  // selecting data loader
+    "args":{
+      "data_dir": "data/",      // dataset path
+      "batch_size": 64,         // batch size
+      "shuffle": true,          // shuffle training data before splitting
+      "validation_split": 0.1   // validation data ratio
+    }
+  },
+  "optimizer": {
+    "type": "Adam",
+    "args":{
+      "lr": 0.001,              // (optional) learning rate
+      "weight_decay": 0,        // (optional) weight decay
+      "amsgrad": true
+    }
+  },
+  "loss": "nll_loss",           // loss
+  "metrics": [
+    "my_metric", "my_metric2"
+  ],                            // list of metrics to evaluate
+  "lr_scheduler": {
+    "type":"StepLR",
+    "args":{
+      "step_size":50,
+      "gamma":0.1
+    }
+  },
+  "trainer": {
+    "epochs": 1000,             // number of training epochs
+    "save_dir": "saved/",       // checkpoints are saved in save_dir/name
+    "save_freq": 1,             // save checkpoints every save_freq epochs
+    "verbosity": 2,             // 0: quiet, 1: per epoch, 2: full
+    "monitor": "val_loss",      // monitor value for best model
+    "monitor_mode": "min"       // "min" if monitor value the lower the better, otherwise "max" 
+  },
+  "visualization":{
+    "tensorboardX": true,       // enable tensorboardX visualization support
+    "log_dir": "saved/runs"     // directory to save log files for visualization
   }
-  ```
+}
+```
 
 Add addional configurations if you need.
 
@@ -298,6 +307,7 @@ Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before c
 - [ ] Multi-GPU support
 - [ ] Multiple optimizers
 - [ ] Configurable logging layout, checkpoint naming
+- [ ] Command line options for fine-tuning
 - [ ] `visdom` logger support
 - [x] `tensorboardX` logger support
 - [x] Update the example to PyTorch 0.4
