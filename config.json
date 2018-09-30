@@ -10,7 +10,7 @@
     "data_loader": {
         "type": "MnistDataLoader",
         "args":{
-            "data_dir": "datasets/",
+            "data_dir": "data/",
             "batch_size": 64,
             "shuffle": true,
             "validation_split": 0.1
