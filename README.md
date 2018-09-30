@@ -119,8 +119,8 @@ Config files are in `.json` format:
   },
   "loss": "nll_loss",           // loss
   "metrics": [
-    "my_metric", "my_metric2"
-  ],                            // list of metrics to evaluate
+    "my_metric", "my_metric2"   // list of metrics to evaluate
+  ],                         
   "lr_scheduler": {
     "type":"StepLR",
     "args":{
@@ -133,8 +133,8 @@ Config files are in `.json` format:
     "save_dir": "saved/",       // checkpoints are saved in save_dir/name
     "save_freq": 1,             // save checkpoints every save_freq epochs
     "verbosity": 2,             // 0: quiet, 1: per epoch, 2: full
-    "monitor": "val_loss",      // monitor value for best model
-    "monitor_mode": "min"       // "min" if monitor value the lower the better, otherwise "max" 
+    "monitor": "val_loss",      // evaluation metric for finding best model
+    "monitor_mode": "min"       // "min" if monitor value the lower the better, otherwise "max". "off" to disable
   },
   "visualization":{
     "tensorboardX": true,       // enable tensorboardX visualization support
@@ -165,7 +165,7 @@ You can resume from a previously saved checkpoint by:
 
 1. **Inherit ```BaseDataLoader```**
 
-    `BaseDataLoader` is similar to `torch.utils.data.DataLoader`, you can use either of them.
+    `BaseDataLoader` is a subclass of `torch.utils.data.DataLoader`, you can use either of them.
 
     `BaseDataLoader` handles:
     * Generating next batch
