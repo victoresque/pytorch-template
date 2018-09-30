@@ -4,7 +4,7 @@ import json
 import logging
 import torch
 import torch.optim as optim
-from utils.util import ensure_dir
+from utils.util import ensure_dir, time_stamp
 from logger.visualization import WriterTensorboardX
 
 
@@ -15,13 +15,16 @@ class BaseTrainer:
     def __init__(self, model, loss, metrics, resume, config, train_logger=None):
         self.config = config
         self.logger = logging.getLogger(self.__class__.__name__)
+
         self.model = model
         self.loss = loss
         self.metrics = metrics
+
         self.name = config['name']
         self.epochs = config['trainer']['epochs']
         self.save_freq = config['trainer']['save_freq']
         self.verbosity = config['trainer']['verbosity']
+
         self.with_cuda = config['cuda'] and torch.cuda.is_available()
         if config['cuda'] and not torch.cuda.is_available():
             self.logger.warning('Warning: There\'s no CUDA support on this machine, '
@@ -40,12 +43,13 @@ class BaseTrainer:
         if self.lr_scheduler:
             self.lr_scheduler = self.lr_scheduler(self.optimizer, **config['lr_scheduler'])
             self.lr_scheduler_freq = config['lr_scheduler_freq']
+
         self.monitor = config['trainer']['monitor']
         self.monitor_mode = config['trainer']['monitor_mode']
         assert self.monitor_mode == 'min' or self.monitor_mode == 'max'
         self.monitor_best = math.inf if self.monitor_mode == 'min' else -math.inf
         self.start_epoch = 1
-        self.checkpoint_dir = os.path.join(config['trainer']['save_dir'], self.name)
+        self.checkpoint_dir = os.path.join(config['trainer']['save_dir'], self.name, time_stamp())
 
         # Save configuration into checkpoint directory:
         ensure_dir(self.checkpoint_dir)
@@ -80,9 +84,9 @@ class BaseTrainer:
             if (self.monitor_mode == 'min' and log[self.monitor] < self.monitor_best)\
                     or (self.monitor_mode == 'max' and log[self.monitor] > self.monitor_best):
                 self.monitor_best = log[self.monitor]
-                self._save_checkpoint(epoch, log, save_best=True)
+                self._save_checkpoint(epoch, save_best=True)
             if epoch % self.save_freq == 0:
-                self._save_checkpoint(epoch, log)
+                self._save_checkpoint(epoch)
             if self.lr_scheduler and epoch % self.lr_scheduler_freq == 0:
                 self.lr_scheduler.step(epoch)
                 lr = self.lr_scheduler.get_lr()[0]
@@ -96,7 +100,7 @@ class BaseTrainer:
         """
         raise NotImplementedError
 
-    def _save_checkpoint(self, epoch, log, save_best=False):
+    def _save_checkpoint(self, epoch, save_best=False):
         """
         Saving checkpoints
 
@@ -114,8 +118,7 @@ class BaseTrainer:
             'monitor_best': self.monitor_best,
             'config': self.config
         }
-        filename = os.path.join(self.checkpoint_dir, 'checkpoint-epoch{:03d}-loss-{:.4f}.pth.tar'
-                                .format(epoch, log['loss']))
+        filename = os.path.join(self.checkpoint_dir, 'checkpoint-epoch{}.pth.tar'.format(epoch))
         torch.save(state, filename)
         if save_best:
             os.replace(filename, os.path.join(self.checkpoint_dir, 'model_best.pth.tar'))

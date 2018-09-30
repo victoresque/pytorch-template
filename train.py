@@ -40,6 +40,9 @@ if __name__ == '__main__':
     logger = logging.getLogger()
 
     parser = argparse.ArgumentParser(description='PyTorch Template')
+
+    parser.add_argument('-f', '--force', action='store_true',
+                        help='')
     arg_group = parser.add_mutually_exclusive_group(required=True)
     arg_group.add_argument('-c', '--config', default=None, type=str,
                            help='config file path (default: None)')
@@ -48,11 +51,19 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    if args.force:
+
+        print('force')
+    else:
+        print('no force')
+
     if args.resume:
         config = torch.load(args.resume)['config']
     else:
         config = json.load(open(args.config))
         path = os.path.join(config['trainer']['save_dir'], config['name'])
-        assert not os.path.exists(path), "Path {} already exists!".format(path)
+        if os.path.exists(path):
+            if not args.force:
+                raise AssertionError("Path {} already exists! \nAdd '-f' or '--force' option to start training anyway, or change 'name' given in config file.".format(path))
 
     main(config, args.resume)
