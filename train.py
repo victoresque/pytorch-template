@@ -10,27 +10,38 @@ from trainer import Trainer
 from logger import Logger
 
 
+def get_instance(module, name, config, *args):
+    return getattr(module, config[name]['type'])(*args, **config[name]['args'])
+
 def main(config, resume):
     train_logger = Logger()
 
-    data_loader = getattr(module_data, config['data_loader']['type'])(config)
+    # setup data_loader instances
+    data_loader = get_instance(module_data, 'data_loader', config)
     valid_data_loader = data_loader.split_validation()
 
-    model = getattr(module_arch, config['arch'])(config)
+    # build model architecture
+    model = get_instance(module_arch, 'arch', config)
     model.summary()
 
-    loss = getattr(module_loss, config['loss']['type'])
+    # get function handles of loss and metrics
+    loss = getattr(module_loss, config['loss'])
     metrics = [getattr(module_metric, met) for met in config['metrics']]
 
-    trainer = Trainer(model, loss, metrics,
+    # build optimizer, learning rate scheduler
+    trainable_params = filter(lambda p: p.requires_grad, model.parameters())
+    optimizer = get_instance(torch.optim, 'optimizer', config, trainable_params)
+    lr_scheduler = get_instance(torch.optim.lr_scheduler, 'lr_scheduler', config, optimizer)
+
+    trainer = Trainer(model, loss, metrics, optimizer, 
                       resume=resume,
                       config=config,
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
+                      lr_scheduler=lr_scheduler,
                       train_logger=train_logger)
 
     trainer.train()
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch Template')
@@ -45,12 +56,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.force:
-
-        print('force')
-    else:
-        print('no force')
-
     if args.resume:
         config = torch.load(args.resume)['config']
     else:
@@ -58,6 +63,7 @@ if __name__ == '__main__':
         path = os.path.join(config['trainer']['save_dir'], config['name'])
         if os.path.exists(path):
             if not args.force:
-                raise AssertionError("Path {} already exists! \nAdd '-f' or '--force' option to start training anyway, or change 'name' given in config file.".format(path))
+                message = "Path {} already exists. Add '-f' or '--force' option to start training anyway, or change 'name' given in config file.".format(path)
+                raise AssertionError(message)
 
     main(config, args.resume)
