@@ -34,15 +34,16 @@ class BaseTrainer:
         self.train_logger = train_logger
         self.optimizer = optimizer
 
+        # monitor model performance with given metric and save best model to model_best checkpoint
         self.monitor = config['trainer']['monitor']
         self.monitor_mode = config['trainer']['monitor_mode']
-        assert self.monitor_mode == 'min' or self.monitor_mode == 'max'
+        assert self.monitor_mode in ['min', 'max']
         self.monitor_best = math.inf if self.monitor_mode == 'min' else -math.inf
         self.start_epoch = 1
 
+        # setup checkpoint, visualization path using timestamp
         start_time = datetime.datetime.now().strftime('%m%d_%H%M%S')
         self.checkpoint_dir = os.path.join(config['trainer']['save_dir'], config['name'], start_time)
-        # Configure visualization writer
         writer_dir = os.path.join(config['visualization']['log_dir'], config['name'], start_time)
         self.writer = WriterTensorboardX(writer_dir, self.logger, config['visualization']['tensorboardX'])
 
@@ -64,11 +65,9 @@ class BaseTrainer:
             log = {'epoch': epoch}
             for key, value in result.items():
                 if key == 'metrics':
-                    for i, metric in enumerate(self.metrics):
-                        log[metric.__name__] = result['metrics'][i]
+                    log.update({mtr.__name__ : value[i] for i, mtr in enumerate(self.metrics)})
                 elif key == 'val_metrics':
-                    for i, metric in enumerate(self.metrics):
-                        log['val_' + metric.__name__] = result['val_metrics'][i]
+                    log.update({'val_' + mtr.__name__ : value[i] for i, mtr in enumerate(self.metrics)})
                 else:
                     log[key] = value
             if self.train_logger is not None:
@@ -76,10 +75,20 @@ class BaseTrainer:
                 if self.verbosity >= 1:
                     for key, value in log.items():
                         self.logger.info('    {:15s}: {}'.format(str(key), value))
-            if (self.monitor_mode == 'min' and log[self.monitor] < self.monitor_best)\
-                    or (self.monitor_mode == 'max' and log[self.monitor] > self.monitor_best):
-                self.monitor_best = log[self.monitor]
-                self._save_checkpoint(epoch, save_best=True)
+
+            try:
+                best = (self.monitor_mode == 'min' and log[self.monitor] < self.monitor_best)\
+                    or (self.monitor_mode == 'max' and log[self.monitor] > self.monitor_best)
+                if best:
+                    self.monitor_best = log[self.monitor]
+            except KeyError:
+                if epoch == 1:
+                    msg = "Warning: Can\'t recognize metric named '{}' for performance monitoring. ".format(self.monitor)\
+                        + "model_best checkpoint will be overridden every steps."
+                    self.logger.warning(msg)
+                best = True
+ 
+            self._save_checkpoint(epoch, save_best=best)
             if epoch % self.save_freq == 0:
                 self._save_checkpoint(epoch)
 
