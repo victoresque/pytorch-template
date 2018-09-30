@@ -1,7 +1,7 @@
 import os
 import importlib
 import warnings
-from datetime import datetime
+from utils.util import time_stamp
 
 
 class WriterTensorboardX():
@@ -9,7 +9,8 @@ class WriterTensorboardX():
         self.writer = None
         if config['visualization']['tensorboardX']:
             logdir = config['visualization']['log_dir']
-            log_path = os.path.join(logdir, f"{config['name']}/{datetime.now().strftime('%y%m%d%H%M%S')}")
+            # log_path = os.path.join(logdir, f"{config['name']}/{datetime.now().strftime('%y%m%d%H%M%S')}")
+            log_path = os.path.join(logdir, "{}/{}".format(config['name'], time_stamp()))
             try:
                 self.writer = importlib.import_module('tensorboardX').SummaryWriter(log_path)
             except ModuleNotFoundError:
