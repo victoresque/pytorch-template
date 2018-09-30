@@ -16,34 +16,35 @@ class BaseTrainer:
         self.config = config
         self.logger = logging.getLogger(self.__class__.__name__)
 
-        self.model = model
+        # setup GPU device if available, move model into configured device
+        self.with_cuda = config['cuda'] and torch.cuda.is_available()
+        if config['cuda'] and not torch.cuda.is_available():
+            self.logger.warning('Warning: There\'s no GPU available on this machine, '
+                                'training will be performed on CPU.')
+        self.device = torch.device('cuda:' + str(config['gpu']) if self.with_cuda else 'cpu')
+        self.model = model.to(self.device)
+
         self.loss = loss
         self.metrics = metrics
+        self.optimizer = optimizer
 
         self.epochs = config['trainer']['epochs']
         self.save_freq = config['trainer']['save_freq']
         self.verbosity = config['trainer']['verbosity']
 
-        self.with_cuda = config['cuda'] and torch.cuda.is_available()
-        if config['cuda'] and not torch.cuda.is_available():
-            self.logger.warning('Warning: There\'s no CUDA support on this machine, '
-                                'training is performed on CPU.')
-        self.device = torch.device('cuda:' + str(config['gpu']) if self.with_cuda else 'cpu')
-        self.model = self.model.to(self.device)
-
         self.train_logger = train_logger
-        self.optimizer = optimizer
 
-        # monitor model performance with given metric and save best model to model_best checkpoint
+        # configuration to monitor model performance and save best
         self.monitor = config['trainer']['monitor']
         self.monitor_mode = config['trainer']['monitor_mode']
-        assert self.monitor_mode in ['min', 'max']
+        assert self.monitor_mode in ['min', 'max', 'off']
         self.monitor_best = math.inf if self.monitor_mode == 'min' else -math.inf
         self.start_epoch = 1
 
-        # setup checkpoint, visualization path using timestamp
+        # setup directory for checkpoint saving
         start_time = datetime.datetime.now().strftime('%m%d_%H%M%S')
         self.checkpoint_dir = os.path.join(config['trainer']['save_dir'], config['name'], start_time)
+        # setup visualization writer instance
         writer_dir = os.path.join(config['visualization']['log_dir'], config['name'], start_time)
         self.writer = WriterTensorboardX(writer_dir, self.logger, config['visualization']['tensorboardX'])
 
@@ -62,6 +63,8 @@ class BaseTrainer:
         """
         for epoch in range(self.start_epoch, self.epochs + 1):
             result = self._train_epoch(epoch)
+            
+            # save logged informations into log dict
             log = {'epoch': epoch}
             for key, value in result.items():
                 if key == 'metrics':
@@ -70,27 +73,29 @@ class BaseTrainer:
                     log.update({'val_' + mtr.__name__ : value[i] for i, mtr in enumerate(self.metrics)})
                 else:
                     log[key] = value
+
+            # print logged informations to the screen
             if self.train_logger is not None:
                 self.train_logger.add_entry(log)
                 if self.verbosity >= 1:
                     for key, value in log.items():
                         self.logger.info('    {:15s}: {}'.format(str(key), value))
 
-            try:
-                best = (self.monitor_mode == 'min' and log[self.monitor] < self.monitor_best)\
-                    or (self.monitor_mode == 'max' and log[self.monitor] > self.monitor_best)
-                if best:
-                    self.monitor_best = log[self.monitor]
-            except KeyError:
-                if epoch == 1:
-                    msg = "Warning: Can\'t recognize metric named '{}' for performance monitoring. ".format(self.monitor)\
-                        + "model_best checkpoint will be overridden every steps."
-                    self.logger.warning(msg)
-                best = True
- 
-            self._save_checkpoint(epoch, save_best=best)
+            # evaluate model performance according to configured metric, save best checkpoint as model_best
+            best = False
+            if self.monitor_mode != 'off':
+                try:
+                    if (self.monitor_mode == 'min' and log[self.monitor] < self.monitor_best)\
+                        or (self.monitor_mode == 'max' and log[self.monitor] > self.monitor_best):
+                        self.monitor_best = log[self.monitor]
+                        best = True
+                except KeyError:
+                    if epoch == 1:
+                        msg = "Warning: Can\'t recognize metric named '{}' ".format(self.monitor)\
+                            + "for performance monitoring. model_best checkpoint won\'t be updated."
+                        self.logger.warning(msg)
             if epoch % self.save_freq == 0:
-                self._save_checkpoint(epoch)
+                self._save_checkpoint(epoch, save_best=best)
 
     def _train_epoch(self, epoch):
         """
@@ -120,11 +125,11 @@ class BaseTrainer:
         }
         filename = os.path.join(self.checkpoint_dir, 'checkpoint-epoch{}.pth.tar'.format(epoch))
         torch.save(state, filename)
+        self.logger.info("Saving checkpoint: {} ...".format(filename))
         if save_best:
-            os.replace(filename, os.path.join(self.checkpoint_dir, 'model_best.pth.tar'))
+            best_path = os.path.join(self.checkpoint_dir, 'model_best.pth.tar')
+            torch.save(state, best_path)
             self.logger.info("Saving current best: {} ...".format('model_best.pth.tar'))
-        else:
-            self.logger.info("Saving checkpoint: {} ...".format(filename))
 
     def _resume_checkpoint(self, resume_path):
         """
