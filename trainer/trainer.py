@@ -10,16 +10,16 @@ class Trainer(BaseTrainer):
 
     Note:
         Inherited from BaseTrainer.
-        self.optimizer is by default handled by BaseTrainer based on config.
     """
-    def __init__(self, model, loss, metrics, resume, config,
-                 data_loader, valid_data_loader=None, train_logger=None):
-        super(Trainer, self).__init__(model, loss, metrics, resume, config, train_logger)
+    def __init__(self, model, loss, metrics, optimizer, resume, config,
+                 data_loader, valid_data_loader=None, lr_scheduler=None, train_logger=None):
+        super(Trainer, self).__init__(model, loss, metrics, optimizer, resume, config, train_logger)
         self.config = config
         self.batch_size = data_loader.batch_size
         self.data_loader = data_loader
         self.valid_data_loader = valid_data_loader
         self.do_validation = self.valid_data_loader is not None
+        self.lr_scheduler = lr_scheduler
         self.log_step = int(np.sqrt(self.batch_size))
 
     def _eval_metrics(self, output, target):
@@ -80,6 +80,9 @@ class Trainer(BaseTrainer):
         if self.do_validation:
             val_log = self._valid_epoch(epoch)
             log = {**log, **val_log}
+
+        if self.lr_scheduler is not None:
+            self.lr_scheduler.step()
 
         return log
 

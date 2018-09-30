@@ -13,7 +13,7 @@ class BaseTrainer:
     """
     Base class for all trainers
     """
-    def __init__(self, model, loss, metrics, resume, config, train_logger=None):
+    def __init__(self, model, loss, metrics, optimizer, resume, config, train_logger=None):
         self.config = config
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -33,15 +33,7 @@ class BaseTrainer:
         self.model = self.model.to(self.device)
 
         self.train_logger = train_logger
-
-        self.optimizer = getattr(optim, config['optimizer_type'])(filter(lambda p: p.requires_grad, model.parameters()),
-                                                                  **config['optimizer'])
-        self.lr_scheduler = getattr(
-            optim.lr_scheduler,
-            config['lr_scheduler_type'], None)
-        if self.lr_scheduler:
-            self.lr_scheduler = self.lr_scheduler(self.optimizer, **config['lr_scheduler'])
-            self.lr_scheduler_freq = config['lr_scheduler_freq']
+        self.optimizer = optimizer
 
         self.monitor = config['trainer']['monitor']
         self.monitor_mode = config['trainer']['monitor_mode']
@@ -91,10 +83,6 @@ class BaseTrainer:
                 self._save_checkpoint(epoch, save_best=True)
             if epoch % self.save_freq == 0:
                 self._save_checkpoint(epoch)
-            if self.lr_scheduler and epoch % self.lr_scheduler_freq == 0:
-                self.lr_scheduler.step(epoch)
-                lr = self.lr_scheduler.get_lr()[0]
-                self.logger.info('New Learning Rate: {:.6f}'.format(lr))
 
     def _train_epoch(self, epoch):
         """
