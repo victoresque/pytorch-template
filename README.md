@@ -52,8 +52,8 @@ If TensorboardX is used:
   ```
   pytorch-template/
   │
-  ├── train.py - example main
-  ├── config.json - example config file
+  ├── train.py - main script to start training
+  ├── config.json - config file
   │
   ├── base/ - abstract base classes
   │   ├── base_data_loader.py - abstract base class for data loaders
@@ -63,10 +63,9 @@ If TensorboardX is used:
   ├── data_loader/ - anything about data loading goes here
   │   └── data_loaders.py
   │
-  ├── data/ - default directory where input data is stored
+  ├── data/ - default directory for storing input data
   │
   ├── model/ - models, losses, and metrics
-  │   ├── modules/ - submodules of your model
   │   ├── loss.py
   │   ├── metric.py
   │   └── model.py
@@ -79,8 +78,8 @@ If TensorboardX is used:
   │
   └── utils/
       ├── util.py
-      ├── logger.py
-      ├── visualization.py
+      ├── logger.py - class for train logging
+      ├── visualization.py - class for tensorboardX visualization support
       └── ...
   ```
 
