@@ -3,10 +3,10 @@ import json
 import logging
 import argparse
 import torch
-from data_loader import data_loaders
-from model import loss as losses
-from model import metric
-from model import model as models
+import data_loader.data_loaders as module_data
+import model.loss as module_loss
+import model.metric as module_metric
+import model.model as module_arch
 from trainer import Trainer
 from logger import Logger
 
@@ -17,14 +17,14 @@ logging.basicConfig(level=logging.INFO, format='')
 def main(config, resume):
     train_logger = Logger()
 
-    data_loader = getattr(data_loaders, config['data_loader']['type'])(config)
+    data_loader = getattr(module_data, config['data_loader']['type'])(config)
     valid_data_loader = data_loader.split_validation()
 
-    model = getattr(models, config['arch'])(config)
+    model = getattr(module_arch, config['arch'])(config)
     model.summary()
 
-    loss = getattr(losses, config['loss']['type'])
-    metrics = [getattr(metric, met) for met in config['metrics']]
+    loss = getattr(module_loss, config['loss']['type'])
+    metrics = [getattr(module_metric, met) for met in config['metrics']]
 
     trainer = Trainer(model, loss, metrics,
                       resume=resume,
