@@ -5,8 +5,9 @@
     "data_loader": {
         "type": "MnistDataLoader",
         "data_dir": "datasets/",
-        "batch_size": 32,
+        "batch_size": 64,
         "shuffle": true
+
     },
     "validation": {
         "validation_split": 0.1,
@@ -24,9 +25,8 @@
         "lr": 0.001,
         "weight_decay": 0
     },
-    "loss": "NLLLoss",
-    "loss_args": {
-        "reduction": "elementwise_mean"
+    "loss": {
+        "type": "nll_loss"
     },
     "metrics": ["my_metric", "my_metric2"],
     "trainer": {

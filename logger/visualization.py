@@ -1,21 +1,19 @@
 import os
 import importlib
 import warnings
-from utils.util import time_stamp
 
 
 class WriterTensorboardX():
-    def __init__(self, config):
+    def __init__(self, writer_dir, logger, enable):
         self.writer = None
-        if config['visualization']['tensorboardX']:
-            logdir = config['visualization']['log_dir']
-            # log_path = os.path.join(logdir, f"{config['name']}/{datetime.now().strftime('%y%m%d%H%M%S')}")
-            log_path = os.path.join(logdir, "{}/{}".format(config['name'], time_stamp()))
+        if enable:
+            log_path = writer_dir
             try:
                 self.writer = importlib.import_module('tensorboardX').SummaryWriter(log_path)
             except ModuleNotFoundError:
                 message = """TensorboardX visualization is configured to use, but currently not installed on this machine. Please install the package by 'pip install tensorboardx' command or turn off the option in the 'config.json' file."""
                 warnings.warn(message, UserWarning)
+                logger.warn()
         self.step = 0
         self.mode = ''
 
@@ -35,7 +33,7 @@ class WriterTensorboardX():
         if name in self.tensorboard_writer_ftns:
             add_data = getattr(self.writer, name, None)
             def wrapper(tag, data, *args, **kwargs):
-                if add_data:
+                if add_data is not None:
                     add_data('{}/{}'.format(self.mode, tag), data, self.step, *args, **kwargs)
             return wrapper
         else:

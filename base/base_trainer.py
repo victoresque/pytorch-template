@@ -2,9 +2,10 @@ import os
 import math
 import json
 import logging
+import datetime
 import torch
 import torch.optim as optim
-from utils.util import ensure_dir, time_stamp
+from utils.util import ensure_dir
 from logger.visualization import WriterTensorboardX
 
 
@@ -20,7 +21,6 @@ class BaseTrainer:
         self.loss = loss
         self.metrics = metrics
 
-        self.name = config['name']
         self.epochs = config['trainer']['epochs']
         self.save_freq = config['trainer']['save_freq']
         self.verbosity = config['trainer']['verbosity']
@@ -33,7 +33,6 @@ class BaseTrainer:
         self.model = self.model.to(self.device)
 
         self.train_logger = train_logger
-        self.writer = WriterTensorboardX(config)
 
         self.optimizer = getattr(optim, config['optimizer_type'])(filter(lambda p: p.requires_grad, model.parameters()),
                                                                   **config['optimizer'])
@@ -49,7 +48,12 @@ class BaseTrainer:
         assert self.monitor_mode == 'min' or self.monitor_mode == 'max'
         self.monitor_best = math.inf if self.monitor_mode == 'min' else -math.inf
         self.start_epoch = 1
-        self.checkpoint_dir = os.path.join(config['trainer']['save_dir'], self.name, time_stamp())
+
+        start_time = datetime.datetime.now().strftime('%m%d_%H%M%S')
+        self.checkpoint_dir = os.path.join(config['trainer']['save_dir'], config['name'], start_time)
+        # Configure visualization writer
+        writer_dir = os.path.join(config['visualization']['log_dir'], config['name'], start_time)
+        self.writer = WriterTensorboardX(writer_dir, self.logger, config['visualization']['tensorboardX'])
 
         # Save configuration into checkpoint directory:
         ensure_dir(self.checkpoint_dir)
