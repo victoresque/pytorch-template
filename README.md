@@ -223,11 +223,7 @@ You can resume from a previously saved checkpoint by:
   Please refer to `model/model.py` for a LeNet example.
 
 ### Loss
-Valid values for 'loss' in the configuration file are all class names inside 'torch.nn.modules.loss' (see [PyTorch documentation](https://pytorch.org/docs/stable/nn.html#loss-functions)). 
-The configuration key 'loss_args' is a dictionary that is passed dictionary that is passed as keyword arguments during loss object
-initialization.
-
-Custom loss functions can be implemented in 'model/loss.py', however using them currently requires explicitly importing the custom loss function manually in 'train.py'.
+Custom loss functions can be implemented in 'model/loss.py'. Use them by changing the name given in "loss" in config file, to corresponding name.
 
 #### Metrics
 Metric functions are located in 'model/metric.py'.
@@ -258,9 +254,9 @@ You can specify the name of the training session in config files:
   "name": "MNIST_LeNet",
   ```
 
-The checkpoints will be saved in `save_dir/name`.
+The checkpoints will be saved in `save_dir/name/timestamp/checkpoint_epoch_n`, with timestamp in mmdd_HHMMSS format.
 
-The config file is saved in the same folder.
+A copy of config file will be saved in the same folder.
 
 **Note**: checkpoints contain:
   ```python
@@ -307,7 +303,7 @@ Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before c
 - [ ] Multi-GPU support
 - [ ] Multiple optimizers
 - [ ] Configurable logging layout, checkpoint naming
-- [ ] Command line options for fine-tuning
+- [ ] Adding command line option for fine-tuning
 - [ ] `visdom` logger support
 - [x] `tensorboardX` logger support
 - [x] Update the example to PyTorch 0.4
