@@ -1,6 +1,5 @@
 import os
 import json
-import logging
 import argparse
 import torch
 import data_loader.data_loaders as module_data
@@ -9,9 +8,6 @@ import model.metric as module_metric
 import model.model as module_arch
 from trainer import Trainer
 from logger import Logger
-
-
-logging.basicConfig(level=logging.INFO, format='')
 
 
 def main(config, resume):
@@ -37,8 +33,6 @@ def main(config, resume):
 
 
 if __name__ == '__main__':
-    logger = logging.getLogger()
-
     parser = argparse.ArgumentParser(description='PyTorch Template')
 
     parser.add_argument('-f', '--force', action='store_true',
