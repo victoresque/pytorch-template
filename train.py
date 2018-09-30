@@ -7,7 +7,7 @@ import model.loss as module_loss
 import model.metric as module_metric
 import model.model as module_arch
 from trainer import Trainer
-from logger import Logger
+from utils import Logger
 
 
 def get_instance(module, name, config, *args):

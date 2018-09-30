@@ -4,9 +4,8 @@ import json
 import logging
 import datetime
 import torch
-import torch.optim as optim
 from utils.util import ensure_dir
-from logger.visualization import WriterTensorboardX
+from utils.visualization import WriterTensorboardX
 
 
 class BaseTrainer:
