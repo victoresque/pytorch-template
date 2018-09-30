@@ -8,9 +8,9 @@ class BaseDataLoader(DataLoader):
     """
     Base class for all data loaders
     """
-    def __init__(self, dataset, config, collate_fn=default_collate):
-        self.validation_split = config['validation']['validation_split']
-        self.shuffle = config['data_loader']['shuffle']
+    def __init__(self, dataset, batch_size, shuffle, validation_split, collate_fn=default_collate):
+        self.validation_split = validation_split
+        self.shuffle = shuffle
         
         self.batch_idx = 0
         self.n_samples = len(dataset)
@@ -19,7 +19,7 @@ class BaseDataLoader(DataLoader):
 
         self.init_kwargs = {
             'dataset': dataset,
-            'batch_size': config['data_loader']['batch_size'],
+            'batch_size': batch_size,
             'shuffle': self.shuffle,
             'collate_fn': collate_fn
             }

@@ -6,12 +6,12 @@ class MnistDataLoader(BaseDataLoader):
     """
     MNIST data loading demo using BaseDataLoader
     """
-    def __init__(self, config):
+    def __init__(self, data_dir, batch_size, shuffle, validation_split):
         trsfm = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,))
             ])
-        self.data_dir = config['data_loader']['data_dir']
+        self.data_dir = data_dir
         self.dataset = datasets.MNIST(self.data_dir, train=True, download=True, transform=trsfm)
-        super(MnistDataLoader, self).__init__(self.dataset, config)
+        super(MnistDataLoader, self).__init__(self.dataset, batch_size, shuffle, validation_split)
         
