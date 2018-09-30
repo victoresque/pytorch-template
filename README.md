@@ -88,7 +88,7 @@ The code in this repo is an MNIST example of the template.
 
 ### Config file format
 Config files are in `.json` format:
-```json
+```javascript
 {
   "name": "Mnist_LeNet",        // training session name
   "cuda": true,                 // use cuda
