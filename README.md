@@ -33,11 +33,9 @@ PyTorch deep learning project made easy.
 ## Requirements
 * Python >= 3.5
 * PyTorch >= 0.4
-
-If TensorboardX is used:
-
-* tensorboard >= 1.7.0
-* tensorboardX >= 1.2
+* tqdm (Optional for `test.py`)
+* tensorboard >= 1.7.0 (Optional for TensorboardX)
+* tensorboardX >= 1.2 (Optional for TensorboardX)
 
 ## Features
 * Clear folder structure which is suitable for many deep learning projects.
