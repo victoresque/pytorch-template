@@ -51,6 +51,7 @@ PyTorch deep learning project made easy.
   pytorch-template/
   │
   ├── train.py - main script to start training
+  ├── test.py - evaluation of trained model
   ├── config.json - config file
   │
   ├── base/ - abstract base classes
@@ -239,6 +240,9 @@ If you have additional information to be logged, in `_train_epoch()` of your tra
   return log
   ```
   
+### Testing
+You can test trained model by running `test.py` passing path to the trained checkpoint by `--resume` argument.
+
 ### Validation data
 To split validation data from a data loader, call `BaseDataLoader.split_validation()`, it will return a validation data loader, with the number of samples according to the specified ratio in your config file.
 
