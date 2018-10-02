@@ -10,10 +10,10 @@
         "type": "MnistDataLoader",
         "args":{
             "data_dir": "data/",
-            "n_cpu": 2,
             "batch_size": 128,
             "shuffle": true,
-            "validation_split": 0.1
+            "validation_split": 0.1,
+            "num_workers": 2
         }
     },
     "optimizer": {

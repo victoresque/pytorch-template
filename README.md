@@ -104,10 +104,10 @@ Config files are in `.json` format:
     "type": "MnistDataLoader",  // selecting data loader
     "args":{
       "data_dir": "data/",      // dataset path
-      "n_cpu": 2,               // number of processes to use for data loading
       "batch_size": 64,         // batch size
       "shuffle": true,          // shuffle training data before splitting
       "validation_split": 0.1   // validation data ratio
+      "num_workers": 2,         // number of cpu processes to be used for data loading
     }
   },
   "optimizer": {
