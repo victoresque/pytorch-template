@@ -52,6 +52,8 @@ if __name__ == '__main__':
                            help='config file path (default: None)')
     parser.add_argument('-r', '--resume', default=None, type=str,
                            help='path to latest checkpoint (default: None)')
+    parser.add_argument('-d', '--device', default=None, type=str,
+                           help='specify indices of GPU to enable(default: all)')
 
     args = parser.parse_args()
 
@@ -66,5 +68,8 @@ if __name__ == '__main__':
         config = torch.load(args.resume)['config']
     else:
         raise AssertionError("Specify configuration file. By adding '-c config.json' for example.")
+    
+    if args.device:
+        os.environ["CUDA_VISIBLE_DEVICES"]=args.device
 
     main(config, args.resume)
