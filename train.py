@@ -47,23 +47,24 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch Template')
 
     parser.add_argument('-f', '--force', action='store_true',
-                        help='')
-    arg_group = parser.add_mutually_exclusive_group(required=True)
-    arg_group.add_argument('-c', '--config', default=None, type=str,
+                           help='ignore existing checkpoint and start training')
+    parser.add_argument('-c', '--config', default=None, type=str,
                            help='config file path (default: None)')
-    arg_group.add_argument('-r', '--resume', default=None, type=str,
+    parser.add_argument('-r', '--resume', default=None, type=str,
                            help='path to latest checkpoint (default: None)')
 
     args = parser.parse_args()
 
-    if args.resume:
-        config = torch.load(args.resume)['config']
-    else:
+    if args.config:
         config = json.load(open(args.config))
         path = os.path.join(config['trainer']['save_dir'], config['name'])
         if os.path.exists(path):
             if not args.force:
-                message = "Path {} already exists. Add '-f' or '--force' option to start training anyway, or change 'name' given in config file.".format(path)
-                raise AssertionError(message)
+                msg = "Path {} already exists. Add '-f' or '--force' option to start training anyway, or change 'name' given in config file.".format(path)
+                raise AssertionError(msg)
+    elif args.resume:
+        config = torch.load(args.resume)['config']
+    else:
+        raise AssertionError("Specify configuration file. By adding '-c config.json' for example.")
 
     main(config, args.resume)
