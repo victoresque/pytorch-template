@@ -11,7 +11,8 @@
         "type": "MnistDataLoader",
         "args":{
             "data_dir": "data/",
-            "batch_size": 64,
+            "n_cpu": 2,
+            "batch_size": 128,
             "shuffle": true,
             "validation_split": 0.1
         }
