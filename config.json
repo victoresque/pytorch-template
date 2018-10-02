@@ -1,7 +1,6 @@
 {
     "name": "Mnist_LeNet",
-    "cuda": true,
-    "gpu": 0,
+    "n_gpu": 1,
     
     "arch": {
         "type": "MnistModel",
