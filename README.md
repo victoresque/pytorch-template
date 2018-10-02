@@ -13,6 +13,7 @@ PyTorch deep learning project made easy.
 		* [Config file format](#config-file-format)
 		* [Using config files](#using-config-files)
 		* [Resuming from checkpoints](#resuming-from-checkpoints)
+    * [Using Multiple GPU](#using-multiple-gpu)
 	* [Customization](#customization)
 		* [Data Loader](#data-loader)
 		* [Trainer](#trainer)
@@ -84,14 +85,14 @@ PyTorch deep learning project made easy.
 
 ## Usage
 The code in this repo is an MNIST example of the template.
+Try `python3 train.py -c config.json` to run code.
 
 ### Config file format
 Config files are in `.json` format:
 ```javascript
 {
   "name": "Mnist_LeNet",        // training session name
-  "cuda": true,                 // use cuda
-  "gpu": 0,
+  "n_gpu": 1,                   // number of GPUs to use for training.
   
   "arch": {
     "type": "MnistModel",       // name of model architecture to train
@@ -106,12 +107,13 @@ Config files are in `.json` format:
       "batch_size": 64,         // batch size
       "shuffle": true,          // shuffle training data before splitting
       "validation_split": 0.1   // validation data ratio
+      "num_workers": 2,         // number of cpu processes to be used for data loading
     }
   },
   "optimizer": {
     "type": "Adam",
     "args":{
-      "lr": 0.001,              // (optional) learning rate
+      "lr": 0.001,              // learning rate
       "weight_decay": 0,        // (optional) weight decay
       "amsgrad": true
     }
@@ -121,9 +123,9 @@ Config files are in `.json` format:
     "my_metric", "my_metric2"   // list of metrics to evaluate
   ],                         
   "lr_scheduler": {
-    "type":"StepLR",
+    "type":"StepLR",            // learning rate scheduler
     "args":{
-      "step_size":50,
+      "step_size":50,          
       "gamma":0.1
     }
   },
@@ -156,6 +158,18 @@ You can resume from a previously saved checkpoint by:
 
   ```
   python train.py --resume path/to/checkpoint
+  ```
+
+### Using Multiple GPU
+You can enable multi-GPU training by setting `n_gpu` argument of the config file to larger number.
+If configured to use smaller number of gpu than available, first n devices will be used by default.
+Specify indices of available GPUs by cuda environmental variable.
+  ```
+  python train.py --device 2,3 -c config.json
+  ```
+  This is equivalent to
+  ```
+  CUDA_VISIBLE_DEVICES=2,3 python train.py -c config.py
   ```
 
 ## Customization
@@ -301,12 +315,12 @@ Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before c
 
 ## TODOs
 - [ ] Iteration-based training (instead of epoch-based)
-- [ ] Multi-GPU support
 - [ ] Multiple optimizers
 - [ ] Configurable logging layout, checkpoint naming
-- [ ] Adding command line option for fine-tuning
 - [ ] `visdom` logger support
 - [x] `tensorboardX` logger support
+- [x] Adding command line option for fine-tuning
+- [x] Multi-GPU support
 - [x] Update the example to PyTorch 0.4
 - [x] Learning rate scheduler
 - [x] Deprecate `BaseDataLoader`, use `torch.utils.data` instesad
