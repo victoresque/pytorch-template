@@ -45,29 +45,24 @@ def main(config, resume):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch Template')
-
-    parser.add_argument('-f', '--force', action='store_true',
-                           help='ignore existing checkpoint and start training')
     parser.add_argument('-c', '--config', default=None, type=str,
                            help='config file path (default: None)')
     parser.add_argument('-r', '--resume', default=None, type=str,
                            help='path to latest checkpoint (default: None)')
     parser.add_argument('-d', '--device', default=None, type=str,
-                           help='specify indices of GPU to enable(default: all)')
-
+                           help='indices of GPUs to enable (default: all)')
     args = parser.parse_args()
 
     if args.config:
+        # load config file
         config = json.load(open(args.config))
         path = os.path.join(config['trainer']['save_dir'], config['name'])
-        if os.path.exists(path):
-            if not args.force:
-                msg = "Path {} already exists. Add '-f' or '--force' option to start training anyway, or change 'name' given in config file.".format(path)
-                raise AssertionError(msg)
     elif args.resume:
+        # load config file from checkpoint, in case new config file is not given.
+        # Use '--config' and '--resume' arguments together to load trained model and train more with changed config.
         config = torch.load(args.resume)['config']
     else:
-        raise AssertionError("Specify configuration file. By adding '-c config.json' for example.")
+        raise AssertionError("Configuration file need to be specified. Add '-c config.json', for example.")
     
     if args.device:
         os.environ["CUDA_VISIBLE_DEVICES"]=args.device
