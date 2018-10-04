@@ -2,6 +2,7 @@ import os
 import json
 import argparse
 import torch
+from easydict import EasyDict
 import data_loader.data_loaders as module_data
 import model.loss as module_loss
 import model.metric as module_metric
@@ -55,8 +56,8 @@ if __name__ == '__main__':
 
     if args.config:
         # load config file
-        config = json.load(open(args.config))
-        path = os.path.join(config['trainer']['save_dir'], config['name'])
+        config = EasyDict(json.load(open(args.config)))
+        path = os.path.join(config.trainer.save_dir, config.name)
     elif args.resume:
         # load config file from checkpoint, in case new config file is not given.
         # Use '--config' and '--resume' arguments together to load trained model and train more with changed config.
