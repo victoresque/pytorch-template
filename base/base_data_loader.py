@@ -26,12 +26,6 @@ class BaseDataLoader(DataLoader):
             }
         super(BaseDataLoader, self).__init__(sampler=self.sampler, **self.init_kwargs)
 
-    def __len__(self):
-        """
-        :return: Total number of batches
-        """
-        return self.n_samples // self.batch_size
-
     def _split_sampler(self, split):
         if split == 0.0:
             return None, None
