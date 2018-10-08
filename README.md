@@ -207,7 +207,7 @@ Specify indices of available GPUs by cuda environmental variable.
     * Checkpoint saving
     * Checkpoint resuming
     * Reconfigurable monitored value for saving current best
-      * Controlled by the configs `monitor` and `monitor_mode`, if `monitor_mode == 'min'` then the trainer will save a checkpoint `model_best.pth.tar` when `monitor` is a current minimum
+      * Controlled by the configs `monitor` and `monitor_mode`, if `monitor_mode == 'min'` then the trainer will save a checkpoint `model_best.pth` when `monitor` is a current minimum
 
 2. **Implementing abstract methods**
 
