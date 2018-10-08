@@ -66,10 +66,14 @@ if __name__ == '__main__':
 
     parser.add_argument('-r', '--resume', default=None, type=str,
                            help='path to latest checkpoint (default: None)')
+    parser.add_argument('-d', '--device', default=None, type=str,
+                           help='indices of GPUs to enable (default: all)')
 
     args = parser.parse_args()
 
     if args.resume:
         config = torch.load(args.resume)['config']
+    if args.device:
+        os.environ["CUDA_VISIBLE_DEVICES"]=args.device
 
     main(config, args.resume)
