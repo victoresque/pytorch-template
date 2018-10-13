@@ -17,7 +17,8 @@ def main(config, resume):
         batch_size=512,
         shuffle=False,
         validation_split=0.0,
-        training=False
+        training=False,
+        num_workers=2
     )
 
     # build model architecture
@@ -31,6 +32,8 @@ def main(config, resume):
     # load state dict
     checkpoint = torch.load(resume)
     state_dict = checkpoint['state_dict']
+    if config['n_gpu'] > 1:
+        model = torch.nn.DataParallel(model)
     model.load_state_dict(state_dict)
 
     # prepare model for testing
