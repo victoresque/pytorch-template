@@ -15,12 +15,11 @@ class Trainer(BaseTrainer):
                  data_loader, valid_data_loader=None, lr_scheduler=None, train_logger=None):
         super(Trainer, self).__init__(model, loss, metrics, optimizer, resume, config, train_logger)
         self.config = config
-        self.batch_size = data_loader.batch_size
         self.data_loader = data_loader
         self.valid_data_loader = valid_data_loader
         self.do_validation = self.valid_data_loader is not None
         self.lr_scheduler = lr_scheduler
-        self.log_step = int(np.sqrt(self.batch_size))
+        self.log_step = int(np.sqrt(data_loader.batch_size))
 
     def _eval_metrics(self, output, target):
         acc_metrics = np.zeros(len(self.metrics))
