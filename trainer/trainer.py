@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import torch
 from torchvision.utils import make_grid
@@ -45,10 +47,12 @@ class Trainer(BaseTrainer):
             The metrics in log must have the key 'metrics'.
         """
         self.model.train()
-    
+
+        epoch_start_time = time.time()
         total_loss = 0
         total_metrics = np.zeros(len(self.metrics))
         for batch_idx, (data, target) in enumerate(self.data_loader):
+            batch_start_time = time.time()
             data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
@@ -63,15 +67,18 @@ class Trainer(BaseTrainer):
             total_metrics += self._eval_metrics(output, target)
 
             if self.verbosity >= 2 and batch_idx % self.log_step == 0:
-                self.logger.info('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
+                self.logger.info('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f} Time: {:.2f}s'.format(
                     epoch,
                     batch_idx * self.data_loader.batch_size,
                     self.data_loader.n_samples,
                     100.0 * batch_idx / len(self.data_loader),
-                    loss.item()))
+                    loss.item(),
+                    time.time() - batch_start_time)
+                )
                 self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
         log = {
+            'epoch_time': time.time() - epoch_start_time,
             'loss': total_loss / len(self.data_loader),
             'metrics': (total_metrics / len(self.data_loader)).tolist()
         }
@@ -97,6 +104,7 @@ class Trainer(BaseTrainer):
         self.model.eval()
         total_val_loss = 0
         total_val_metrics = np.zeros(len(self.metrics))
+        epoch_start_time = time.time()
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(self.valid_data_loader):
                 data, target = data.to(self.device), target.to(self.device)
@@ -111,6 +119,7 @@ class Trainer(BaseTrainer):
                 self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
         return {
+            'val_epoch_time': time.time() - epoch_start_time,
             'val_loss': total_val_loss / len(self.valid_data_loader),
             'val_metrics': (total_val_metrics / len(self.valid_data_loader)).tolist()
         }
