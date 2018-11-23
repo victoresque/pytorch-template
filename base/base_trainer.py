@@ -35,6 +35,11 @@ class BaseTrainer:
         # configuration to monitor model performance and save best
         self.monitor = config['trainer']['monitor']
         self.monitor_mode = config['trainer']['monitor_mode']
+
+        self.early_stop = config['trainer']['early_stop']
+        if self.early_stop <= 0 or self.early_stop == None:
+            self.early_stop = math.inf
+
         assert self.monitor_mode in ['min', 'max', 'off']
         self.monitor_best = math.inf if self.monitor_mode == 'min' else -math.inf
         self.start_epoch = 1
@@ -64,8 +69,7 @@ class BaseTrainer:
             self.logger.warning("Warning: There\'s no GPU available on this machine, training will be performed on CPU.")
             n_gpu_use = 0
         if n_gpu_use > n_gpu:
-            msg = "Warning: The number of GPU\'s configured to use is {}, but only {} are available on this machine.".format(n_gpu_use, n_gpu)
-            self.logger.warning(msg)
+            self.logger.warning("Warning: The number of GPU\'s configured to use is {}, but only {} are available on this machine.".format(n_gpu_use, n_gpu))
             n_gpu_use = n_gpu
         device = torch.device('cuda:0' if n_gpu_use > 0 else 'cpu')
         list_ids = list(range(n_gpu_use))
@@ -102,14 +106,20 @@ class BaseTrainer:
                     if  (self.monitor_mode == 'min' and log[self.monitor] < self.monitor_best) or\
                         (self.monitor_mode == 'max' and log[self.monitor] > self.monitor_best):
                         self.monitor_best = log[self.monitor]
+                        not_improved_count = 0
                         best = True
                 except KeyError:
-                    if epoch == 1:
-                        msg = "Warning: Can\'t recognize metric named '{}' ".format(self.monitor)\
-                            + "for performance monitoring. model_best checkpoint won\'t be updated."
-                        self.logger.warning(msg)
+                    self.logger.warning("Warning: Metric '{}' is not found. Model performance monitoring is disabled.".format(self.monitor))
+                    self.monitor_mode = 'off'
+                    not_improved_count = 0
+
             if epoch % self.save_freq == 0:
                 self._save_checkpoint(epoch, save_best=best)
+            
+            if not_improved_count >= self.early_stop:
+                self.logger.info("Validation performance didn\'t improve for {} epochs. Training stops.".format(self.early_stop))
+                break
+            not_improved_count += 1
 
     def _train_epoch(self, epoch):
         """

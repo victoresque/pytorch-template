@@ -130,12 +130,13 @@ Config files are in `.json` format:
     }
   },
   "trainer": {
-    "epochs": 1000,             // number of training epochs
+    "epochs": 100,              // number of training epochs
     "save_dir": "saved/",       // checkpoints are saved in save_dir/name
     "save_freq": 1,             // save checkpoints every save_freq epochs
     "verbosity": 2,             // 0: quiet, 1: per epoch, 2: full
     "monitor": "val_loss",      // evaluation metric for finding best model
     "monitor_mode": "min"       // "min" if monitor value the lower the better, otherwise "max". "off" to disable
+    "early_stop": 0	            // number of epochs to wait before early stop. set 0 to disable.
   },
   "visualization":{
     "tensorboardX": true,       // enable tensorboardX visualization support
