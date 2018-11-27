@@ -38,14 +38,12 @@
     "trainer": {
         "epochs": 100,
         "save_dir": "saved/",
-        "save_freq": 1,
+        "save_period": 1,
         "verbosity": 2,
         
-        "monitor": "val_loss",
-        "monitor_mode": "min",
-        "early_stop": 10
-    },
-    "visualization":{
+        "monitor": "min val_loss",
+        "early_stop": 10,
+        
         "tensorboardX": true,
         "log_dir": "saved/runs"
     }
