@@ -135,8 +135,8 @@ Config files are in `.json` format:
     "save_freq": 1,                    // save checkpoints every save_freq epochs
     "verbosity": 2,                    // 0: quiet, 1: per epoch, 2: full
   
-    "monitor_mode": "min val_loss"     // mode and metric for model performance monitoring. set 'off' to disable.
-    "early_stop": 10	                   // number of epochs to wait before early stop. set 0 to disable.
+    "monitor": "min val_loss"          // mode and metric for model performance monitoring. set 'off' to disable.
+    "early_stop": 10	                 // number of epochs to wait before early stop. set 0 to disable.
   
     "tensorboardX": true,              // enable tensorboardX visualization support
     "log_dir": "saved/runs"            // directory to save log files for visualization
@@ -206,7 +206,7 @@ Specify indices of available GPUs by cuda environmental variable.
     * Training process logging
     * Checkpoint saving
     * Checkpoint resuming
-    * Reconfigurable monitored value for saving current best, and early stop option.
+    * Reconfigurable performance monitoring for saving current best model, and early stop training.
       * If config `monitor` is set to `max val_accuracy`, which means then the trainer will save a checkpoint `model_best.pth` when `validation accuracy` of epoch replaces current `maximum`.
       * If config `early_stop` is set, training will be automatically terminated when model performance does not improve for given number of epochs. This feature can be turned off by passing 0 to the `early_stop` option, or just deleting the line of config.
 
