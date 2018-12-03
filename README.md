@@ -101,45 +101,45 @@ Config files are in `.json` format:
     }                
   },
   "data_loader": {
-    "type": "MnistDataLoader",  // selecting data loader
+    "type": "MnistDataLoader",         // selecting data loader
     "args":{
-      "data_dir": "data/",      // dataset path
-      "batch_size": 64,         // batch size
-      "shuffle": true,          // shuffle training data before splitting
-      "validation_split": 0.1   // validation data ratio
-      "num_workers": 2,         // number of cpu processes to be used for data loading
+      "data_dir": "data/",             // dataset path
+      "batch_size": 64,                // batch size
+      "shuffle": true,                 // shuffle training data before splitting
+      "validation_split": 0.1          // validation data ratio
+      "num_workers": 2,                // number of cpu processes to be used for data loading
     }
   },
   "optimizer": {
     "type": "Adam",
     "args":{
-      "lr": 0.001,              // learning rate
-      "weight_decay": 0,        // (optional) weight decay
+      "lr": 0.001,                     // learning rate
+      "weight_decay": 0,               // (optional) weight decay
       "amsgrad": true
     }
   },
-  "loss": "nll_loss",           // loss
+  "loss": "nll_loss",                  // loss
   "metrics": [
-    "my_metric", "my_metric2"   // list of metrics to evaluate
+    "my_metric", "my_metric2"          // list of metrics to evaluate
   ],                         
   "lr_scheduler": {
-    "type":"StepLR",            // learning rate scheduler
+    "type": "StepLR",                   // learning rate scheduler
     "args":{
-      "step_size":50,          
-      "gamma":0.1
+      "step_size": 50,          
+      "gamma": 0.1
     }
   },
   "trainer": {
-    "epochs": 1000,             // number of training epochs
-    "save_dir": "saved/",       // checkpoints are saved in save_dir/name
-    "save_freq": 1,             // save checkpoints every save_freq epochs
-    "verbosity": 2,             // 0: quiet, 1: per epoch, 2: full
-    "monitor": "val_loss",      // evaluation metric for finding best model
-    "monitor_mode": "min"       // "min" if monitor value the lower the better, otherwise "max". "off" to disable
-  },
-  "visualization":{
-    "tensorboardX": true,       // enable tensorboardX visualization support
-    "log_dir": "saved/runs"     // directory to save log files for visualization
+    "epochs": 100,                     // number of training epochs
+    "save_dir": "saved/",              // checkpoints are saved in save_dir/name
+    "save_freq": 1,                    // save checkpoints every save_freq epochs
+    "verbosity": 2,                    // 0: quiet, 1: per epoch, 2: full
+  
+    "monitor": "min val_loss"          // mode and metric for model performance monitoring. set 'off' to disable.
+    "early_stop": 10	                 // number of epochs to wait before early stop. set 0 to disable.
+  
+    "tensorboardX": true,              // enable tensorboardX visualization support
+    "log_dir": "saved/runs"            // directory to save log files for visualization
   }
 }
 ```
@@ -206,8 +206,9 @@ Specify indices of available GPUs by cuda environmental variable.
     * Training process logging
     * Checkpoint saving
     * Checkpoint resuming
-    * Reconfigurable monitored value for saving current best
-      * Controlled by the configs `monitor` and `monitor_mode`, if `monitor_mode == 'min'` then the trainer will save a checkpoint `model_best.pth` when `monitor` is a current minimum
+    * Reconfigurable performance monitoring for saving current best model, and early stop training.
+      * If config `monitor` is set to `max val_accuracy`, which means then the trainer will save a checkpoint `model_best.pth` when `validation accuracy` of epoch replaces current `maximum`.
+      * If config `early_stop` is set, training will be automatically terminated when model performance does not improve for given number of epochs. This feature can be turned off by passing 0 to the `early_stop` option, or just deleting the line of config.
 
 2. **Implementing abstract methods**
 
@@ -224,7 +225,7 @@ Specify indices of available GPUs by cuda environmental variable.
 
     `BaseModel` handles:
     * Inherited from `torch.nn.Module`
-    * `summary()`: Model summary
+    * `__str__`: Modify native `print` function to prints the number of trainable parameters.
 
 2. **Implementing abstract methods**
 
@@ -281,7 +282,7 @@ A copy of config file will be saved in the same folder.
     'logger': self.train_logger,
     'state_dict': self.model.state_dict(),
     'optimizer': self.optimizer.state_dict(),
-    'monitor_best': self.monitor_best,
+    'monitor_best': self.mnt_best,
     'config': self.config
   }
   ```

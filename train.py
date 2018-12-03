@@ -22,8 +22,8 @@ def main(config, resume):
 
     # build model architecture
     model = get_instance(module_arch, 'arch', config)
-    model.summary()
-
+    print(model)
+    
     # get function handles of loss and metrics
     loss = getattr(module_loss, config['loss'])
     metrics = [getattr(module_metric, met) for met in config['metrics']]
@@ -65,6 +65,6 @@ if __name__ == '__main__':
         raise AssertionError("Configuration file need to be specified. Add '-c config.json', for example.")
     
     if args.device:
-        os.environ["CUDA_VISIBLE_DEVICES"]=args.device
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.device
 
     main(config, args.resume)
