@@ -15,7 +15,8 @@ class WriterTensorboardX():
         self.step = 0
         self.mode = ''
 
-        self.tensorboard_writer_ftns = ['add_scalar', 'add_scalars', 'add_image', 'add_audio', 'add_text', 'add_histogram', 'add_pr_curve', 'add_embedding']
+        self.tb_writer_ftns = ['add_scalar', 'add_scalars', 'add_image', 'add_images', 'add_audio', 'add_text', 'add_histogram', 'add_pr_curve', 'add_embedding']
+        self.tag_mode_exceptions = ['add_histogram', 'add_embedding']
 
     def set_step(self, step, mode='train'):
         self.mode = mode
@@ -26,13 +27,16 @@ class WriterTensorboardX():
         If visualization is configured to use:
             return add_data() methods of tensorboard with additional information (step, tag) added.
         Otherwise:
-            return blank function handle that does nothing
+            return a blank function handle that does nothing
         """
-        if name in self.tensorboard_writer_ftns:
+        if name in self.tb_writer_ftns:
             add_data = getattr(self.writer, name, None)
             def wrapper(tag, data, *args, **kwargs):
                 if add_data is not None:
-                    add_data('{}/{}'.format(self.mode, tag), data, self.step, *args, **kwargs)
+                    # add mode(train/valid) tag
+                    if name not in self.tag_mode_exceptions:
+                        tag = '{}/{}'.format(self.mode, tag)
+                    add_data(tag, data, self.step, *args, **kwargs)
             return wrapper
         else:
             # default action for returning methods defined in this class, set_step() for instance.
