@@ -3,6 +3,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format='')
 
+
 class Logger:
     """
     Training process logger
