@@ -50,7 +50,7 @@ def main(config, resume):
             #
             # save sample images, or do something with output here
             #
-            
+
             # computing loss, metrics on test set
             loss = loss_fn(output, target)
             batch_size = data.shape[0]
@@ -60,7 +60,7 @@ def main(config, resume):
 
     n_samples = len(data_loader.sampler)
     log = {'loss': total_loss / n_samples}
-    log.update({met.__name__ : total_metrics[i].item() / n_samples for i, met in enumerate(metric_fns)})
+    log.update({met.__name__: total_metrics[i].item() / n_samples for i, met in enumerate(metric_fns)})
     print(log)
 
 
@@ -68,15 +68,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch Template')
 
     parser.add_argument('-r', '--resume', default=None, type=str,
-                           help='path to latest checkpoint (default: None)')
+                        help='path to latest checkpoint (default: None)')
     parser.add_argument('-d', '--device', default=None, type=str,
-                           help='indices of GPUs to enable (default: all)')
+                        help='indices of GPUs to enable (default: all)')
 
     args = parser.parse_args()
 
     if args.resume:
         config = torch.load(args.resume)['config']
     if args.device:
-        os.environ["CUDA_VISIBLE_DEVICES"]=args.device
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.device
 
     main(config, args.resume)

@@ -45,7 +45,7 @@ class Trainer(BaseTrainer):
             The metrics in log must have the key 'metrics'.
         """
         self.model.train()
-    
+
         total_loss = 0
         total_metrics = np.zeros(len(self.metrics))
         for batch_idx, (data, target) in enumerate(self.data_loader):
