@@ -54,6 +54,7 @@ PyTorch deep learning project made easy.
   ├── train.py - main script to start training
   ├── test.py - evaluation of trained model
   ├── config.json - config file
+  ├── new_project.py - initialize new project with template files
   │
   ├── base/ - abstract base classes
   │   ├── base_data_loader.py - abstract base class for data loaders
@@ -173,6 +174,12 @@ Specify indices of available GPUs by cuda environmental variable.
   ```
 
 ## Customization
+
+### Project initialization
+Use the `new_project.py` script to make your new project directory with template files.
+`python3 new_project.py ../NewProject` then a new project folder named 'NewProject' will be made.
+This script will filter out unneccessary files like cache, git files or readme file. 
+
 ### Data Loader
 * **Writing your own data loader**
 
