@@ -11,7 +11,7 @@ class BaseTrainer:
     """
     Base class for all trainers
     """
-    def __init__(self, model, loss, metrics, optimizer, resume, config, train_logger=None):
+    def __init__(self, model, loss, metrics, optimizer, resume, config):
         self.config = config
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -24,7 +24,6 @@ class BaseTrainer:
         self.loss = loss
         self.metrics = metrics
         self.optimizer = optimizer
-        self.train_logger = train_logger
 
         cfg_trainer = config['trainer']
         self.epochs = cfg_trainer['epochs']
@@ -95,11 +94,9 @@ class BaseTrainer:
                     log[key] = value
 
             # print logged informations to the screen
-            if self.train_logger is not None:
-                self.train_logger.add_entry(log)
-                if self.verbosity >= 1:
-                    for key, value in log.items():
-                        self.logger.info('    {:15s}: {}'.format(str(key), value))
+            if self.verbosity >= 1:
+                for key, value in log.items():
+                    self.logger.info('    {:15s}: {}'.format(str(key), value))
 
             # evaluate model performance according to configured metric, save best checkpoint as model_best
             best = False
@@ -150,7 +147,6 @@ class BaseTrainer:
         state = {
             'arch': arch,
             'epoch': epoch,
-            'logger': self.train_logger,
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'monitor_best': self.mnt_best,
@@ -188,5 +184,4 @@ class BaseTrainer:
         else:
             self.optimizer.load_state_dict(checkpoint['optimizer'])
 
-        self.train_logger = checkpoint['logger']
         self.logger.info("Checkpoint '{}' (epoch {}) loaded".format(resume_path, self.start_epoch))
