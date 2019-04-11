@@ -2,12 +2,12 @@ import importlib
 
 
 class WriterTensorboardX():
-    def __init__(self, writer_dir, logger, enable):
+    def __init__(self, log_dir, logger, enable):
         self.writer = None
         if enable:
-            log_path = writer_dir
+            log_dir = str(log_dir)
             try:
-                self.writer = importlib.import_module('tensorboardX').SummaryWriter(log_path)
+                self.writer = importlib.import_module('tensorboardX').SummaryWriter(log_dir)
             except ImportError:
                 message = "Warning: TensorboardX visualization is configured to use, but currently not installed on " \
                     "this machine. Please install the package by 'pip install tensorboardx' command or turn " \

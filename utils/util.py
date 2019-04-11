@@ -1,17 +1,20 @@
-import os
 import json
+from pathlib import Path
 from collections import OrderedDict
 
 
 def ensure_dir(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
+    path = Path(path)
+    if not path.is_dir():
+        path.mkdir()
 
 def read_json(filename):
-    with open(filename, 'rt') as handle:
+    filename = Path(filename)
+    with filename.open('rt') as handle:
         result = json.load(handle, object_pairs_hook=OrderedDict)
     return result
     
 def write_json(obj, filename):
-    with open(filename, 'wt') as handle:
+    filename = Path(filename)
+    with filename.open('wt') as handle:
         json.dump(obj, handle, indent=4)

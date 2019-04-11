@@ -1,6 +1,6 @@
 import os
-import argparse
 import torch
+import argparse
 import data_loader.data_loaders as module_data
 import model.loss as module_loss
 import model.metric as module_metric
@@ -54,8 +54,6 @@ if __name__ == '__main__':
     if args.config:
         # load config file
         config = read_json(args.config)
-        # setting path to save trained models and log files
-        path = os.path.join(config['trainer']['save_dir'], config['name'])
 
     elif args.resume:
         # load config from checkpoint if new config file is not given.

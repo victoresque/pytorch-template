@@ -1,11 +1,13 @@
-import os
 import math
+import torch
 import logging
 import datetime
-import torch
+from pathlib import Path
 from utils import ensure_dir, write_json
 from utils.visualization import WriterTensorboardX
 
+
+logging.basicConfig(level=logging.INFO, format='')
 
 class BaseTrainer:
     """
@@ -46,14 +48,14 @@ class BaseTrainer:
 
         # setup directory for checkpoint saving
         start_time = datetime.datetime.now().strftime('%m%d_%H%M%S')
-        self.checkpoint_dir = os.path.join(cfg_trainer['save_dir'], config['name'], start_time)
+        self.checkpoint_dir = Path(cfg_trainer['save_dir']) / config['name'] / start_time
         # setup visualization writer instance
-        writer_dir = os.path.join(cfg_trainer['log_dir'], config['name'], start_time)
+        writer_dir = Path(cfg_trainer['log_dir']) / config['name'] / start_time
         self.writer = WriterTensorboardX(writer_dir, self.logger, cfg_trainer['tensorboardX'])
 
         # Save configuration file into checkpoint directory:
         ensure_dir(self.checkpoint_dir)
-        config_save_path = os.path.join(self.checkpoint_dir, 'config.json')
+        config_save_path = Path(self.checkpoint_dir) / 'config.json'
         write_json(config, config_save_path)
 
         if resume:
@@ -152,11 +154,11 @@ class BaseTrainer:
             'monitor_best': self.mnt_best,
             'config': self.config
         }
-        filename = os.path.join(self.checkpoint_dir, 'checkpoint-epoch{}.pth'.format(epoch))
+        filename = str(self.checkpoint_dir / 'checkpoint-epoch{}.pth'.format(epoch))
         torch.save(state, filename)
         self.logger.info("Saving checkpoint: {} ...".format(filename))
         if save_best:
-            best_path = os.path.join(self.checkpoint_dir, 'model_best.pth')
+            best_path = str(self.checkpoint_dir / 'model_best.pth')
             torch.save(state, best_path)
             self.logger.info("Saving current best: {} ...".format('model_best.pth'))
 
