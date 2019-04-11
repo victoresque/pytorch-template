@@ -6,15 +6,16 @@ import datetime
 import torch
 from utils.util import ensure_dir
 from utils.visualization import WriterTensorboardX
+from utils.logger import setup_logger
 
 
 class BaseTrainer:
     """
     Base class for all trainers
     """
-    def __init__(self, model, loss, metrics, optimizer, resume, config, train_logger=None):
+    def __init__(self, model, loss, metrics, optimizer, resume, config):
         self.config = config
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = setup_logger(self)
 
         # setup GPU device if available, move model into configured device
         self.device, device_ids = self._prepare_device(config['n_gpu'])
@@ -25,13 +26,12 @@ class BaseTrainer:
         self.loss = loss
         self.metrics = metrics
         self.optimizer = optimizer
-        self.train_logger = train_logger
 
         cfg_trainer = config['trainer']
         self.epochs = cfg_trainer['epochs']
         self.save_period = cfg_trainer['save_period']
-        self.verbosity = cfg_trainer['verbosity']
         self.monitor = cfg_trainer.get('monitor', 'off')
+        self.logger.setLevel(cfg_trainer['verbosity'])
 
         # configuration to monitor model performance and save best
         if self.monitor == 'off':
@@ -97,11 +97,8 @@ class BaseTrainer:
                     log[key] = value
 
             # print logged informations to the screen
-            if self.train_logger is not None:
-                self.train_logger.add_entry(log)
-                if self.verbosity >= 1:
-                    for key, value in log.items():
-                        self.logger.info('    {:15s}: {}'.format(str(key), value))
+            for key, value in log.items():
+                self.logger.info('    {:15s}: {}'.format(str(key), value))
 
             # evaluate model performance according to configured metric, save best checkpoint as model_best
             best = False
@@ -152,7 +149,6 @@ class BaseTrainer:
         state = {
             'arch': arch,
             'epoch': epoch,
-            'logger': self.train_logger,
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'monitor_best': self.mnt_best,
@@ -190,5 +186,4 @@ class BaseTrainer:
         else:
             self.optimizer.load_state_dict(checkpoint['optimizer'])
 
-        self.train_logger = checkpoint['logger']
         self.logger.info("Checkpoint '{}' (epoch {}) loaded".format(resume_path, self.start_epoch))

@@ -1,7 +1,7 @@
 import logging
 import torch.nn as nn
 import numpy as np
-
+from utils.logger import setup_logger
 
 class BaseModel(nn.Module):
     """
@@ -9,7 +9,7 @@ class BaseModel(nn.Module):
     """
     def __init__(self):
         super(BaseModel, self).__init__()
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = setup_logger(self)
 
     def forward(self, *input):
         """
@@ -26,4 +26,3 @@ class BaseModel(nn.Module):
         model_parameters = filter(lambda p: p.requires_grad, self.parameters())
         params = sum([np.prod(p.size()) for p in model_parameters])
         return super(BaseModel, self).__str__() + '\nTrainable parameters: {}'.format(params)
-        # print(super(BaseModel, self))
