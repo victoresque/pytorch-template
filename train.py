@@ -1,5 +1,4 @@
 import os
-import json
 import argparse
 import torch
 import data_loader.data_loaders as module_data
@@ -7,7 +6,7 @@ import model.loss as module_loss
 import model.metric as module_metric
 import model.model as module_arch
 from trainer import Trainer
-from utils import Logger
+from utils import read_json
 
 
 def get_instance(module, name, config, *args):
@@ -57,8 +56,7 @@ if __name__ == '__main__':
 
     if args.config:
         # load config file
-        with open(args.config) as handle:
-            config = json.load(handle)
+        config = read_json(args.config)
         # setting path to save trained models and log files
         path = os.path.join(config['trainer']['save_dir'], config['name'])
 

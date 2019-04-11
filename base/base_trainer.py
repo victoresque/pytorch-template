@@ -1,10 +1,9 @@
 import os
 import math
-import json
 import logging
 import datetime
 import torch
-from utils.util import ensure_dir
+from utils import ensure_dir, write_json
 from utils.visualization import WriterTensorboardX
 
 
@@ -56,8 +55,7 @@ class BaseTrainer:
         # Save configuration file into checkpoint directory:
         ensure_dir(self.checkpoint_dir)
         config_save_path = os.path.join(self.checkpoint_dir, 'config.json')
-        with open(config_save_path, 'w') as handle:
-            json.dump(config, handle, indent=4, sort_keys=False)
+        write_json(config, config_save_path)
 
         if resume:
             self._resume_checkpoint(resume)
