@@ -286,7 +286,6 @@ A copy of config file will be saved in the same folder.
   {
     'arch': arch,
     'epoch': epoch,
-    'logger': self.train_logger,
     'state_dict': self.model.state_dict(),
     'optimizer': self.optimizer.state_dict(),
     'monitor_best': self.mnt_best,
