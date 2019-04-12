@@ -22,7 +22,7 @@ def main(config, resume):
 
     # build model architecture
     model = get_instance(module_arch, 'arch', config)
-    model.summary()
+    print(model)
 
     # get function handles of loss and metrics
     loss_fn = getattr(module_loss, config['loss'])

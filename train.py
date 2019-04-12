@@ -7,7 +7,6 @@ import model.loss as module_loss
 import model.metric as module_metric
 import model.model as module_arch
 from trainer import Trainer
-from utils import Logger
 
 
 def get_instance(module, name, config, *args):
@@ -15,8 +14,6 @@ def get_instance(module, name, config, *args):
 
 
 def main(config, resume):
-    train_logger = Logger()
-
     # setup data_loader instances
     data_loader = get_instance(module_data, 'data_loader', config)
     valid_data_loader = data_loader.split_validation()
@@ -39,8 +36,7 @@ def main(config, resume):
                       config=config,
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
-                      lr_scheduler=lr_scheduler,
-                      train_logger=train_logger)
+                      lr_scheduler=lr_scheduler)
 
     trainer.train()
 

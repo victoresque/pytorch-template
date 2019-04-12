@@ -62,8 +62,8 @@ class Trainer(BaseTrainer):
             total_loss += loss.item()
             total_metrics += self._eval_metrics(output, target)
 
-            if self.verbosity >= 2 and batch_idx % self.log_step == 0:
-                self.logger.info('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
+            if batch_idx % self.log_step == 0:
+                self.logger.debug('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
                     epoch,
                     batch_idx * self.data_loader.batch_size,
                     self.data_loader.n_samples,
