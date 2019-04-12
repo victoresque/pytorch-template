@@ -7,9 +7,9 @@ class BaseModel(nn.Module):
     """
     Base class for all models
     """
-    def __init__(self):
+    def __init__(self, verbose=0):
         super(BaseModel, self).__init__()
-        self.logger = setup_logger(self)
+        self.logger = setup_logger(self, verbose=verbose)
 
     def forward(self, *input):
         """

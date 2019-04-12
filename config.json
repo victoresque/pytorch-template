@@ -4,7 +4,9 @@
     
     "arch": {
         "type": "MnistModel",
-        "args": {}
+        "args": {
+            "verbose": 2
+        }
     },
     "data_loader": {
         "type": "MnistDataLoader",
@@ -39,7 +41,7 @@
         "epochs": 100,
         "save_dir": "saved/",
         "save_period": 1,
-        "verbosity": 2,
+        "verbose": 2,
         
         "monitor": "min val_loss",
         "early_stop": 10,

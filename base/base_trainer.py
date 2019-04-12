@@ -15,7 +15,7 @@ class BaseTrainer:
     """
     def __init__(self, model, loss, metrics, optimizer, resume, config):
         self.config = config
-        self.logger = setup_logger(self, verbose=config['trainer']['verbosity'])
+        self.logger = setup_logger(self, verbose=config['trainer']['verbose'])
 
         # setup GPU device if available, move model into configured device
         self.device, device_ids = self._prepare_device(config['n_gpu'])
