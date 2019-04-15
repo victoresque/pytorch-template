@@ -7,37 +7,49 @@ import model.loss as module_loss
 import model.metric as module_metric
 import model.model as module_arch
 from trainer import Trainer
+from utils import setup_logging, setup_logger
 
 
 def get_instance(module, name, config, *args):
     return getattr(module, config[name]['type'])(*args, **config[name]['args'])
 
 
-def main(config, resume):
-    # setup data_loader instances
-    data_loader = get_instance(module_data, 'data_loader', config)
-    valid_data_loader = data_loader.split_validation()
+class TrainingRunner:
 
-    # build model architecture
-    model = get_instance(module_arch, 'arch', config)
+    def run(self, config, resume):
+        setup_logging(config)
+        logger = setup_logger(self, verbosity=config['training']['verbosity'])
 
-    # get function handles of loss and metrics
-    loss = getattr(module_loss, config['loss'])
-    metrics = [getattr(module_metric, met) for met in config['metrics']]
+        logger.info('Using config: \n{}'.format(json.dumps(config, indent=4)))
 
-    # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
-    trainable_params = filter(lambda p: p.requires_grad, model.parameters())
-    optimizer = get_instance(torch.optim, 'optimizer', config, trainable_params)
-    lr_scheduler = get_instance(torch.optim.lr_scheduler, 'lr_scheduler', config, optimizer)
+        logger.info('Setting up data_loader instance...')
+        data_loader = get_instance(module_data, 'data_loader', config)
+        valid_data_loader = data_loader.split_validation()
 
-    trainer = Trainer(model, loss, metrics, optimizer,
-                      resume=resume,
-                      config=config,
-                      data_loader=data_loader,
-                      valid_data_loader=valid_data_loader,
-                      lr_scheduler=lr_scheduler)
+        logger.info('Building model architecture...')
+        model = get_instance(module_arch, 'arch', config)
+        logger.info('Using: \n{}'.format(model))
 
-    trainer.train()
+        logger.info('Loading function handles for loss and metrics...')
+        loss = getattr(module_loss, config['loss'])
+        metrics = [getattr(module_metric, met) for met in config['metrics']]
+
+        logger.info('Initialising optimiser and scheduler...')
+        # delete every lines containing lr_scheduler for disabling scheduler
+        trainable_params = filter(lambda p: p.requires_grad, model.parameters())
+        optimizer = get_instance(torch.optim, 'optimizer', config, trainable_params)
+        lr_scheduler = get_instance(torch.optim.lr_scheduler, 'lr_scheduler', config, optimizer)
+
+        logger.info('Initialising Trainer...')
+        trainer = Trainer(model, loss, metrics, optimizer,
+                        resume=resume,
+                        config=config,
+                        data_loader=data_loader,
+                        valid_data_loader=valid_data_loader,
+                        lr_scheduler=lr_scheduler)
+
+        trainer.train()
+        logger.info('Finished!')
 
 
 if __name__ == '__main__':
@@ -54,8 +66,6 @@ if __name__ == '__main__':
         # load config file
         with open(args.config) as handle:
             config = json.load(handle)
-        # setting path to save trained models and log files
-        path = os.path.join(config['trainer']['save_dir'], config['name'])
 
     elif args.resume:
         # load config from checkpoint if new config file is not given.
@@ -68,4 +78,4 @@ if __name__ == '__main__':
     if args.device:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.device
 
-    main(config, args.resume)
+    TrainingRunner().run(config, args.resume)

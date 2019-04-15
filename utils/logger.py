@@ -1,19 +1,24 @@
 import os
-import json
 import yaml
 import logging.config
 
-def setup_logging(default_path='logging.yaml', default_level=logging.INFO, env_key='LOG_CFG'):
+from .saving import log_path
+from .util import ensure_dir
+
+def setup_logging(run_config, log_config='logging.yaml', default_level=logging.INFO, env_key='LOG_CFG'):
     """
     Setup logging configuration
     """
-    config_f = default_path
-    value = os.getenv(env_key, None)
-    if value:
-        config_f = value
-    if os.path.exists(config_f):
-        with open(config_f, 'rt') as f:
+    if os.path.exists(log_config):
+        with open(log_config, 'rt') as f:
             config = yaml.safe_load(f.read())
+
+        # modify logging paths based on run config
+        run_path = log_path(run_config)
+        for _, handler in config['handlers'].items():
+            if 'filename' in handler:
+                handler['filename'] = os.path.join(run_path, handler['filename'])
+
         logging.config.dictConfig(config)
     else:
         logging.basicConfig(level=default_level)
@@ -25,14 +30,11 @@ logging_level_dict = {
     2: logging.DEBUG
 }
 
-def setup_logger(cls, verbose=0):
+def setup_logger(cls, verbosity=0):
     logger = logging.getLogger(cls.__class__.__name__)
-    if verbose not in logging_level_dict:
-        raise KeyError('Verbose option {} for {} not valid. '
+    if verbosity not in logging_level_dict:
+        raise KeyError('verbosity option {} for {} not valid. '
                         'Valid options are {}.'.format(
-                            verbose, cls, logging_level_dict.keys()))
-    logger.setLevel(logging_level_dict[verbose])
+                            verbosity, cls, logging_level_dict.keys()))
+    logger.setLevel(logging_level_dict[verbosity])
     return logger
-
-
-setup_logging()

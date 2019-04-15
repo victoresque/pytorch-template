@@ -2,12 +2,10 @@ import os
 import math
 import json
 import logging
-import datetime
 import torch
-from utils.util import ensure_dir
 from utils.visualization import WriterTensorboardX
 from utils.logger import setup_logger
-
+from utils.saving import trainer_paths
 
 class BaseTrainer:
     """
@@ -15,7 +13,7 @@ class BaseTrainer:
     """
     def __init__(self, model, loss, metrics, optimizer, resume, config):
         self.config = config
-        self.logger = setup_logger(self, verbose=config['trainer']['verbose'])
+        self.logger = setup_logger(self, verbosity=config['training']['verbosity'])
 
         # setup GPU device if available, move model into configured device
         self.device, device_ids = self._prepare_device(config['n_gpu'])
@@ -27,7 +25,7 @@ class BaseTrainer:
         self.metrics = metrics
         self.optimizer = optimizer
 
-        cfg_trainer = config['trainer']
+        cfg_trainer = config['training']
         self.epochs = cfg_trainer['epochs']
         self.save_period = cfg_trainer['save_period']
         self.monitor = cfg_trainer.get('monitor', 'off')
@@ -45,15 +43,12 @@ class BaseTrainer:
 
         self.start_epoch = 1
 
-        # setup directory for checkpoint saving
-        start_time = datetime.datetime.now().strftime('%m%d_%H%M%S')
-        self.checkpoint_dir = os.path.join(cfg_trainer['save_dir'], config['name'], start_time)
+        # setup directory for checkpoint saving and tensorboard logging
+        self.checkpoint_dir, writer_dir = trainer_paths(config)
         # setup visualization writer instance
-        writer_dir = os.path.join(cfg_trainer['log_dir'], config['name'], start_time)
         self.writer = WriterTensorboardX(writer_dir, self.logger, cfg_trainer['tensorboardX'])
 
         # Save configuration file into checkpoint directory:
-        ensure_dir(self.checkpoint_dir)
         config_save_path = os.path.join(self.checkpoint_dir, 'config.json')
         with open(config_save_path, 'w') as handle:
             json.dump(config, handle, indent=4, sort_keys=False)
@@ -82,6 +77,7 @@ class BaseTrainer:
         """
         Full training logic
         """
+        self.logger.info('Starting training...')
         for epoch in range(self.start_epoch, self.epochs + 1):
             result = self._train_epoch(epoch)
 

@@ -1,15 +1,15 @@
 import logging
 import torch.nn as nn
 import numpy as np
-from utils.logger import setup_logger
+
 
 class BaseModel(nn.Module):
     """
     Base class for all models
     """
-    def __init__(self, verbose=0):
+    def __init__(self):
         super(BaseModel, self).__init__()
-        self.logger = setup_logger(self, verbose=verbose)
+        
 
     def forward(self, *input):
         """
