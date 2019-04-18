@@ -8,10 +8,7 @@ from parse_config import ConfigParser
 from trainer import Trainer
 
 
-def get_instance(module, name, config, *args):
-    return getattr(module, config[name]['type'])(*args, **config[name]['args'])
-
-def main(config, resume):
+def main(config):
     logger = config.get_logger('train')
 
     # setup data_loader instances
@@ -34,7 +31,6 @@ def main(config, resume):
     lr_scheduler = config.initialize('lr_scheduler', torch.optim.lr_scheduler, optimizer)
 
     trainer = Trainer(model, loss, metrics, optimizer,
-                      resume=resume,
                       config=config,
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
@@ -54,4 +50,4 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     config = ConfigParser(args)
-    main(config, args.resume)
+    main(config)

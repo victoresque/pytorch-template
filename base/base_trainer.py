@@ -7,7 +7,7 @@ class BaseTrainer:
     """
     Base class for all trainers
     """
-    def __init__(self, model, loss, metrics, optimizer, resume, config):
+    def __init__(self, model, loss, metrics, optimizer, config):
         self.config = config
         # self.logger = setup_logger("BaseTrainer", verbosity=config['training']['verbosity'])# TODO: config.getlogger
         self.logger = config.get_logger("trainer", config['training']['verbosity'])
@@ -44,8 +44,8 @@ class BaseTrainer:
         # setup visualization writer instance
         self.writer = WriterTensorboardX(config.log_dir, self.logger, cfg_trainer['tensorboardX'])
 
-        if resume:
-            self._resume_checkpoint(resume)
+        if config.resume is not None:
+            self._resume_checkpoint(config.resume)
 
     def _prepare_device(self, n_gpu_use):
         """
@@ -153,6 +153,7 @@ class BaseTrainer:
 
         :param resume_path: Checkpoint path to be resumed
         """
+        resume_path = str(resume_path)
         self.logger.info("Loading checkpoint: {} ...".format(resume_path))
         checkpoint = torch.load(resume_path)
         self.start_epoch = checkpoint['epoch'] + 1
@@ -171,4 +172,4 @@ class BaseTrainer:
         else:
             self.optimizer.load_state_dict(checkpoint['optimizer'])
 
-        self.logger.info("Checkpoint (epoch {}) loaded".format(self.start_epoch))
+        self.logger.info("Checkpoint loaded. Resume training from epoch {}".format(self.start_epoch))
