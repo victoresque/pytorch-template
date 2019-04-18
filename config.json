@@ -1,7 +1,6 @@
 {
     "name": "Mnist_LeNet",
     "n_gpu": 1,
-    "save_dir": "saved/",
 
     "arch": {
         "type": "MnistModel",
@@ -36,8 +35,10 @@
             "gamma": 0.1
         }
     },
-    "training": {
+    "trainer": {
         "epochs": 100,
+
+        "save_dir": "saved/",
         "save_period": 1,
         "verbosity": 2,
         

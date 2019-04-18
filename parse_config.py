@@ -10,11 +10,12 @@ class ConfigParser:
     def __init__(self, args):
         if args.device:
             os.environ["CUDA_VISIBLE_DEVICES"] = args.device
-
+        
         if args.resume:
             self.resume = Path(args.resume)
             self.cfg_fname = self.resume.parent / 'config.json'
         else:
+            self.resume = None
             self.cfg_fname = Path(args.config)
         assert self.cfg_fname is not None, "Configuration file need to be specified. Add '-c config.json', for example."
         
@@ -22,7 +23,7 @@ class ConfigParser:
         self.exper_name = self.config['name']
 
         # set save_dir where trained model and log will be saved.
-        save_dir = Path(self.config['save_dir'])
+        save_dir = Path(self.config['trainer']['save_dir'])
         timestamp = datetime.now().strftime('%m%d_%H%M%S')# if timestamp else ''
 
         self.save_dir = save_dir / 'models' / self.exper_name / timestamp

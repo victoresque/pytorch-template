@@ -9,8 +9,7 @@ class BaseTrainer:
     """
     def __init__(self, model, loss, metrics, optimizer, config):
         self.config = config
-        # self.logger = setup_logger("BaseTrainer", verbosity=config['training']['verbosity'])# TODO: config.getlogger
-        self.logger = config.get_logger("trainer", config['training']['verbosity'])
+        self.logger = config.get_logger('trainer', config['trainer']['verbosity'])
 
         # setup GPU device if available, move model into configured device
         self.device, device_ids = self._prepare_device(config['n_gpu'])
@@ -22,7 +21,7 @@ class BaseTrainer:
         self.metrics = metrics
         self.optimizer = optimizer
 
-        cfg_trainer = config['training']
+        cfg_trainer = config['trainer']
         self.epochs = cfg_trainer['epochs']
         self.save_period = cfg_trainer['save_period']
         self.monitor = cfg_trainer.get('monitor', 'off')
