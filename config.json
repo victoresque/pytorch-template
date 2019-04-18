@@ -45,8 +45,5 @@
         "early_stop": 10,
         
         "tensorboardX": true
-    },
-    "testing": {
-        "verbosity": 2
     }
 }
