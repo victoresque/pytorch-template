@@ -171,4 +171,4 @@ class BaseTrainer:
         else:
             self.optimizer.load_state_dict(checkpoint['optimizer'])
 
-        self.logger.info("Checkpoint '{}' (epoch {}) loaded".format(resume_path, self.start_epoch))
+        self.logger.info("Checkpoint (epoch {}) loaded".format(self.start_epoch))

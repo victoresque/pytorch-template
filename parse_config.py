@@ -45,7 +45,7 @@ class ConfigParser:
 
     def initialize(self, name, module, *args):
         """
-        return initialized object as configured in config file.
+        return 'module.name' instance initialized with configuration given in file.
         equivalent to `module.name(*args, **kwargs_on_cfg)`
         """
         module_cfg = self[name]

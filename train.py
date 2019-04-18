@@ -1,5 +1,3 @@
-import os
-import json
 import argparse
 import torch
 import data_loader.data_loaders as module_data
@@ -8,7 +6,6 @@ import model.metric as module_metric
 import model.model as module_arch
 from parse_config import ConfigParser
 from trainer import Trainer
-from utils import setup_logging
 
 
 def get_instance(module, name, config, *args):
