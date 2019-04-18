@@ -1,5 +1,5 @@
-import math
 import torch
+from numpy import inf
 from utils.visualization import WriterTensorboardX
 
 
@@ -35,8 +35,8 @@ class BaseTrainer:
             self.mnt_mode, self.mnt_metric = self.monitor.split()
             assert self.mnt_mode in ['min', 'max']
 
-            self.mnt_best = math.inf if self.mnt_mode == 'min' else -math.inf
-            self.early_stop = cfg_trainer.get('early_stop', math.inf)
+            self.mnt_best = inf if self.mnt_mode == 'min' else -inf
+            self.early_stop = cfg_trainer.get('early_stop', inf)
 
         self.start_epoch = 1
 
@@ -90,8 +90,8 @@ class BaseTrainer:
             if self.mnt_mode != 'off':
                 try:
                     # check whether model performance improved or not, according to specified metric(mnt_metric)
-                    improved = (self.mnt_mode == 'min' and log[self.mnt_metric] < self.mnt_best) or \
-                               (self.mnt_mode == 'max' and log[self.mnt_metric] > self.mnt_best)
+                    improved = (self.mnt_mode == 'min' and log[self.mnt_metric] <= self.mnt_best) or \
+                               (self.mnt_mode == 'max' and log[self.mnt_metric] >= self.mnt_best)
                 except KeyError:
                     self.logger.warning("Warning: Metric '{}' is not found. "
                                         "Model performance monitoring is disabled.".format(self.mnt_metric))
