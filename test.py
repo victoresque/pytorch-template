@@ -1,19 +1,16 @@
 import os
 import argparse
 import torch
-import json
 from tqdm import tqdm
 import data_loader.data_loaders as module_data
 import model.loss as module_loss
 import model.metric as module_metric
 import model.model as module_arch
-from train import get_instance
-from utils import setup_logging, setup_logger
+from parse_config import ConfigParser
 
 
 def main(config, resume):
-    setup_logging(config)
-    logger = setup_logger("test", verbosity=config['testing']['verbosity'])
+    logger = config.get_logger('test')
 
     # setup data_loader instances
     data_loader = getattr(module_data, config['data_loader']['type'])(
@@ -26,14 +23,14 @@ def main(config, resume):
     )
 
     # build model architecture
-    model = get_instance(module_arch, 'arch', config)
+    model = config.initialize('arch', module_arch)
     logger.info('Using: \n{}'.format(model))
 
     # get function handles of loss and metrics
     loss_fn = getattr(module_loss, config['loss'])
     metric_fns = [getattr(module_metric, met) for met in config['metrics']]
 
-    logger.info('Loading state: {}'.format(resume))
+    logger.info('Loading checkpoint from: {}'.format(resume))
     checkpoint = torch.load(resume)
     state_dict = checkpoint['state_dict']
     if config['n_gpu'] > 1:
@@ -56,7 +53,7 @@ def main(config, resume):
             #
             # save sample images, or do something with output here
             #
-
+            
             # computing loss, metrics on test set
             loss = loss_fn(output, target)
             batch_size = data.shape[0]
@@ -66,7 +63,9 @@ def main(config, resume):
 
     n_samples = len(data_loader.sampler)
     log = {'loss': total_loss / n_samples}
-    log.update({met.__name__: total_metrics[i].item() / n_samples for i, met in enumerate(metric_fns)})
+    log.update({
+        met.__name__: total_metrics[i].item() / n_samples for i, met in enumerate(metric_fns)
+    })
     logger.info(log)
 
 
@@ -79,10 +78,5 @@ if __name__ == '__main__':
                         help='indices of GPUs to enable (default: all)')
 
     args = parser.parse_args()
-
-    if args.resume:
-        config = torch.load(args.resume)['config']
-    if args.device:
-        os.environ["CUDA_VISIBLE_DEVICES"] = args.device
-
+    config = ConfigParser(args)
     main(config, args.resume)

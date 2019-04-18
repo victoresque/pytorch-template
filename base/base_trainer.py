@@ -1,11 +1,7 @@
-import os
 import math
-import json
-import logging
 import torch
 from utils.visualization import WriterTensorboardX
-from utils.logger import setup_logger
-from utils.saving import trainer_paths
+
 
 class BaseTrainer:
     """
@@ -13,7 +9,8 @@ class BaseTrainer:
     """
     def __init__(self, model, loss, metrics, optimizer, resume, config):
         self.config = config
-        self.logger = setup_logger(self, verbosity=config['training']['verbosity'])
+        # self.logger = setup_logger("BaseTrainer", verbosity=config['training']['verbosity'])# TODO: config.getlogger
+        self.logger = config.get_logger("trainer", config['training']['verbosity'])
 
         # setup GPU device if available, move model into configured device
         self.device, device_ids = self._prepare_device(config['n_gpu'])
@@ -43,15 +40,9 @@ class BaseTrainer:
 
         self.start_epoch = 1
 
-        # setup directory for checkpoint saving and tensorboard logging
-        self.checkpoint_dir, writer_dir = trainer_paths(config)
+        self.checkpoint_dir = config.save_dir
         # setup visualization writer instance
-        self.writer = WriterTensorboardX(writer_dir, self.logger, cfg_trainer['tensorboardX'])
-
-        # Save configuration file into checkpoint directory:
-        config_save_path = os.path.join(self.checkpoint_dir, 'config.json')
-        with open(config_save_path, 'w') as handle:
-            json.dump(config, handle, indent=4, sort_keys=False)
+        self.writer = WriterTensorboardX(config.log_dir, self.logger, cfg_trainer['tensorboardX'])
 
         if resume:
             self._resume_checkpoint(resume)
@@ -77,7 +68,6 @@ class BaseTrainer:
         """
         Full training logic
         """
-        self.logger.info('Starting training...')
         for epoch in range(self.start_epoch, self.epochs + 1):
             result = self._train_epoch(epoch)
 
@@ -149,13 +139,13 @@ class BaseTrainer:
             'monitor_best': self.mnt_best,
             'config': self.config
         }
-        filename = os.path.join(self.checkpoint_dir, 'checkpoint-epoch{}.pth'.format(epoch))
+        filename = str(self.checkpoint_dir / 'checkpoint-epoch{}.pth'.format(epoch))
         torch.save(state, filename)
         self.logger.info("Saving checkpoint: {} ...".format(filename))
         if save_best:
-            best_path = os.path.join(self.checkpoint_dir, 'model_best.pth')
+            best_path = str(self.checkpoint_dir / 'model_best.pth')
             torch.save(state, best_path)
-            self.logger.info("Saving current best: {} ...".format('model_best.pth'))
+            self.logger.info("Saving current best: model_best.pth ...")
 
     def _resume_checkpoint(self, resume_path):
         """

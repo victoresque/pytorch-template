@@ -5,7 +5,7 @@ class WriterTensorboardX():
     def __init__(self, writer_dir, logger, enable):
         self.writer = None
         if enable:
-            log_path = writer_dir
+            log_path = str(writer_dir)
             try:
                 self.writer = importlib.import_module('tensorboardX').SummaryWriter(log_path)
             except ImportError:
