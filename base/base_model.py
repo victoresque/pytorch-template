@@ -1,15 +1,13 @@
 import torch.nn as nn
 import numpy as np
+from abc import abstractmethod
 
 
 class BaseModel(nn.Module):
     """
     Base class for all models
     """
-    def __init__(self):
-        super(BaseModel, self).__init__()
-        
-
+    @abstractmethod
     def forward(self, *input):
         """
         Forward pass logic
