@@ -9,9 +9,9 @@ from utils import read_json
 
 class ConfigParser:
     def __init__(self, args):
+        args = args.parse_args()
         if args.device:
             os.environ["CUDA_VISIBLE_DEVICES"] = args.device
-        
         if args.resume:
             self.resume = Path(args.resume)
             self.cfg_fname = self.resume.parent / 'config.json'
