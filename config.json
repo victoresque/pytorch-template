@@ -1,7 +1,7 @@
 {
     "name": "Mnist_LeNet",
     "n_gpu": 1,
-    
+
     "arch": {
         "type": "MnistModel",
         "args": {}
@@ -37,6 +37,7 @@
     },
     "trainer": {
         "epochs": 100,
+
         "save_dir": "saved/",
         "save_period": 1,
         "verbosity": 2,
@@ -44,7 +45,6 @@
         "monitor": "min val_loss",
         "early_stop": 10,
         
-        "tensorboardX": true,
-        "log_dir": "saved/runs"
+        "tensorboardX": true
     }
 }

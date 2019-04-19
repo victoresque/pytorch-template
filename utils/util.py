@@ -3,18 +3,15 @@ from pathlib import Path
 from collections import OrderedDict
 
 
-def ensure_dir(path):
-    path = Path(path)
-    if not path.is_dir():
-        path.mkdir()
+def ensure_dir(dirname):
+    dirname = Path(dirname)
+    if not dirname.is_dir():
+        dirname.mkdir(parents=True, exist_ok=False)
 
-def read_json(filename):
-    filename = Path(filename)
-    with filename.open('rt') as handle:
-        result = json.load(handle, object_pairs_hook=OrderedDict)
-    return result
-    
-def write_json(obj, filename):
-    filename = Path(filename)
-    with filename.open('wt') as handle:
-        json.dump(obj, handle, indent=4)
+def read_json(fname):
+    with fname.open('rt') as handle:
+        return json.load(handle, object_hook=OrderedDict)
+
+def write_json(content, fname):
+    with fname.open('wt') as handle:
+        json.dump(content, handle, indent=4, sort_keys=False)

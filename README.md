@@ -53,7 +53,10 @@ PyTorch deep learning project made easy.
   │
   ├── train.py - main script to start training
   ├── test.py - evaluation of trained model
+  │
   ├── config.json - config file
+  ├── parse_config.py - class to handle config file 
+  │
   ├── new_project.py - initialize new project with template files
   │
   ├── base/ - abstract base classes
@@ -71,8 +74,9 @@ PyTorch deep learning project made easy.
   │   ├── metric.py
   │   └── model.py
   │
-  ├── saved/ - default checkpoints folder
-  │   └── runs/ - default logdir for tensorboardX
+  ├── saved/
+  │   ├── models/ - trained models are saved here
+  │   └── log/ - default logdir for tensorboardX
   │
   ├── trainer/ - trainers
   │   └── trainer.py
@@ -131,15 +135,14 @@ Config files are in `.json` format:
   },
   "trainer": {
     "epochs": 100,                     // number of training epochs
-    "save_dir": "saved/",              // checkpoints are saved in save_dir/name
+    "save_dir": "saved/",              // checkpoints are saved in save_dir/models/name
     "save_freq": 1,                    // save checkpoints every save_freq epochs
     "verbosity": 2,                    // 0: quiet, 1: per epoch, 2: full
   
     "monitor": "min val_loss"          // mode and metric for model performance monitoring. set 'off' to disable.
     "early_stop": 10	                 // number of epochs to wait before early stop. set 0 to disable.
   
-    "tensorboardX": true,              // enable tensorboardX visualization support
-    "log_dir": "saved/runs"            // directory to save log files for visualization
+    "tensorboardX": true,              // enable tensorboardX visualization
   }
 }
 ```
@@ -307,7 +310,7 @@ This template supports [TensorboardX](https://github.com/lanpa/tensorboardX) vis
 
 3. **Open tensorboard server** 
 
-    Type `tensorboard --logdir saved/runs/` at the project root, then server will open at `http://localhost:6006`
+    Type `tensorboard --logdir saved/log/` at the project root, then server will open at `http://localhost:6006`
 
 By default, values of loss and metrics specified in config file, input images, and histogram of model parameters will be logged.
 If you need more visualizations, use `add_scalar('tag', data)`, `add_image('tag', image)`, etc in the `trainer._train_epoch` method.

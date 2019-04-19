@@ -1,26 +1,25 @@
-import os
+import argparse
 import torch
 import argparse
 import data_loader.data_loaders as module_data
 import model.loss as module_loss
 import model.metric as module_metric
 import model.model as module_arch
+from parse_config import ConfigParser
 from trainer import Trainer
-from utils import read_json
 
 
-def get_instance(module, name, config, *args):
-    return getattr(module, config[name]['type'])(*args, **config[name]['args'])
+def main(config):
+    logger = config.get_logger('train')
 
-
-def main(config, resume):
     # setup data_loader instances
-    data_loader = get_instance(module_data, 'data_loader', config)
+    # data_loader = get_instance(module_data, 'data_loader', config)
+    data_loader = config.initialize('data_loader', module_data)
     valid_data_loader = data_loader.split_validation()
 
-    # build model architecture
-    model = get_instance(module_arch, 'arch', config)
-    print(model)
+    # build model architecture, then print to console
+    model = config.initialize('arch', module_arch)
+    logger.info(model)
 
     # get function handles of loss and metrics
     loss = getattr(module_loss, config['loss'])
@@ -28,11 +27,11 @@ def main(config, resume):
 
     # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
     trainable_params = filter(lambda p: p.requires_grad, model.parameters())
-    optimizer = get_instance(torch.optim, 'optimizer', config, trainable_params)
-    lr_scheduler = get_instance(torch.optim.lr_scheduler, 'lr_scheduler', config, optimizer)
+    optimizer = config.initialize('optimizer', torch.optim, trainable_params)
+
+    lr_scheduler = config.initialize('lr_scheduler', torch.optim.lr_scheduler, optimizer)
 
     trainer = Trainer(model, loss, metrics, optimizer,
-                      resume=resume,
                       config=config,
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
@@ -49,21 +48,7 @@ if __name__ == '__main__':
                         help='path to latest checkpoint (default: None)')
     parser.add_argument('-d', '--device', default=None, type=str,
                         help='indices of GPUs to enable (default: all)')
+    
     args = parser.parse_args()
-
-    if args.config:
-        # load config file
-        config = read_json(args.config)
-
-    elif args.resume:
-        # load config from checkpoint if new config file is not given.
-        # Use '--config' and '--resume' together to fine-tune trained model with changed configurations.
-        config = torch.load(args.resume)['config']
-        
-    else:
-        raise AssertionError("Configuration file need to be specified. Add '-c config.json', for example.")
-
-    if args.device:
-        os.environ["CUDA_VISIBLE_DEVICES"] = args.device
-
-    main(config, args.resume)
+    config = ConfigParser(args)
+    main(config)

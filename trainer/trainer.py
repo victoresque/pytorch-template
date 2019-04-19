@@ -11,9 +11,9 @@ class Trainer(BaseTrainer):
     Note:
         Inherited from BaseTrainer.
     """
-    def __init__(self, model, loss, metrics, optimizer, resume, config,
+    def __init__(self, model, loss, metrics, optimizer, config,
                  data_loader, valid_data_loader=None, lr_scheduler=None):
-        super(Trainer, self).__init__(model, loss, metrics, optimizer, resume, config)
+        super(Trainer, self).__init__(model, loss, metrics, optimizer, config)
         self.config = config
         self.data_loader = data_loader
         self.valid_data_loader = valid_data_loader
@@ -62,8 +62,8 @@ class Trainer(BaseTrainer):
             total_loss += loss.item()
             total_metrics += self._eval_metrics(output, target)
 
-            if self.verbosity >= 2 and batch_idx % self.log_step == 0:
-                self.logger.info('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
+            if batch_idx % self.log_step == 0:
+                self.logger.debug('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
                     epoch,
                     batch_idx * self.data_loader.batch_size,
                     self.data_loader.n_samples,

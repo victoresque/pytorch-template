@@ -1,21 +1,16 @@
-import math
 import torch
-import logging
-import datetime
-from pathlib import Path
-from utils import ensure_dir, write_json
-from utils.visualization import WriterTensorboardX
+from abc import abstractmethod
+from numpy import inf
+from logger import WriterTensorboardX
 
-
-logging.basicConfig(level=logging.INFO, format='')
 
 class BaseTrainer:
     """
     Base class for all trainers
     """
-    def __init__(self, model, loss, metrics, optimizer, resume, config):
+    def __init__(self, model, loss, metrics, optimizer, config):
         self.config = config
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = config.get_logger('trainer', config['trainer']['verbosity'])
 
         # setup GPU device if available, move model into configured device
         self.device, device_ids = self._prepare_device(config['n_gpu'])
@@ -30,7 +25,6 @@ class BaseTrainer:
         cfg_trainer = config['trainer']
         self.epochs = cfg_trainer['epochs']
         self.save_period = cfg_trainer['save_period']
-        self.verbosity = cfg_trainer['verbosity']
         self.monitor = cfg_trainer.get('monitor', 'off')
 
         # configuration to monitor model performance and save best
@@ -41,42 +35,26 @@ class BaseTrainer:
             self.mnt_mode, self.mnt_metric = self.monitor.split()
             assert self.mnt_mode in ['min', 'max']
 
-            self.mnt_best = math.inf if self.mnt_mode == 'min' else -math.inf
-            self.early_stop = cfg_trainer.get('early_stop', math.inf)
+            self.mnt_best = inf if self.mnt_mode == 'min' else -inf
+            self.early_stop = cfg_trainer.get('early_stop', inf)
 
         self.start_epoch = 1
 
-        # setup directory for checkpoint saving
-        start_time = datetime.datetime.now().strftime('%m%d_%H%M%S')
-        self.checkpoint_dir = Path(cfg_trainer['save_dir']) / config['name'] / start_time
+        self.checkpoint_dir = config.save_dir
         # setup visualization writer instance
-        writer_dir = Path(cfg_trainer['log_dir']) / config['name'] / start_time
-        self.writer = WriterTensorboardX(writer_dir, self.logger, cfg_trainer['tensorboardX'])
+        self.writer = WriterTensorboardX(config.log_dir, self.logger, cfg_trainer['tensorboardX'])
 
-        # Save configuration file into checkpoint directory:
-        ensure_dir(self.checkpoint_dir)
-        config_save_path = Path(self.checkpoint_dir) / 'config.json'
-        write_json(config, config_save_path)
+        if config.resume is not None:
+            self._resume_checkpoint(config.resume)
 
-        if resume:
-            self._resume_checkpoint(resume)
-
-    def _prepare_device(self, n_gpu_use):
+    @abstractmethod
+    def _train_epoch(self, epoch):
         """
-        setup GPU device if available, move model into configured device
+        Training logic for an epoch
+
+        :param epoch: Current epoch number
         """
-        n_gpu = torch.cuda.device_count()
-        if n_gpu_use > 0 and n_gpu == 0:
-            self.logger.warning("Warning: There\'s no GPU available on this machine,"
-                                "training will be performed on CPU.")
-            n_gpu_use = 0
-        if n_gpu_use > n_gpu:
-            self.logger.warning("Warning: The number of GPU\'s configured to use is {}, but only {} are available "
-                                "on this machine.".format(n_gpu_use, n_gpu))
-            n_gpu_use = n_gpu
-        device = torch.device('cuda:0' if n_gpu_use > 0 else 'cpu')
-        list_ids = list(range(n_gpu_use))
-        return device, list_ids
+        raise NotImplementedError
 
     def train(self):
         """
@@ -96,9 +74,8 @@ class BaseTrainer:
                     log[key] = value
 
             # print logged informations to the screen
-            if self.verbosity >= 1:
-                for key, value in log.items():
-                    self.logger.info('    {:15s}: {}'.format(str(key), value))
+            for key, value in log.items():
+                self.logger.info('    {:15s}: {}'.format(str(key), value))
 
             # evaluate model performance according to configured metric, save best checkpoint as model_best
             best = False
@@ -129,13 +106,22 @@ class BaseTrainer:
             if epoch % self.save_period == 0:
                 self._save_checkpoint(epoch, save_best=best)
 
-    def _train_epoch(self, epoch):
+    def _prepare_device(self, n_gpu_use):
         """
-        Training logic for an epoch
-
-        :param epoch: Current epoch number
+        setup GPU device if available, move model into configured device
         """
-        raise NotImplementedError
+        n_gpu = torch.cuda.device_count()
+        if n_gpu_use > 0 and n_gpu == 0:
+            self.logger.warning("Warning: There\'s no GPU available on this machine,"
+                                "training will be performed on CPU.")
+            n_gpu_use = 0
+        if n_gpu_use > n_gpu:
+            self.logger.warning("Warning: The number of GPU\'s configured to use is {}, but only {} are available "
+                                "on this machine.".format(n_gpu_use, n_gpu))
+            n_gpu_use = n_gpu
+        device = torch.device('cuda:0' if n_gpu_use > 0 else 'cpu')
+        list_ids = list(range(n_gpu_use))
+        return device, list_ids
 
     def _save_checkpoint(self, epoch, save_best=False):
         """
@@ -160,7 +146,7 @@ class BaseTrainer:
         if save_best:
             best_path = str(self.checkpoint_dir / 'model_best.pth')
             torch.save(state, best_path)
-            self.logger.info("Saving current best: {} ...".format('model_best.pth'))
+            self.logger.info("Saving current best: model_best.pth ...")
 
     def _resume_checkpoint(self, resume_path):
         """
@@ -168,6 +154,7 @@ class BaseTrainer:
 
         :param resume_path: Checkpoint path to be resumed
         """
+        resume_path = str(resume_path)
         self.logger.info("Loading checkpoint: {} ...".format(resume_path))
         checkpoint = torch.load(resume_path)
         self.start_epoch = checkpoint['epoch'] + 1
@@ -186,4 +173,4 @@ class BaseTrainer:
         else:
             self.optimizer.load_state_dict(checkpoint['optimizer'])
 
-        self.logger.info("Checkpoint '{}' (epoch {}) loaded".format(resume_path, self.start_epoch))
+        self.logger.info("Checkpoint loaded. Resume training from epoch {}".format(self.start_epoch))
