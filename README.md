@@ -40,7 +40,8 @@ PyTorch deep learning project made easy.
 
 ## Features
 * Clear folder structure which is suitable for many deep learning projects.
-* `.json` config file support for more convenient parameter tuning.
+* `.json` config file support for convenient parameter tuning.
+* Customizable command line options for more convenient parameter tuning.
 * Checkpoint saving and resuming.
 * Abstract base classes for faster development:
   * `BaseTrainer` handles checkpoint saving/resuming, training process logging, and more.
@@ -54,15 +55,15 @@ PyTorch deep learning project made easy.
   ├── train.py - main script to start training
   ├── test.py - evaluation of trained model
   │
-  ├── config.json - config file
-  ├── parse_config.py - class to handle config file 
+  ├── config.json - holds configuration for training
+  ├── parse_config.py - class to handle config file and cli options
   │
   ├── new_project.py - initialize new project with template files
   │
   ├── base/ - abstract base classes
-  │   ├── base_data_loader.py - abstract base class for data loaders
-  │   ├── base_model.py - abstract base class for models
-  │   └── base_trainer.py - abstract base class for trainers
+  │   ├── base_data_loader.py
+  │   ├── base_model.py
+  │   └── base_trainer.py
   │
   ├── data_loader/ - anything about data loading goes here
   │   └── data_loaders.py
@@ -70,20 +71,24 @@ PyTorch deep learning project made easy.
   ├── data/ - default directory for storing input data
   │
   ├── model/ - models, losses, and metrics
-  │   ├── loss.py
+  │   ├── model.py
   │   ├── metric.py
-  │   └── model.py
+  │   └── loss.py
   │
   ├── saved/
   │   ├── models/ - trained models are saved here
-  │   └── log/ - default logdir for tensorboardX
+  │   └── log/ - default logdir for tensorboardX and logging output
   │
   ├── trainer/ - trainers
   │   └── trainer.py
   │
-  └── utils/
+  ├── logger/ - module for tensorboardX visualization and logging
+  │   ├── visualization.py
+  │   ├── logger.py
+  │   └── logger_config.json
+  │  
+  └── utils/ - small utility functions
       ├── util.py
-      ├── visualization.py - class for tensorboardX visualization support
       └── ...
   ```
 
@@ -181,6 +186,29 @@ Specify indices of available GPUs by cuda environmental variable.
 Use the `new_project.py` script to make your new project directory with template files.
 `python3 new_project.py ../NewProject` then a new project folder named 'NewProject' will be made.
 This script will filter out unneccessary files like cache, git files or readme file. 
+
+### Adding custom CLI options
+
+Changing values of config file is a clean, safe and easy way of tuning hyperparameters. However, sometimes
+it is better to have command line options if some values need to be changed too often or quickly.
+
+This template uses the configurations stored in the json file by default, but by registering custom options as follows
+you can change some of them using CLI flags.
+
+```python
+# simple class-like object having 3 attributes, `flags`, `type`, `target`.
+CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
+options = [
+    CustomArgs(['--lr', '--learning_rate'], type=float, target=('optimizer', 'args', 'lr')),
+    CustomArgs(['--bs', '--batch_size'], type=int, target=('data_loader', 'args', 'batch_size'))
+    # options added here can be modified by command line flags.
+]
+```
+`target` here is a sequence of keys which are required to access that option in the config dict.
+In this example, `target` of learning rate option is `('optimizer', 'args', 'lr')` because `config['optimizer']['args']['lr']` points to the learning rate.
+`python3 train.py -c config.json --bs 256` runs training with options given in `config.json` except for the `batch size`
+which is increased to 256 by command line options.
+
 
 ### Data Loader
 * **Writing your own data loader**
