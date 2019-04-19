@@ -23,13 +23,13 @@ def main(config, resume):
 
     # build model architecture
     model = config.initialize('arch', module_arch)
-    logger.info('Using: \n{}'.format(model))
+    logger.info(model)
 
     # get function handles of loss and metrics
     loss_fn = getattr(module_loss, config['loss'])
     metric_fns = [getattr(module_metric, met) for met in config['metrics']]
 
-    logger.info('Loading checkpoint from: {}'.format(resume))
+    logger.info('Loading checkpoint: {} ...'.format(resume))
     checkpoint = torch.load(resume)
     state_dict = checkpoint['state_dict']
     if config['n_gpu'] > 1:
@@ -44,15 +44,15 @@ def main(config, resume):
     total_loss = 0.0
     total_metrics = torch.zeros(len(metric_fns))
 
-    logger.info('Starting...')
     with torch.no_grad():
         for i, (data, target) in enumerate(tqdm(data_loader)):
             data, target = data.to(device), target.to(device)
             output = model(data)
+
             #
             # save sample images, or do something with output here
             #
-            
+
             # computing loss, metrics on test set
             loss = loss_fn(output, target)
             batch_size = data.shape[0]

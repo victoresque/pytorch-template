@@ -12,7 +12,6 @@ def main(config):
     logger = config.get_logger('train')
 
     # setup data_loader instances
-    # data_loader = get_instance(module_data, 'data_loader', config)
     data_loader = config.initialize('data_loader', module_data)
     valid_data_loader = data_loader.split_validation()
 
