@@ -1,7 +1,7 @@
 import torch
 from abc import abstractmethod
 from numpy import inf
-from utils.visualization import WriterTensorboardX
+from logger import WriterTensorboardX
 
 
 class BaseTrainer:

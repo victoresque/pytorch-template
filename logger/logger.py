@@ -1,7 +1,7 @@
 import logging
 import logging.config
 from pathlib import Path
-from .util import read_json
+from utils import read_json
 
 
 def setup_logging(save_dir, log_config='utils/logger_config.json', default_level=logging.INFO):

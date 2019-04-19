@@ -3,7 +3,8 @@ import logging
 from pathlib import Path
 from shutil import copyfile
 from datetime import datetime
-from utils import read_json, setup_logging
+from logger import setup_logging
+from utils import read_json
 
 
 class ConfigParser:
