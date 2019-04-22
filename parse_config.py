@@ -9,7 +9,7 @@ from utils import read_json, write_json
 
 
 class ConfigParser:
-    def __init__(self, args, options=None):
+    def __init__(self, args, options='', timestamp=True):
         # parse default and custom cli options
         for opt in options:
             args.add_argument(*opt.flags, default=None, type=opt.type)
@@ -28,18 +28,18 @@ class ConfigParser:
 
         # load config file and apply custom cli options
         config = read_json(self.cfg_fname)
-        self.config = _update_config(config, options, args)
+        self.__config = _update_config(config, options, args)
 
         # set save_dir where trained model and log will be saved.
         save_dir = Path(self.config['trainer']['save_dir'])
-        timestamp = datetime.now().strftime(r'%m%d_%H%M%S')# if timestamp else ''
+        timestamp = datetime.now().strftime(r'%m%d_%H%M%S') if timestamp else ''
 
         exper_name = self.config['name']
-        self.save_dir = save_dir / 'models' / exper_name / timestamp
-        self.log_dir = save_dir / 'log' / exper_name / timestamp
+        self.__save_dir = save_dir / 'models' / exper_name / timestamp
+        self.__log_dir = save_dir / 'log' / exper_name / timestamp
 
-        self.save_dir.mkdir(parents=True)
-        self.log_dir.mkdir(parents=True)
+        self.save_dir.mkdir(parents=True, exist_ok=True)
+        self.log_dir.mkdir(parents=True, exist_ok=True)
 
         # save updated config file to the checkpoint dir
         write_json(self.config, self.save_dir / 'config.json')
@@ -54,8 +54,8 @@ class ConfigParser:
 
     def initialize(self, name, module, *args):
         """
-        return 'module.name' instance initialized with configuration given in file.
-        equivalent to `module.name(*args, **kwargs_on_cfg)`
+        finds a function handle with the name given as 'type' in config, and returns the 
+        instance initialized with corresponding keyword args given as 'args'.
         """
         module_cfg = self[name]
         return getattr(module, module_cfg['type'])(*args, **module_cfg['args'])
@@ -69,6 +69,19 @@ class ConfigParser:
         logger = logging.getLogger(name)
         logger.setLevel(self.log_levels[verbosity])
         return logger
+
+    # setting read-only attributes
+    @property
+    def config(self):
+        return self.__config
+
+    @property
+    def save_dir(self):
+        return self.__save_dir
+
+    @property
+    def log_dir(self):
+        return self.__log_dir
 
 # helper functions used to update config dict with custom cli options
 def _update_config(config, options, args):
