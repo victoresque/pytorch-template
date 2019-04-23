@@ -15,6 +15,7 @@ PyTorch deep learning project made easy.
 		* [Resuming from checkpoints](#resuming-from-checkpoints)
     * [Using Multiple GPU](#using-multiple-gpu)
 	* [Customization](#customization)
+		* [Custom CLI options](#custom-cli-options)
 		* [Data Loader](#data-loader)
 		* [Trainer](#trainer)
 		* [Model](#model)
@@ -94,7 +95,7 @@ PyTorch deep learning project made easy.
 
 ## Usage
 The code in this repo is an MNIST example of the template.
-Try `python3 train.py -c config.json` to run code.
+Try `python train.py -c config.json` to run code.
 
 ### Config file format
 Config files are in `.json` format:
@@ -184,10 +185,10 @@ Specify indices of available GPUs by cuda environmental variable.
 
 ### Project initialization
 Use the `new_project.py` script to make your new project directory with template files.
-`python3 new_project.py ../NewProject` then a new project folder named 'NewProject' will be made.
+`python new_project.py ../NewProject` then a new project folder named 'NewProject' will be made.
 This script will filter out unneccessary files like cache, git files or readme file. 
 
-### Adding custom CLI options
+### Custom CLI options
 
 Changing values of config file is a clean, safe and easy way of tuning hyperparameters. However, sometimes
 it is better to have command line options if some values need to be changed too often or quickly.
@@ -195,18 +196,18 @@ it is better to have command line options if some values need to be changed too 
 This template uses the configurations stored in the json file by default, but by registering custom options as follows
 you can change some of them using CLI flags.
 
-```python
-# simple class-like object having 3 attributes, `flags`, `type`, `target`.
-CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
-options = [
-    CustomArgs(['--lr', '--learning_rate'], type=float, target=('optimizer', 'args', 'lr')),
-    CustomArgs(['--bs', '--batch_size'], type=int, target=('data_loader', 'args', 'batch_size'))
-    # options added here can be modified by command line flags.
-]
-```
-`target` here is a sequence of keys which are required to access that option in the config dict.
-In this example, `target` of learning rate option is `('optimizer', 'args', 'lr')` because `config['optimizer']['args']['lr']` points to the learning rate.
-`python3 train.py -c config.json --bs 256` runs training with options given in `config.json` except for the `batch size`
+  ```python
+  # simple class-like object having 3 attributes, `flags`, `type`, `target`.
+  CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
+  options = [
+      CustomArgs(['--lr', '--learning_rate'], type=float, target=('optimizer', 'args', 'lr')),
+      CustomArgs(['--bs', '--batch_size'], type=int, target=('data_loader', 'args', 'batch_size'))
+      # options added here can be modified by command line flags.
+  ]
+  ```
+`target` argument should be sequence of keys, which are used to access that option in the config dict. In this example, `target` 
+for the learning rate option is `('optimizer', 'args', 'lr')` because `config['optimizer']['args']['lr']` points to the learning rate.
+`python train.py -c config.json --bs 256` runs training with options given in `config.json` except for the `batch size`
 which is increased to 256 by command line options.
 
 
