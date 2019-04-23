@@ -4,7 +4,7 @@ from pathlib import Path
 from utils import read_json
 
 
-def setup_logging(save_dir, log_config='utils/logger_config.json', default_level=logging.INFO):
+def setup_logging(save_dir, log_config='logger/logger_config.json', default_level=logging.INFO):
     """
     Setup logging configuration
     """
@@ -18,4 +18,5 @@ def setup_logging(save_dir, log_config='utils/logger_config.json', default_level
 
         logging.config.dictConfig(config)
     else:
+        print("Warning: logging configuration file is not found in {}.".format(log_config))
         logging.basicConfig(level=default_level)
