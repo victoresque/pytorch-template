@@ -1,4 +1,5 @@
 import importlib
+from utils import Timer
 
 
 class WriterTensorboardX():
@@ -21,11 +22,16 @@ class WriterTensorboardX():
             'add_text', 'add_histogram', 'add_pr_curve', 'add_embedding'
         ]
         self.tag_mode_exceptions = ['add_histogram', 'add_embedding']
-
+        self.timer = Timer()
 
     def set_step(self, step, mode='train'):
         self.mode = mode
         self.step = step
+        if step == 0:
+            self.timer.reset()
+        else:
+            duration = self.timer.check()
+            self.add_scalar('steps_per_sec', 1 / duration)
 
     def __getattr__(self, name):
         """
@@ -41,7 +47,7 @@ class WriterTensorboardX():
                 if add_data is not None:
                     # add mode(train/valid) tag
                     if name not in self.tag_mode_exceptions:
-                        tag = '{}/{}'.format(self.mode, tag)
+                        tag = '{}/{}'.format(tag, self.mode)
                     add_data(tag, data, self.step, *args, **kwargs)
             return wrapper
         else:
