@@ -290,7 +290,7 @@ You can monitor multiple metrics by providing a list in the configuration file a
   "metrics": {
     "my_metric": {},
     "my_metric2": {
-      "k" = 3
+      "k": 3
     }
   },
   ```
