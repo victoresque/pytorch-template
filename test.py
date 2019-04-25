@@ -26,8 +26,10 @@ def main(config, resume):
     logger.info(model)
 
     # get function handles of loss and metrics
-    loss_fn = getattr(module_loss, config['loss'])
+    loss_fn = getattr(module_loss, config['loss']['type'])
+    loss_args = config['loss']['args']
     metric_fns = [getattr(module_metric, met) for met in config['metrics']]
+    metric_args = [config['metrics'][met] for met in config['metrics']]
 
     logger.info('Loading checkpoint: {} ...'.format(resume))
     checkpoint = torch.load(resume)
@@ -54,11 +56,11 @@ def main(config, resume):
             #
 
             # computing loss, metrics on test set
-            loss = loss_fn(output, target)
+            loss = loss_fn(output, target, **loss_args)
             batch_size = data.shape[0]
             total_loss += loss.item() * batch_size
             for i, metric in enumerate(metric_fns):
-                total_metrics[i] += metric(output, target) * batch_size
+                total_metrics[i] += metric(output, target, **metric_args[i]) * batch_size
 
     n_samples = len(data_loader.sampler)
     log = {'loss': total_loss / n_samples}
