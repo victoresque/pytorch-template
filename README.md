@@ -87,7 +87,7 @@ PyTorch deep learning project made easy.
   │   ├── visualization.py
   │   ├── logger.py
   │   └── logger_config.json
-  │  
+  │
   └── utils/ - small utility functions
       ├── util.py
       └── ...
@@ -103,12 +103,12 @@ Config files are in `.json` format:
 {
   "name": "Mnist_LeNet",        // training session name
   "n_gpu": 1,                   // number of GPUs to use for training.
-  
+
   "arch": {
     "type": "MnistModel",       // name of model architecture to train
     "args": {
 
-    }                
+    }
   },
   "data_loader": {
     "type": "MnistDataLoader",         // selecting data loader
@@ -128,14 +128,20 @@ Config files are in `.json` format:
       "amsgrad": true
     }
   },
-  "loss": "nll_loss",                  // loss
-  "metrics": [
-    "my_metric", "my_metric2"          // list of metrics to evaluate
-  ],                         
+  "loss": {                            // loss function and args
+    "type": "nll_loss",
+    "args": {}
+  },
+  "metrics": {                         // metrics to evaluate and args
+    "my_metric": {},
+    "my_metric2": {
+      "k": 3
+    }
+  },
   "lr_scheduler": {
     "type": "StepLR",                   // learning rate scheduler
     "args":{
-      "step_size": 50,          
+      "step_size": 50,
       "gamma": 0.1
     }
   },
@@ -144,10 +150,10 @@ Config files are in `.json` format:
     "save_dir": "saved/",              // checkpoints are saved in save_dir/models/name
     "save_freq": 1,                    // save checkpoints every save_freq epochs
     "verbosity": 2,                    // 0: quiet, 1: per epoch, 2: full
-  
+
     "monitor": "min val_loss"          // mode and metric for model performance monitoring. set 'off' to disable.
     "early_stop": 10	                 // number of epochs to wait before early stop. set 0 to disable.
-  
+
     "tensorboardX": true,              // enable tensorboardX visualization
   }
 }
@@ -186,7 +192,7 @@ Specify indices of available GPUs by cuda environmental variable.
 ### Project initialization
 Use the `new_project.py` script to make your new project directory with template files.
 `python new_project.py ../NewProject` then a new project folder named 'NewProject' will be made.
-This script will filter out unneccessary files like cache, git files or readme file. 
+This script will filter out unneccessary files like cache, git files or readme file.
 
 ### Custom CLI options
 
@@ -205,7 +211,7 @@ you can change some of them using CLI flags.
       # options added here can be modified by command line flags.
   ]
   ```
-`target` argument should be sequence of keys, which are used to access that option in the config dict. In this example, `target` 
+`target` argument should be sequence of keys, which are used to access that option in the config dict. In this example, `target`
 for the learning rate option is `('optimizer', 'args', 'lr')` because `config['optimizer']['args']['lr']` points to the learning rate.
 `python train.py -c config.json --bs 256` runs training with options given in `config.json` except for the `batch size`
 which is increased to 256 by command line options.
@@ -274,14 +280,19 @@ which is increased to 256 by command line options.
   Please refer to `model/model.py` for a LeNet example.
 
 ### Loss
-Custom loss functions can be implemented in 'model/loss.py'. Use them by changing the name given in "loss" in config file, to corresponding name.
+Custom loss functions can be implemented in 'model/loss.py'. Use them by changing the name given in "loss" in config file, to corresponding name. Any additional arguments can also be specified using kwargs.
 
 #### Metrics
 Metric functions are located in 'model/metric.py'.
 
-You can monitor multiple metrics by providing a list in the configuration file, e.g.:
+You can monitor multiple metrics by providing a list in the configuration file alongside any additional arguments, e.g.:
   ```json
-  "metrics": ["my_metric", "my_metric2"],
+  "metrics": {
+    "my_metric": {},
+    "my_metric2": {
+      "k" = 3
+    }
+  },
   ```
 
 ### Additional logging
@@ -292,7 +303,7 @@ If you have additional information to be logged, in `_train_epoch()` of your tra
   log = {**log, **additional_log}
   return log
   ```
-  
+
 ### Testing
 You can test trained model by running `test.py` passing path to the trained checkpoint by `--resume` argument.
 
@@ -333,17 +344,17 @@ This template supports [TensorboardX](https://github.com/lanpa/tensorboardX) vis
 
     Follow installation guide in [TensorboardX](https://github.com/lanpa/tensorboardX).
 
-2. **Run training** 
+2. **Run training**
 
     Set `tensorboardX` option in config file true.
 
-3. **Open tensorboard server** 
+3. **Open tensorboard server**
 
     Type `tensorboard --logdir saved/log/` at the project root, then server will open at `http://localhost:6006`
 
 By default, values of loss and metrics specified in config file, input images, and histogram of model parameters will be logged.
 If you need more visualizations, use `add_scalar('tag', data)`, `add_image('tag', image)`, etc in the `trainer._train_epoch` method.
-`add_something()` methods in this template are basically wrappers for those of `tensorboardX.SummaryWriter` module. 
+`add_something()` methods in this template are basically wrappers for those of `tensorboardX.SummaryWriter` module.
 
 **Note**: You don't have to specify current steps, since `WriterTensorboardX` class defined at `logger/visualization.py` will track current steps.
 
