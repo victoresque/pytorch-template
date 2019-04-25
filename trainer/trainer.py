@@ -11,9 +11,9 @@ class Trainer(BaseTrainer):
     Note:
         Inherited from BaseTrainer.
     """
-    def __init__(self, model, loss, metrics, optimizer, config,
-                 data_loader, valid_data_loader=None, lr_scheduler=None):
-        super(Trainer, self).__init__(model, loss, metrics, optimizer, config)
+    def __init__(self, model, loss_fn, loss_args, metric_fns, metric_args, optimizer,
+                 config, data_loader, valid_data_loader=None, lr_scheduler=None):
+        super(Trainer, self).__init__(model, loss_fn, loss_args, metric_fns, metric_args, optimizer, config)
         self.config = config
         self.data_loader = data_loader
         self.valid_data_loader = valid_data_loader
@@ -22,9 +22,9 @@ class Trainer(BaseTrainer):
         self.log_step = int(np.sqrt(data_loader.batch_size))
 
     def _eval_metrics(self, output, target):
-        acc_metrics = np.zeros(len(self.metrics))
-        for i, metric in enumerate(self.metrics):
-            acc_metrics[i] += metric(output, target)
+        acc_metrics = np.zeros(len(self.metric_fns))
+        for i, metric in enumerate(self.metric_fns):
+            acc_metrics[i] += metric(output, target, **self.metric_args[i])
             self.writer.add_scalar('{}'.format(metric.__name__), acc_metrics[i])
         return acc_metrics
 
@@ -47,13 +47,13 @@ class Trainer(BaseTrainer):
         self.model.train()
 
         total_loss = 0
-        total_metrics = np.zeros(len(self.metrics))
+        total_metrics = np.zeros(len(self.metric_fns))
         for batch_idx, (data, target) in enumerate(self.data_loader):
             data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
             output = self.model(data)
-            loss = self.loss(output, target)
+            loss = self.loss_fn(output, target, **self.loss_args)
             loss.backward()
             self.optimizer.step()
 
@@ -96,13 +96,13 @@ class Trainer(BaseTrainer):
         """
         self.model.eval()
         total_val_loss = 0
-        total_val_metrics = np.zeros(len(self.metrics))
+        total_val_metrics = np.zeros(len(self.metric_fns))
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(self.valid_data_loader):
                 data, target = data.to(self.device), target.to(self.device)
 
                 output = self.model(data)
-                loss = self.loss(output, target)
+                loss = self.loss_fn(output, target, **self.loss_args)
 
                 self.writer.set_step((epoch - 1) * len(self.valid_data_loader) + batch_idx, 'valid')
                 self.writer.add_scalar('loss', loss.item())
