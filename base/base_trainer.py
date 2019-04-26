@@ -8,7 +8,7 @@ class BaseTrainer:
     """
     Base class for all trainers
     """
-    def __init__(self, model, loss, metrics, optimizer, config):
+    def __init__(self, model, loss_fn, loss_args, metric_fns, metric_args, optimizer, config):
         self.config = config
         self.logger = config.get_logger('trainer', config['trainer']['verbosity'])
 
@@ -18,8 +18,10 @@ class BaseTrainer:
         if len(device_ids) > 1:
             self.model = torch.nn.DataParallel(model, device_ids=device_ids)
 
-        self.loss = loss
-        self.metrics = metrics
+        self.loss_fn = loss_fn
+        self.loss_args = loss_args
+        self.metric_fns = metric_fns
+        self.metric_args = metric_args
         self.optimizer = optimizer
 
         cfg_trainer = config['trainer']
@@ -67,9 +69,9 @@ class BaseTrainer:
             log = {'epoch': epoch}
             for key, value in result.items():
                 if key == 'metrics':
-                    log.update({mtr.__name__: value[i] for i, mtr in enumerate(self.metrics)})
+                    log.update({mtr.__name__: value[i] for i, mtr in enumerate(self.metric_fns)})
                 elif key == 'val_metrics':
-                    log.update({'val_' + mtr.__name__: value[i] for i, mtr in enumerate(self.metrics)})
+                    log.update({'val_' + mtr.__name__: value[i] for i, mtr in enumerate(self.metric_fns)})
                 else:
                     log[key] = value
 

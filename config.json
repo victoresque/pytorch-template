@@ -24,10 +24,16 @@
             "amsgrad": true
         }
     },
-    "loss": "nll_loss",
-    "metrics": [
-        "my_metric", "my_metric2"
-    ],
+    "loss": {
+        "type": "nll_loss",
+        "args": {}
+    },
+    "metrics": {
+        "my_metric": {},
+        "my_metric2": {
+            "k": 3
+        }
+    },
     "lr_scheduler": {
         "type": "StepLR",
         "args": {
@@ -41,10 +47,10 @@
         "save_dir": "saved/",
         "save_period": 1,
         "verbosity": 2,
-        
+
         "monitor": "min val_loss",
         "early_stop": 10,
-        
+
         "tensorboardX": true
     }
 }
