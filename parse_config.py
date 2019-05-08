@@ -76,7 +76,7 @@ class ConfigParser:
     # setting read-only attributes
     @property
     def config(self):
-        return self.__config
+        return self._config
 
     @property
     def save_dir(self):
