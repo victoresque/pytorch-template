@@ -28,12 +28,9 @@
         "type": "nll_loss",
         "args": {}
     },
-    "metrics": {
-        "my_metric": {},
-        "my_metric2": {
-            "k": 3
-        }
-    },
+    "metrics": [
+        "my_metric", "my_metric2"
+    ],
     "lr_scheduler": {
         "type": "StepLR",
         "args": {

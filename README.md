@@ -128,18 +128,15 @@ Config files are in `.json` format:
       "amsgrad": true
     }
   },
-  "loss": {                            // loss function and args
-    "type": "nll_loss",
+  "loss": {
+    "type": "nll_loss",                // loss function
     "args": {}
   },
-  "metrics": {                         // metrics to evaluate and args
-    "my_metric": {},
-    "my_metric2": {
-      "k": 3
-    }
-  },
+  "metrics": [
+    "my_metric", "my_metric2"          // list of metrics to evaluate
+  ],
   "lr_scheduler": {
-    "type": "StepLR",                   // learning rate scheduler
+    "type": "StepLR",                  // learning rate scheduler
     "args":{
       "step_size": 50,
       "gamma": 0.1
@@ -285,14 +282,9 @@ Custom loss functions can be implemented in 'model/loss.py'. Use them by changin
 #### Metrics
 Metric functions are located in 'model/metric.py'.
 
-You can monitor multiple metrics by providing a list in the configuration file alongside any additional arguments, e.g.:
+You can monitor multiple metrics by providing a list in the configuration file, e.g.:
   ```json
-  "metrics": {
-    "my_metric": {},
-    "my_metric2": {
-      "k": 3
-    }
-  },
+  "metrics": ["my_metric", "my_metric2"],
   ```
 
 ### Additional logging

@@ -21,10 +21,8 @@ def main(config):
     logger.info(model)
 
     # get function handles of loss and metrics
-    loss_fn = getattr(module_loss, config['loss']['type'])
-    loss_args = config['loss']['args']
-    metric_fns = [getattr(module_metric, met) for met in config['metrics']]
-    metric_args = [config['metrics'][met] for met in config['metrics']]
+    loss = getattr(module_loss, config['loss'])
+    metrics = [getattr(module_metric, met) for met in config['metrics']]
 
     # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
     trainable_params = filter(lambda p: p.requires_grad, model.parameters())
@@ -32,7 +30,7 @@ def main(config):
 
     lr_scheduler = config.initialize('lr_scheduler', torch.optim.lr_scheduler, optimizer)
 
-    trainer = Trainer(model, loss_fn, loss_args, metric_fns, metric_args, optimizer,
+    trainer = Trainer(model, loss, metrics, optimizer,
                       config=config,
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
