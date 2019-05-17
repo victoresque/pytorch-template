@@ -1,7 +1,7 @@
 import os
 import logging
 from pathlib import Path
-from functools import reduce
+from functools import reduce, partial
 from operator import getitem
 from datetime import datetime
 from logger import setup_logging
@@ -52,13 +52,21 @@ class ConfigParser:
             2: logging.DEBUG
         }
 
-    def initialize(self, name, module, *args):
+    def init_obj(self, name, module, *args):
         """
-        finds a function handle with the name given as 'type' in config, and returns the 
-        instance initialized with corresponding keyword args given as 'args'.
+        retrieve a module initializer with the 'type' specified in config, and returns the 
+        object initialized with corresponding arguments given as 'args'.
         """
         module_cfg = self[name]
         return getattr(module, module_cfg['type'])(*args, **module_cfg['args'])
+
+    def init_fnc(self, name, module, *args):
+        """
+        retrieve a module initializer with the 'type' specified in config, and returns the 
+        function with corresponding arguments given as 'args' fixed.
+        """
+        module_cfg = self[name]
+        return partial(getattr(module, module_cfg['type']), *args, **module_cfg['args'])
 
     def __getitem__(self, name):
         return self.config[name]
