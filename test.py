@@ -8,7 +8,7 @@ import model.model as module_arch
 from parse_config import ConfigParser
 
 
-def main(config, resume):
+def main(config):
     logger = config.get_logger('test')
 
     # setup data_loader instances
@@ -29,8 +29,8 @@ def main(config, resume):
     loss_fn = getattr(module_loss, config['loss'])
     metric_fns = [getattr(module_metric, met) for met in config['metrics']]
 
-    logger.info('Loading checkpoint: {} ...'.format(resume))
-    checkpoint = torch.load(resume)
+    logger.info('Loading checkpoint: {} ...'.format(config.resume))
+    checkpoint = torch.load(config.resume)
     state_dict = checkpoint['state_dict']
     if config['n_gpu'] > 1:
         model = torch.nn.DataParallel(model)
@@ -69,13 +69,12 @@ def main(config, resume):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='PyTorch Template')
+    args = argparse.ArgumentParser(description='PyTorch Template')
 
-    parser.add_argument('-r', '--resume', default=None, type=str,
-                        help='path to latest checkpoint (default: None)')
-    parser.add_argument('-d', '--device', default=None, type=str,
-                        help='indices of GPUs to enable (default: all)')
+    args.add_argument('-r', '--resume', default=None, type=str,
+                      help='path to latest checkpoint (default: None)')
+    args.add_argument('-d', '--device', default=None, type=str,
+                      help='indices of GPUs to enable (default: all)')
 
-    args = parser.parse_args()
     config = ConfigParser(args)
-    main(config, args.resume)
+    main(config)
