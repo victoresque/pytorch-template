@@ -24,7 +24,7 @@ class BaseDataLoader(DataLoader):
             'collate_fn': collate_fn,
             'num_workers': num_workers
         }
-        super(BaseDataLoader, self).__init__(sampler=self.sampler, **self.init_kwargs)
+        super().__init__(sampler=self.sampler, **self.init_kwargs)
 
     def _split_sampler(self, split):
         if split == 0.0:

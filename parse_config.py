@@ -28,15 +28,15 @@ class ConfigParser:
 
         # load config file and apply custom cli options
         config = read_json(self.cfg_fname)
-        self.__config = _update_config(config, options, args)
+        self._config = _update_config(config, options, args)
 
         # set save_dir where trained model and log will be saved.
         save_dir = Path(self.config['trainer']['save_dir'])
         timestamp = datetime.now().strftime(r'%m%d_%H%M%S') if timestamp else ''
 
         exper_name = self.config['name']
-        self.__save_dir = save_dir / 'models' / exper_name / timestamp
-        self.__log_dir = save_dir / 'log' / exper_name / timestamp
+        self._save_dir = save_dir / 'models' / exper_name / timestamp
+        self._log_dir = save_dir / 'log' / exper_name / timestamp
 
         self.save_dir.mkdir(parents=True, exist_ok=True)
         self.log_dir.mkdir(parents=True, exist_ok=True)
@@ -52,13 +52,16 @@ class ConfigParser:
             2: logging.DEBUG
         }
 
-    def initialize(self, name, module, *args):
+    def initialize(self, name, module, *args, **kwargs):
         """
         finds a function handle with the name given as 'type' in config, and returns the 
         instance initialized with corresponding keyword args given as 'args'.
         """
-        module_cfg = self[name]
-        return getattr(module, module_cfg['type'])(*args, **module_cfg['args'])
+        module_name = self[name]['type']
+        module_args = dict(self[name]['args'])
+        assert all([k not in module_args for k in kwargs]), 'Overwriting kwargs given in config file is not allowed'
+        module_args.update(kwargs)
+        return getattr(module, module_name)(*args, **module_args)
 
     def __getitem__(self, name):
         return self.config[name]
@@ -73,15 +76,15 @@ class ConfigParser:
     # setting read-only attributes
     @property
     def config(self):
-        return self.__config
+        return self._config
 
     @property
     def save_dir(self):
-        return self.__save_dir
+        return self._save_dir
 
     @property
     def log_dir(self):
-        return self.__log_dir
+        return self._log_dir
 
 # helper functions used to update config dict with custom cli options
 def _update_config(config, options, args):
