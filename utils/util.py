@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from datetime import datetime
+from itertools import repeat
 from collections import OrderedDict
 
 
@@ -17,6 +18,14 @@ def write_json(content, fname):
     with fname.open('wt') as handle:
         json.dump(content, handle, indent=4, sort_keys=False)
 
+def inf_loop(data_loader):
+    '''
+    wrapper function to make pytorch data loader loops endlessly.
+    '''
+    for loader in repeat(data_loader):
+        for data, target in loader:
+            yield data, target
+
 class Timer:
     def __init__(self):
         self.cache = datetime.now()
@@ -29,3 +38,4 @@ class Timer:
 
     def reset(self):
         self.cache = datetime.now()
+
