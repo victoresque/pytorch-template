@@ -19,12 +19,9 @@ def write_json(content, fname):
         json.dump(content, handle, indent=4, sort_keys=False)
 
 def inf_loop(data_loader):
-    '''
-    wrapper function to make pytorch data loader loops endlessly.
-    '''
+    ''' wrapper function for endless data loader. '''
     for loader in repeat(data_loader):
-        for data, target in loader:
-            yield data, target
+        yield from loader
 
 class Timer:
     def __init__(self):
@@ -38,4 +35,3 @@ class Timer:
 
     def reset(self):
         self.cache = datetime.now()
-
