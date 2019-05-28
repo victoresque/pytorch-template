@@ -33,7 +33,7 @@ PyTorch deep learning project made easy.
 <!-- /code_chunk_output -->
 
 ## Requirements
-* Python >= 3.5
+* Python >= 3.5 (3.6 recommended)
 * PyTorch >= 0.4
 * tqdm (Optional for `test.py`)
 * tensorboard >= 1.7.0 (Optional for TensorboardX)
@@ -256,6 +256,10 @@ which is increased to 256 by command line options.
 
   Please refer to `trainer/trainer.py` for MNIST training.
 
+* **Iteration-based training**
+
+  `Trainer.__init__` takes an optional argument, `len_epoch` which controls number of batches(steps) in each epoch.
+
 ### Model
 * **Writing your own model**
 
@@ -289,7 +293,7 @@ If you have additional information to be logged, in `_train_epoch()` of your tra
 
   ```python
   additional_log = {"gradient_norm": g, "sensitivity": s}
-  log = {**log, **additional_log}
+  log = log.update(additional_log)
   return log
   ```
   
@@ -353,17 +357,17 @@ Feel free to contribute any kind of function or enhancement, here the coding sty
 Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before committing.
 
 ## TODOs
-- [ ] Iteration-based training (instead of epoch-based)
+
+- [ ] Using fixed random seed
+- [ ] Check pytorch 1.1
 - [ ] Multiple optimizers
-- [ ] Configurable logging layout, checkpoint naming
-- [ ] `visdom` logger support
+- [ ] Support pytorch native tensorboard
+- [ ] Support more tensorboard functions
 - [x] `tensorboardX` logger support
+- [x] Configurable logging layout, checkpoint naming
+- [x] Iteration-based training (instead of epoch-based)
 - [x] Adding command line option for fine-tuning
 - [x] Multi-GPU support
-- [x] Update the example to PyTorch 0.4
-- [x] Learning rate scheduler
-- [x] Deprecate `BaseDataLoader`, use `torch.utils.data` instesad
-- [x] Load settings from `config` files
 
 ## License
 This project is licensed under the MIT License. See  LICENSE for more details

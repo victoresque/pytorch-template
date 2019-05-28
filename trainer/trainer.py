@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from torchvision.utils import make_grid
 from base import BaseTrainer
+from utils import inf_loop
 
 
 class Trainer(BaseTrainer):
@@ -11,11 +12,18 @@ class Trainer(BaseTrainer):
     Note:
         Inherited from BaseTrainer.
     """
-    def __init__(self, model, loss, metrics, optimizer, config,
-                 data_loader, valid_data_loader=None, lr_scheduler=None):
+    def __init__(self, model, loss, metrics, optimizer, config, data_loader,
+                 valid_data_loader=None, lr_scheduler=None, len_epoch=None):
         super().__init__(model, loss, metrics, optimizer, config)
         self.config = config
         self.data_loader = data_loader
+        if len_epoch is None:
+            # epoch-based training
+            self.len_epoch = len(self.data_loader)
+        else:
+            # iteration-based training
+            self.data_loader = inf_loop(data_loader)
+            self.len_epoch = len_epoch
         self.valid_data_loader = valid_data_loader
         self.do_validation = self.valid_data_loader is not None
         self.lr_scheduler = lr_scheduler
@@ -57,28 +65,29 @@ class Trainer(BaseTrainer):
             loss.backward()
             self.optimizer.step()
 
-            self.writer.set_step((epoch - 1) * len(self.data_loader) + batch_idx)
+            self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
             self.writer.add_scalar('loss', loss.item())
             total_loss += loss.item()
             total_metrics += self._eval_metrics(output, target)
 
             if batch_idx % self.log_step == 0:
-                self.logger.debug('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
+                self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
                     epoch,
-                    batch_idx * self.data_loader.batch_size,
-                    self.data_loader.n_samples,
-                    100.0 * batch_idx / len(self.data_loader),
+                    self._progress(batch_idx),
                     loss.item()))
                 self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
+            if batch_idx == self.len_epoch:
+                break
+
         log = {
-            'loss': total_loss / len(self.data_loader),
-            'metrics': (total_metrics / len(self.data_loader)).tolist()
+            'loss': total_loss / self.len_epoch,
+            'metrics': (total_metrics / self.len_epoch).tolist()
         }
 
         if self.do_validation:
             val_log = self._valid_epoch(epoch)
-            log = {**log, **val_log}
+            log.update(val_log)
 
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()
@@ -118,3 +127,13 @@ class Trainer(BaseTrainer):
             'val_loss': total_val_loss / len(self.valid_data_loader),
             'val_metrics': (total_val_metrics / len(self.valid_data_loader)).tolist()
         }
+
+    def _progress(self, batch_idx):
+        base = '[{}/{} ({:.0f}%)]'
+        if hasattr(self.data_loader, 'n_samples'):
+            current = batch_idx * self.data_loader.batch_size
+            total = self.data_loader.n_samples
+        else:
+            current = batch_idx
+            total = self.len_epoch
+        return base.format(current, total, 100.0 * current / total)
