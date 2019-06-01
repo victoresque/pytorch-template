@@ -24,7 +24,7 @@ PyTorch deep learning project made easy.
 		* [Additional logging](#additional-logging)
 		* [Validation data](#validation-data)
 		* [Checkpoints](#checkpoints)
-    * [TensorboardX Visualization](#tensorboardx-visualization)
+    * [Tensorboard Visualization](#tensorboard-visualization)
 	* [Contributing](#contributing)
 	* [TODOs](#todos)
 	* [License](#license)
@@ -36,8 +36,8 @@ PyTorch deep learning project made easy.
 * Python >= 3.5 (3.6 recommended)
 * PyTorch >= 0.4
 * tqdm (Optional for `test.py`)
-* tensorboard >= 1.7.0 (Optional for TensorboardX)
-* tensorboardX >= 1.2 (Optional for TensorboardX)
+* tensorboard >= 1.7.0 (Optional for TensorboardX) or tensorboard >= 1.14 (Optional for pytorch.utils.tensorboard)
+* tensorboardX >= 1.2 (Optional for TensorboardX), see [Tensorboard Visualization][#tensorboardx-visualization]
 
 ## Features
 * Clear folder structure which is suitable for many deep learning projects.
@@ -329,8 +329,11 @@ A copy of config file will be saved in the same folder.
   }
   ```
 
-### TensorboardX Visualization
-This template supports [TensorboardX](https://github.com/lanpa/tensorboardX) visualization.
+### Tensorboard Visualization
+This template supports Tensorboard visualization using either Pytorch 1.1's `torch.utils.tensorboard` capabilities or [TensorboardX](https://github.com/lanpa/tensorboardX).
+
+The template attempts to choose a writing module from a list of modules specified in the config file under "tensorboard.modules". It load the modules in the order specified, only moving on to the next one if the previous one failed.
+
 * **TensorboardX Usage**
 
 1. **Install**
@@ -339,17 +342,44 @@ This template supports [TensorboardX](https://github.com/lanpa/tensorboardX) vis
 
 2. **Run training** 
 
-    Set `tensorboardX` option in config file true.
+    Set `tensorboard` option in config file to:
+    Set the "tensorboard" entry in the config to:
+    ```
+     "tensorboard" :{
+        "enabled": true,
+        "modules": ["tensorboardX", "torch.utils.tensorboard"]
+    }
+    ```
 
-3. **Open tensorboard server** 
+3. **Open Tensorboard server** 
 
     Type `tensorboard --logdir saved/log/` at the project root, then server will open at `http://localhost:6006`
 
+* **Pytorch 1.1 torch.utils.tensorboard Usage**
+
+1. **Install**
+
+    Must have Pytorch 1.1 installed and `tensorboard >= 1.14` (`pip install tb-nightly`).
+
+2. **Run training** 
+
+    Set the "tensorboard" entry in the config to:
+    ```
+     "tensorboard" :{
+        "enabled": true,
+        "modules": ["torch.utils.tensorboard", "tensorboardX"]
+    }
+    ```
+
+3. **Open Tensorboard server** 
+
+    Same as above.
+
 By default, values of loss and metrics specified in config file, input images, and histogram of model parameters will be logged.
 If you need more visualizations, use `add_scalar('tag', data)`, `add_image('tag', image)`, etc in the `trainer._train_epoch` method.
-`add_something()` methods in this template are basically wrappers for those of `tensorboardX.SummaryWriter` module. 
+`add_something()` methods in this template are basically wrappers for those of `tensorboardX.SummaryWriter` and `torch.utils.tensorboard.SummaryWriter` modules. 
 
-**Note**: You don't have to specify current steps, since `WriterTensorboardX` class defined at `logger/visualization.py` will track current steps.
+**Note**: You don't have to specify current steps, since `WriterTensorboard` class defined at `logger/visualization.py` will track current steps.
 
 ## Contributing
 Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8

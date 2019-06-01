@@ -1,7 +1,7 @@
 import torch
 from abc import abstractmethod
 from numpy import inf
-from logger import WriterTensorboardX
+from logger import TensorboardWriter
 
 
 class BaseTrainer:
@@ -41,8 +41,9 @@ class BaseTrainer:
         self.start_epoch = 1
 
         self.checkpoint_dir = config.save_dir
-        # setup visualization writer instance
-        self.writer = WriterTensorboardX(config.log_dir, self.logger, cfg_trainer['tensorboardX'])
+
+        # setup visualization writer instance                
+        self.writer = TensorboardWriter(config.log_dir, self.logger, config['tensorboard'])
 
         if config.resume is not None:
             self._resume_checkpoint(config.resume)
