@@ -3,47 +3,39 @@ from utils import Timer
 
 
 class TensorboardWriter():
-    def __init__(self, log_dir, logger, config):
+    def __init__(self, log_dir, logger, enabled):
         self.writer = None
-
-        self.viz_methods = ["pytorch_tensorboard", "tensorboardX"]
         self.selected_module = ""
 
-        if config["enabled"]:
+        if enabled:
             log_dir = str(log_dir)
 
-            # Try to find a vizualization writer.
+            # Retrieve vizualization writer.
             succeeded = False
-            for module in config["modules"]:
+            for module in ["torch.utils.tensorboard", "tensorboardX"]:
                 try:
                     self.writer = importlib.import_module(module).SummaryWriter(log_dir)
                     succeeded = True
-                    self.selected_module = module
-                    logger.info("Selected Tensorboard writer {}".format(module))
                     break
                 except ImportError:
-                    logger.warning("{} failed to load.".format(module))
                     succeeded = False
+                self.selected_module = module
 
-            if (not succeeded):
+            if not succeeded:
                 message = "Warning: visualization (Tensorboard) is configured to use, but currently not installed on " \
-                    "this machine. Please install either TensorboardX with 'pip install tensorboardx', " \
-                    "install PyTorch 1.1 for using 'torch.utils.tensorboard' or turn off the option in " \
+                    "this machine. Please install either TensorboardX with 'pip install tensorboardx', upgrade " \
+                    "PyTorch to version >= 1.1 for using 'torch.utils.tensorboard' or turn off the option in " \
                     "the 'config.json' file."
                 logger.warning(message)
 
         self.step = 0
         self.mode = ''
 
-        self.tb_writer_ftns = [
+        self.tb_writer_ftns = {
             'add_scalar', 'add_scalars', 'add_image', 'add_images', 'add_audio',
             'add_text', 'add_histogram', 'add_pr_curve', 'add_embedding'
-        ]
-        self.tag_mode_exceptions = ['add_histogram', 'add_embedding']
-        
-        if(self.selected_module == "pytorch.utils.tensorboard"):
-            self.tb_writer_ftns = self.tb_writer_ftns + self.tag_mode_exceptions
-            self.tag_mode_exceptions = []
+        }
+        self.tag_mode_exceptions = {'add_histogram', 'add_embedding'}
             
         self.timer = Timer()
 
