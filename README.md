@@ -130,7 +130,7 @@ Config files are in `.json` format:
   },
   "loss": "nll_loss",                  // loss
   "metrics": [
-    "my_metric", "my_metric2"          // list of metrics to evaluate
+    "accuracy", "top_k_acc"          // list of metrics to evaluate
   ],                         
   "lr_scheduler": {
     "type": "StepLR",                   // learning rate scheduler
@@ -285,7 +285,7 @@ Metric functions are located in 'model/metric.py'.
 
 You can monitor multiple metrics by providing a list in the configuration file, e.g.:
   ```json
-  "metrics": ["my_metric", "my_metric2"],
+  "metrics": ["accuracy", "top_k_acc"],
   ```
 
 ### Additional logging
