@@ -2,26 +2,41 @@ import importlib
 from utils import Timer
 
 
-class WriterTensorboardX():
-    def __init__(self, log_dir, logger, enable):
+class TensorboardWriter():
+    def __init__(self, log_dir, logger, enabled):
         self.writer = None
-        if enable:
+        self.selected_module = ""
+
+        if enabled:
             log_dir = str(log_dir)
-            try:
-                self.writer = importlib.import_module('tensorboardX').SummaryWriter(log_dir)
-            except ImportError:
-                message = "Warning: TensorboardX visualization is configured to use, but currently not installed on " \
-                    "this machine. Please install the package by 'pip install tensorboardx' command or turn " \
-                    "off the option in the 'config.json' file."
+
+            # Retrieve vizualization writer.
+            succeeded = False
+            for module in ["torch.utils.tensorboard", "tensorboardX"]:
+                try:
+                    self.writer = importlib.import_module(module).SummaryWriter(log_dir)
+                    succeeded = True
+                    break
+                except ImportError:
+                    succeeded = False
+                self.selected_module = module
+
+            if not succeeded:
+                message = "Warning: visualization (Tensorboard) is configured to use, but currently not installed on " \
+                    "this machine. Please install either TensorboardX with 'pip install tensorboardx', upgrade " \
+                    "PyTorch to version >= 1.1 for using 'torch.utils.tensorboard' or turn off the option in " \
+                    "the 'config.json' file."
                 logger.warning(message)
+
         self.step = 0
         self.mode = ''
 
-        self.tb_writer_ftns = [
+        self.tb_writer_ftns = {
             'add_scalar', 'add_scalars', 'add_image', 'add_images', 'add_audio',
             'add_text', 'add_histogram', 'add_pr_curve', 'add_embedding'
-        ]
-        self.tag_mode_exceptions = ['add_histogram', 'add_embedding']
+        }
+        self.tag_mode_exceptions = {'add_histogram', 'add_embedding'}
+            
         self.timer = Timer()
 
     def set_step(self, step, mode='train'):
@@ -55,5 +70,5 @@ class WriterTensorboardX():
             try:
                 attr = object.__getattr__(name)
             except AttributeError:
-                raise AttributeError("type object 'WriterTensorboardX' has no attribute '{}'".format(name))
+                raise AttributeError("type object '{}' has no attribute '{}'".format(self.selected_module, name))
             return attr
