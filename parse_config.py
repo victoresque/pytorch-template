@@ -17,17 +17,20 @@ class ConfigParser:
 
         if args.device:
             os.environ["CUDA_VISIBLE_DEVICES"] = args.device
-        if args.resume:
-            self.resume = Path(args.resume)
-            self.cfg_fname = self.resume.parent / 'config.json'
-        else:
+        if args.resume is None:
             msg_no_cfg = "Configuration file need to be specified. Add '-c config.json', for example."
             assert args.config is not None, msg_no_cfg
-            self.resume = None
             self.cfg_fname = Path(args.config)
+            config = read_json(self.cfg_fname)
+            self.resume = None
+        else:        
+            self.resume = Path(args.resume)
+            resume_cfg_fname = self.resume.parent / 'config.json'
+            config = read_json(resume_cfg_fname)
+            if args.config is not None:
+                config.update(read_json(Path(args.config)))
 
         # load config file and apply custom cli options
-        config = read_json(self.cfg_fname)
         self._config = _update_config(config, options, args)
 
         # set save_dir where trained model and log will be saved.
