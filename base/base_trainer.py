@@ -67,13 +67,7 @@ class BaseTrainer:
 
             # save logged informations into log dict
             log = {'epoch': epoch}
-            for key, value in result.items():
-                if key == 'metrics':
-                    log.update({mtr.__name__: value[i] for i, mtr in enumerate(self.metrics)})
-                elif key == 'val_metrics':
-                    log.update({'val_' + mtr.__name__: value[i] for i, mtr in enumerate(self.metrics)})
-                else:
-                    log[key] = value
+            log.update(result)
 
             # print logged informations to the screen
             for key, value in log.items():
