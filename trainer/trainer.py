@@ -8,13 +8,10 @@ from utils import inf_loop
 class Trainer(BaseTrainer):
     """
     Trainer class
-
-    Note:
-        Inherited from BaseTrainer.
     """
-    def __init__(self, model, loss, metrics, optimizer, config, data_loader,
+    def __init__(self, model, criterion, metric_ftns, optimizer, config, data_loader,
                  valid_data_loader=None, lr_scheduler=None, len_epoch=None):
-        super().__init__(model, loss, metrics, optimizer, config)
+        super().__init__(model, criterion, metric_ftns, optimizer, config)
         self.config = config
         self.data_loader = data_loader
         if len_epoch is None:
@@ -61,7 +58,7 @@ class Trainer(BaseTrainer):
 
             self.optimizer.zero_grad()
             output = self.model(data)
-            loss = self.loss(output, target)
+            loss = self.criterion(output, target)
             loss.backward()
             self.optimizer.step()
 
