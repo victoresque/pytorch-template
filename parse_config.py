@@ -16,7 +16,7 @@ class ConfigParser:
         :param config: Dict containing configurations, hyperparameters for training. contents of `config.json` file for example.
         :param resume: String, path to the checkpoint being loaded.
         :param modification: Dict keychain:value, specifying position values to be replaced from config dict.
-        :param run_id: Identifier for this run for saving checkpoints and training log.
+        :param run_id: Unique Identifier for training processes. Used to save checkpoints and training log. Timestamp is being used as default
         """
         # load config file and apply modification
         self._config = _update_config(config, modification)
@@ -24,15 +24,17 @@ class ConfigParser:
 
         # set save_dir where trained model and log will be saved.
         save_dir = Path(self.config['trainer']['save_dir'])
-        if run_id is None: # use timestamp as id if 
-            run_id = datetime.now().strftime(r'%m%d_%H%M%S')
 
         exper_name = self.config['name']
+        if run_id is None: # use timestamp as default run-id
+            run_id = datetime.now().strftime(r'%m%d_%H%M%S')
         self._save_dir = save_dir / 'models' / exper_name / run_id
         self._log_dir = save_dir / 'log' / exper_name / run_id
 
-        self.save_dir.mkdir(parents=True, exist_ok=True)
-        self.log_dir.mkdir(parents=True, exist_ok=True)
+        # make directory for saving checkpoints and log.
+        exist_ok = run_id == ''
+        self.save_dir.mkdir(parents=True, exist_ok=exist_ok)
+        self.log_dir.mkdir(parents=True, exist_ok=exist_ok)
 
         # save updated config file to the checkpoint dir
         write_json(self.config, self.save_dir / 'config.json')
@@ -129,7 +131,7 @@ class ConfigParser:
     def log_dir(self):
         return self._log_dir
 
-# helper functions used to update config dict with custom cli options
+# helper functions to update config dict with custom cli options
 def _update_config(config, modification):
     if modification is None:
         return config
