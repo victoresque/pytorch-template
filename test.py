@@ -22,7 +22,7 @@ def main(config):
     )
 
     # build model architecture
-    model = config.initialize('arch', module_arch)
+    model = config.init_obj('arch', module_arch)
     logger.info(model)
 
     # get function handles of loss and metrics
@@ -70,11 +70,12 @@ def main(config):
 
 if __name__ == '__main__':
     args = argparse.ArgumentParser(description='PyTorch Template')
-
+    args.add_argument('-c', '--config', default=None, type=str,
+                      help='config file path (default: None)')
     args.add_argument('-r', '--resume', default=None, type=str,
                       help='path to latest checkpoint (default: None)')
     args.add_argument('-d', '--device', default=None, type=str,
                       help='indices of GPUs to enable (default: all)')
 
-    config = ConfigParser(args)
+    config = ConfigParser.from_args(args)
     main(config)

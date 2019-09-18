@@ -1,5 +1,5 @@
 import importlib
-from utils import Timer
+from datetime import datetime
 
 
 class TensorboardWriter():
@@ -36,17 +36,17 @@ class TensorboardWriter():
             'add_text', 'add_histogram', 'add_pr_curve', 'add_embedding'
         }
         self.tag_mode_exceptions = {'add_histogram', 'add_embedding'}
-            
-        self.timer = Timer()
+        self.timer = datetime.now()
 
     def set_step(self, step, mode='train'):
         self.mode = mode
         self.step = step
         if step == 0:
-            self.timer.reset()
+            self.timer = datetime.now()
         else:
-            duration = self.timer.check()
-            self.add_scalar('steps_per_sec', 1 / duration)
+            duration = datetime.now() - self.timer
+            self.add_scalar('steps_per_sec', 1 / duration.total_seconds())
+            self.timer = datetime.now()
 
     def __getattr__(self, name):
         """
