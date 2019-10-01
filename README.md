@@ -34,10 +34,9 @@ PyTorch deep learning project made easy.
 
 ## Requirements
 * Python >= 3.5 (3.6 recommended)
-* PyTorch >= 0.4
+* PyTorch >= 0.4 (1.2 recommended)
 * tqdm (Optional for `test.py`)
-* tensorboard >= 1.7.0 (Optional for TensorboardX) or tensorboard >= 1.14 (Optional for pytorch.utils.tensorboard)
-* tensorboardX >= 1.2 (Optional for TensorboardX), see [Tensorboard Visualization][#tensorboardx-visualization]
+* tensorboard >= 1.14 (see [Tensorboard Visualization][#tensorboardx-visualization])
 
 ## Features
 * Clear folder structure which is suitable for many deep learning projects.
@@ -78,12 +77,12 @@ PyTorch deep learning project made easy.
   │
   ├── saved/
   │   ├── models/ - trained models are saved here
-  │   └── log/ - default logdir for tensorboardX and logging output
+  │   └── log/ - default logdir for tensorboard and logging output
   │
   ├── trainer/ - trainers
   │   └── trainer.py
   │
-  ├── logger/ - module for tensorboardX visualization and logging
+  ├── logger/ - module for tensorboard visualization and logging
   │   ├── visualization.py
   │   ├── logger.py
   │   └── logger_config.json
@@ -130,10 +129,10 @@ Config files are in `.json` format:
   },
   "loss": "nll_loss",                  // loss
   "metrics": [
-    "accuracy", "top_k_acc"          // list of metrics to evaluate
+    "accuracy", "top_k_acc"            // list of metrics to evaluate
   ],                         
   "lr_scheduler": {
-    "type": "StepLR",                   // learning rate scheduler
+    "type": "StepLR",                  // learning rate scheduler
     "args":{
       "step_size": 50,          
       "gamma": 0.1
@@ -148,7 +147,7 @@ Config files are in `.json` format:
     "monitor": "min val_loss"          // mode and metric for model performance monitoring. set 'off' to disable.
     "early_stop": 10	                 // number of epochs to wait before early stop. set 0 to disable.
   
-    "tensorboardX": true,              // enable tensorboardX visualization
+    "tensorboard": true,               // enable tensorboard visualization
   }
 }
 ```
@@ -296,7 +295,7 @@ If you have additional information to be logged, in `_train_epoch()` of your tra
   log = log.update(additional_log)
   return log
   ```
-  
+
 ### Testing
 You can test trained model by running `test.py` passing path to the trained checkpoint by `--resume` argument.
 
@@ -330,50 +329,25 @@ A copy of config file will be saved in the same folder.
   ```
 
 ### Tensorboard Visualization
-This template supports Tensorboard visualization using either Pytorch 1.1's `torch.utils.tensorboard` capabilities or [TensorboardX](https://github.com/lanpa/tensorboardX).
-
-The template attempts to choose a writing module from a list of modules specified in the config file under "tensorboard.modules". It load the modules in the order specified, only moving on to the next one if the previous one failed.
-
-* **TensorboardX Usage**
+This template supports Tensorboard visualization by using either  `torch.utils.tensorboard` or [TensorboardX](https://github.com/lanpa/tensorboardX).
 
 1. **Install**
 
-    Follow installation guide in [TensorboardX](https://github.com/lanpa/tensorboardX).
+    If you are using pytorch 1.1 or higher, install tensorboard by 'pip install tensorboard>=1.14.0'.
+
+    Otherwise, you should install tensorboardx. Follow installation guide in [TensorboardX](https://github.com/lanpa/tensorboardX).
 
 2. **Run training** 
 
-    Set `tensorboard` option in config file to:
-    Set the "tensorboard" entry in the config to:
+    Make sure that `tensorboard` option in the config file is turned on.
+
     ```
-     "tensorboard" :{
-        "enabled": true,
-        "modules": ["tensorboardX", "torch.utils.tensorboard"]
-    }
+     "tensorboard" : true
     ```
 
 3. **Open Tensorboard server** 
 
     Type `tensorboard --logdir saved/log/` at the project root, then server will open at `http://localhost:6006`
-
-* **Pytorch 1.1 torch.utils.tensorboard Usage**
-
-1. **Install**
-
-    Must have Pytorch 1.1 installed and `tensorboard >= 1.14` (`pip install tb-nightly`).
-
-2. **Run training** 
-
-    Set the "tensorboard" entry in the config to:
-    ```
-     "tensorboard" :{
-        "enabled": true,
-        "modules": ["torch.utils.tensorboard", "tensorboardX"]
-    }
-    ```
-
-3. **Open Tensorboard server** 
-
-    Same as above.
 
 By default, values of loss and metrics specified in config file, input images, and histogram of model parameters will be logged.
 If you need more visualizations, use `add_scalar('tag', data)`, `add_image('tag', image)`, etc in the `trainer._train_epoch` method.
@@ -388,19 +362,17 @@ Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before c
 
 ## TODOs
 
-- [ ] Using fixed random seed
-- [ ] Check pytorch 1.1
 - [ ] Multiple optimizers
-- [ ] Support pytorch native tensorboard
 - [ ] Support more tensorboard functions
+- [x] Using fixed random seed
+- [x] Support pytorch native tensorboard
 - [x] `tensorboardX` logger support
 - [x] Configurable logging layout, checkpoint naming
 - [x] Iteration-based training (instead of epoch-based)
 - [x] Adding command line option for fine-tuning
-- [x] Multi-GPU support
 
 ## License
 This project is licensed under the MIT License. See  LICENSE for more details
 
-## Acknowledgments
+## Acknowledgements
 This project is inspired by the project [Tensorflow-Project-Template](https://github.com/MrGemy95/Tensorflow-Project-Template) by [Mahmoud Gemy](https://github.com/MrGemy95)
