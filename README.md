@@ -25,10 +25,10 @@ PyTorch deep learning project made easy.
 		* [Validation data](#validation-data)
 		* [Checkpoints](#checkpoints)
     * [Tensorboard Visualization](#tensorboard-visualization)
-	* [Contributing](#contributing)
+	* [Contribution](#contribution)
 	* [TODOs](#todos)
 	* [License](#license)
-	* [Acknowledgments](#acknowledgments)
+	* [Acknowledgements](#acknowledgments)
 
 <!-- /code_chunk_output -->
 
@@ -355,7 +355,7 @@ If you need more visualizations, use `add_scalar('tag', data)`, `add_image('tag'
 
 **Note**: You don't have to specify current steps, since `WriterTensorboard` class defined at `logger/visualization.py` will track current steps.
 
-## Contributing
+## Contribution
 Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8
 
 Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before committing.
