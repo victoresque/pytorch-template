@@ -292,7 +292,7 @@ If you have additional information to be logged, in `_train_epoch()` of your tra
 
   ```python
   additional_log = {"gradient_norm": g, "sensitivity": s}
-  log = log.update(additional_log)
+  log.update(additional_log)
   return log
   ```
 
