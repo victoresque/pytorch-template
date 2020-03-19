@@ -59,8 +59,9 @@ class Trainer(BaseTrainer):
                     loss.item()))
                 self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
-            if batch_idx == self.len_epoch:
+            if batch_idx == self.len_epoch or self.overfit_single_batch:
                 break
+
         log = self.train_metrics.result()
 
         if self.do_validation:
@@ -81,7 +82,7 @@ class Trainer(BaseTrainer):
         self.model.eval()
         self.valid_metrics.reset()
         with torch.no_grad():
-            for batch_idx, (data, target) in enumerate(self.valid_data_loader):
+            for batch_idx, (data, target, _) in enumerate(self.valid_data_loader):
                 data, target = data.to(self.device), target.to(self.device)
 
                 output = self.model(data)

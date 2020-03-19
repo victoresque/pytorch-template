@@ -8,14 +8,23 @@ class BaseDataLoader(DataLoader):
     """
     Base class for all data loaders
     """
-    def __init__(self, dataset, batch_size, shuffle, validation_split, num_workers, collate_fn=default_collate):
+    def __init__(self, dataset, batch_size, shuffle, validation_split, num_workers, collate_fn=default_collate,
+                 single_batch=False):
         self.validation_split = validation_split
         self.shuffle = shuffle
 
         self.batch_idx = 0
         self.n_samples = len(dataset)
 
-        self.sampler, self.valid_sampler = self._split_sampler(self.validation_split)
+        if not single_batch:
+            self.sampler, self.valid_sampler = self._split_sampler(self.validation_split)
+        else:
+            idx_full = np.arange(self.n_samples)
+            np.random.seed(0)
+            np.random.shuffle(idx_full)
+            self.sampler = SubsetRandomSampler(idx_full[:batch_size])
+            self.valid_sampler = None
+            self.shuffle = None
 
         self.init_kwargs = {
             'dataset': dataset,
