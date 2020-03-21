@@ -22,10 +22,8 @@ def main(config):
     logger = config.get_logger('train')
 
     # setup data_loader instances
-    if config['trainer'].get('overfit_single_batch', False):
-        data_loader = config.init_obj('data_loader', module_data, single_batch=True)
-    else:
-        data_loader = config.init_obj('data_loader', module_data)
+    data_loader = config.init_obj('data_loader', module_data,
+                                  single_batch=config['trainer'].get('overfit_single_batch', False))
     valid_data_loader = data_loader.split_validation()
 
     # build model architecture, then print to console
