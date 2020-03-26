@@ -1,4 +1,6 @@
 import torch
+import logging
+from pathlib import Path
 from abc import abstractmethod
 from numpy import inf
 from logger import TensorboardWriter
@@ -8,9 +10,9 @@ class BaseTrainer:
     """
     Base class for all trainers
     """
-    def __init__(self, model, criterion, metric_ftns, optimizer, config):
+    def __init__(self, model, criterion, metric_ftns, optimizer, config, logger):
         self.config = config
-        self.logger = config.get_logger('trainer', config['trainer']['verbosity'])
+        self.logger = logging.getLogger('trainer')
 
         # setup GPU device if available, move model into configured device
         self.device, device_ids = self._prepare_device(config['n_gpu'])
@@ -39,11 +41,13 @@ class BaseTrainer:
             self.early_stop = cfg_trainer.get('early_stop', inf)
 
         self.start_epoch = 1
-
-        self.checkpoint_dir = config.save_dir
+        self.checkpoint_dir = Path('model')
+        self.checkpoint_dir.mkdir()
 
         # setup visualization writer instance                
-        self.writer = TensorboardWriter(config.log_dir, self.logger, cfg_trainer['tensorboard'])
+        log_dir = Path('log')
+        log_dir.mkdir()
+        self.writer = TensorboardWriter(log_dir, None, cfg_trainer['tensorboard'])
 
         if config.resume is not None:
             self._resume_checkpoint(config.resume)
