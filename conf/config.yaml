@@ -1,0 +1,9 @@
+log_dir: ${name}/
+resume:
+
+defaults:
+  - status: train
+  - structure: mnist_lenet
+  - hparams: lenet_baseline
+
+  - hydra/job_logging : custom

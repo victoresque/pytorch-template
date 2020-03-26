@@ -1,0 +1,6 @@
+batch_size: 256
+learning_rate: 0.001
+weight_decay: 0
+
+scheduler_step_size: 50
+scheduler_gamma: 0.1

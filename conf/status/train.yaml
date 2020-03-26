@@ -1,0 +1,17 @@
+save_dir: models/
+resume:
+n_gpu: 1
+n_cpu: 8
+metrics:
+  - accuracy
+  - top_k_acc
+trainer:
+  epochs: 20
+
+  save_period: 1
+  verbosity: 2
+
+  monitor: min val_loss
+  early_stop: 10
+
+  tensorboard: true
