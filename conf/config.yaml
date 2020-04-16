@@ -7,3 +7,4 @@ defaults:
   - hparams: lenet_baseline
 
   - hydra/job_logging : custom
+  - hydra/run/dir: job_timestamp
