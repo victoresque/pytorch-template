@@ -260,34 +260,69 @@ which is increased to 256 by command line options.
   `Trainer.__init__` takes an optional argument, `len_epoch` which controls number of batches(steps) in each epoch.
 
 ### Model
-* **Writing your own model**
 
-1. **Inherit `BaseModel`**
+1.In  `model.models`, **Inherit `BaseModel`**, we may write some classes or functions representing similar models  in a single file, and different models in different files.
 
-    `BaseModel` handles:
-    * Inherited from `torch.nn.Module`
-    * `__str__`: Modify native `print` function to prints the number of trainable parameters.
+>`BaseModel` handles:
+>
+>- Inherited from `torch.nn.Module`
+>
+>- `__str__`: Modify native `print` function to prints the number of trainable parameters.
 
-2. **Implementing abstract methods**
+```python
+# model/models/ResNet.py
+class ResNet(BaseModel):
+    ...
+def resnet18(*kwargs):
+    ...
+```
+   2.import the models from your model file into `model/__init__.py`
+```python
+from .ResNet import ResNet,resnet18
+```
+   3.change model name in a new json file
 
-    Implement the foward pass method `forward()`
+ ```json
+  "arch": {
+    "type": "ResNet",       // name of model architecture to train
+    "args": {}                
+  },
+ ```
 
-* **Example**
+Done~
 
-  Please refer to `model/model.py` for a LeNet example.
+**Example**
+
+Please refer to `model/models/model.py` for a LeNet example.
 
 ### Loss
-Custom loss functions can be implemented in 'model/loss.py'. Use them by changing the name given in "loss" in config file, to corresponding name.
+Custom loss functions can be implemented in 'model/loss.py'. 
+
+When you want to get a loss function based on config file, directly use:
+
+```python
+makeLoss(config)
+```
+
+
 
 ### Metrics
-Metric functions are located in 'model/metric.py'.
+Metric functions are located in 'model/metric.py'. 
 
 You can monitor multiple metrics by providing a list in the configuration file, e.g.:
+
   ```json
   "metrics": ["accuracy", "top_k_acc"],
   ```
 
+And get the metrics using:
+
+```python
+makeMetrics(config)
+```
+
 ### Additional logging
+
 If you have additional information to be logged, in `_train_epoch()` of your trainer class, merge them with `log` as shown below before returning:
 
   ```python
