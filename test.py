@@ -2,9 +2,7 @@ import argparse
 import torch
 from tqdm import tqdm
 import data_loader.data_loaders as module_data
-import model.loss as module_loss
-import model.metric as module_metric
-import model.model as module_arch
+from model import *
 from parse_config import ConfigParser
 
 
@@ -22,12 +20,12 @@ def main(config):
     )
 
     # build model architecture
-    model = config.init_obj('arch', module_arch)
+    model = makeModel(config)
     logger.info(model)
 
     # get function handles of loss and metrics
-    loss_fn = getattr(module_loss, config['loss'])
-    metric_fns = [getattr(module_metric, met) for met in config['metrics']]
+    loss_fn = makeLoss(config)
+    metric_fns = makeMetrics(config)
 
     logger.info('Loading checkpoint: {} ...'.format(config.resume))
     checkpoint = torch.load(config.resume)
