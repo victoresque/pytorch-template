@@ -284,7 +284,7 @@ from .ResNet import ResNet,resnet18
 
  ```json
   "arch": {
-    "type": "ResNet",       // name of model architecture to train
+    "type": "ResNet",
     "args": {}                
   },
  ```
