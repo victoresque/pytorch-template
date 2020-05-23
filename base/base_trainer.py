@@ -8,6 +8,7 @@ class BaseTrainer:
     """
     Base class for all trainers
     """
+
     def __init__(self, model, criterion, metric_ftns, optimizer, config):
         self.config = config
         self.logger = config.get_logger('trainer', config['trainer']['verbosity'])
@@ -73,7 +74,12 @@ class BaseTrainer:
             for key, value in log.items():
                 self.logger.info('    {:15s}: {}'.format(str(key), value))
 
-            # evaluate model performance according to configured metric, save best checkpoint as model_best
+            # save model every period
+            if epoch % self.save_period == 0:
+                self._save_checkpoint(epoch)
+
+            # evaluate model performance according to configured metric,
+            # save best checkpoint as model_best.
             best = False
             if self.mnt_mode != 'off':
                 try:
@@ -89,7 +95,8 @@ class BaseTrainer:
                 if improved:
                     self.mnt_best = log[self.mnt_metric]
                     not_improved_count = 0
-                    best = True
+                    # if best, directly save it.
+                    self._save_checkpoint(epoch, save_best=True)
                 else:
                     not_improved_count += 1
 
@@ -97,9 +104,6 @@ class BaseTrainer:
                     self.logger.info("Validation performance didn\'t improve for {} epochs. "
                                      "Training stops.".format(self.early_stop))
                     break
-
-            if epoch % self.save_period == 0:
-                self._save_checkpoint(epoch, save_best=best)
 
     def _prepare_device(self, n_gpu_use):
         """

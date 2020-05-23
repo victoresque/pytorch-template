@@ -3,7 +3,7 @@ import collections
 import torch
 import numpy as np
 import data_loader.data_loaders as module_data
-from model import *
+from model import makeModel, makeLoss, makeMetrics, makeOptimizer
 from parse_config import ConfigParser
 from trainer import Trainer
 

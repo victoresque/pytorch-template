@@ -4,14 +4,29 @@
 @IDE    ：PyCharm
 @Author ：QiangZiBro
 @Date   ：2020/5/23 12:56 下午
-@Desc   ： 提取模型等工厂方法
+@Desc   ： use factory method to add model,loss,Metrics,Optimizer
+    Q: How to add a pytorch model?
+    A: 1.edit a or  a set of models in a single file in `model/models/`, we may
+    obtain a model by a class or function
+    ```
+    class ResNet():
+        ...
+    def resnet18(*kwargs):
+        ...
+    ```
+       2.import the model in `model/__init__.py`
+    ```
+    from .ResNet import ResNet,resnet18
+    ```
+       3.change model name in a new json file
+       Done~
 """
 import torch
 import model.models as module_models
 import model.loss as module_loss
 import model.metric as module_metric
 
-__all__ = ["makeModel", "makeLoss", "makeMetrics","makeOptimizer"]
+__all__ = ["makeModel", "makeLoss", "makeMetrics", "makeOptimizer"]
 
 
 def makeModel(config):

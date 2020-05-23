@@ -2,7 +2,7 @@ import argparse
 import torch
 from tqdm import tqdm
 import data_loader.data_loaders as module_data
-from model import *
+from model import makeModel, makeLoss, makeMetrics, makeOptimizer
 from parse_config import ConfigParser
 
 
