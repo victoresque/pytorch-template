@@ -1,5 +1,6 @@
 torch>=1.1
 torchvision
 numpy
+hydra-core>=1.0.0
 tqdm
 tensorboard>=1.14

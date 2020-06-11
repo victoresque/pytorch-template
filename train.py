@@ -16,7 +16,7 @@ np.random.seed(SEED)
 
 logger = logging.getLogger(__name__)
 
-@hydra.main(config_path='conf/config.yaml')
+@hydra.main(config_name='config', config_path='conf/')
 def main(config):
     # setup data_loader instances
     data_loader = instantiate(config.data_loader)

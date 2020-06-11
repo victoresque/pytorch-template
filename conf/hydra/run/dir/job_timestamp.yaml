@@ -1,3 +1,2 @@
-hydra:
-  run:
-    dir: ./outputs/${hydra.job.name}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+# @package hydra.run
+dir: ./outputs/${hydra.job.name}/${now:%Y-%m-%d}/${now:%H-%M-%S}

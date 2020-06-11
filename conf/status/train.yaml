@@ -1,3 +1,4 @@
+# @package _global_
 save_dir: models/
 resume:
 n_gpu: 1
