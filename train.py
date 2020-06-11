@@ -14,9 +14,9 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 np.random.seed(SEED)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('train')
 
-@hydra.main(config_name='config', config_path='conf/')
+@hydra.main(config_path='conf/', config_name='config')
 def main(config):
     # setup data_loader instances
     data_loader = instantiate(config.data_loader)
@@ -39,13 +39,11 @@ def main(config):
                       config=config,
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
-                      lr_scheduler=lr_scheduler,
-                      logger=logger)
+                      lr_scheduler=lr_scheduler)
 
     trainer.train()
 
 
 if __name__ == '__main__':
-
     # pylint: disable=no-value-for-parameter
     main()

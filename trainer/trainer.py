@@ -1,3 +1,4 @@
+import logging
 import torch
 from torchvision.utils import make_grid
 from base import BaseTrainer
@@ -5,13 +6,15 @@ from utils import inf_loop
 from logger import MetricTracker
 
 
+logger = logging.getLogger('trainer')
+
 class Trainer(BaseTrainer):
     """
     Trainer class
     """
     def __init__(self, model, criterion, metric_ftns, optimizer, config, data_loader,
-                 valid_data_loader=None, lr_scheduler=None, len_epoch=None, logger=None):
-        super().__init__(model, criterion, metric_ftns, optimizer, config, logger)
+                 valid_data_loader=None, lr_scheduler=None, len_epoch=None):
+        super().__init__(model, criterion, metric_ftns, optimizer, config)
         self.config = config
         self.data_loader = data_loader
         if len_epoch is None:
@@ -52,7 +55,7 @@ class Trainer(BaseTrainer):
                 self.train_metrics.update(met.__name__, met(output, target))
 
             if batch_idx % self.log_step == 0:
-                self.logger.info('Train Epoch: {} {} Loss: {:.6f}'.format(
+                logger.info('Train Epoch: {} {} Loss: {:.6f}'.format(
                     epoch,
                     self._progress(batch_idx),
                     loss.item()))

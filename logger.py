@@ -1,10 +1,13 @@
+import logging
 import importlib
 import pandas as pd
 from datetime import datetime
 
 
+logger = logging.getLogger('tensorboard-writer')
+
 class TensorboardWriter():
-    def __init__(self, log_dir, logger, enabled):
+    def __init__(self, log_dir, enabled):
         self.writer = None
         self.selected_module = ""
 
