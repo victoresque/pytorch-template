@@ -19,8 +19,7 @@ logger = logging.getLogger('train')
 @hydra.main(config_path='conf/', config_name='config')
 def main(config):
     # setup data_loader instances
-    data_loader = instantiate(config.data_loader)
-    valid_data_loader = data_loader.split_validation()
+    data_loader, valid_data_loader = instantiate(config.data_loader)
 
     # build model architecture, then print to console
     model = instantiate(config.arch)

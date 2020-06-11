@@ -5,7 +5,7 @@ arch:
   params:
     num_classes: 10
 data_loader:
-  cls: data_loader.data_loaders.MnistDataLoader
+  cls: data_loader.data_loaders.get_data_loaders
   params:
     data_dir: /data/private/pytorch-template/data
     batch_size: ${batch_size}

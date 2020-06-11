@@ -19,7 +19,7 @@ class Trainer(BaseTrainer):
         self.data_loader = data_loader
         if len_epoch is None:
             # epoch-based training
-            self.len_epoch = len(self.data_loader)
+            self.len_epoch = len(self.data_loader.dataset)
         else:
             # iteration-based training
             self.data_loader = inf_loop(data_loader)
@@ -102,10 +102,12 @@ class Trainer(BaseTrainer):
 
     def _progress(self, batch_idx):
         base = '[{}/{} ({:.0f}%)]'
-        if hasattr(self.data_loader, 'n_samples'):
+        try:
+            # epoch-based training
+            total = len(self.data_loader.dataset)
             current = batch_idx * self.data_loader.batch_size
-            total = self.data_loader.n_samples
-        else:
-            current = batch_idx
+        except AttributeError:
+            # iteration-based training
             total = self.len_epoch
+            current = batch_idx
         return base.format(current, total, 100.0 * current / total)
