@@ -1,7 +1,7 @@
 import logging
 import torch
 from torchvision.utils import make_grid
-from srcs.base import BaseTrainer
+from .base import BaseTrainer
 from srcs.utils import inf_loop
 from srcs.logger import MetricTracker
 
