@@ -19,7 +19,7 @@ class Trainer(BaseTrainer):
         self.data_loader = data_loader
         if len_epoch is None:
             # epoch-based training
-            self.len_epoch = len(self.data_loader.dataset)
+            self.len_epoch = len(self.data_loader)
         else:
             # iteration-based training
             self.data_loader = inf_loop(data_loader)
