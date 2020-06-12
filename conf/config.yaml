@@ -6,6 +6,8 @@ metrics:
   - cls: srcs.model.metric.top_k_acc
 
 defaults:
+  - dataset: mnist_train
+
   - status: train
   - structure: mnist_lenet
   - hparams: lenet_baseline

@@ -1,0 +1,8 @@
+# @package data_loader
+cls: srcs.data_loader.data_loaders.get_data_loaders
+params:
+  data_dir: /data/private/pytorch-template/data
+  batch_size: 512
+  training: false
+  shuffle: false
+  num_workers: 4
