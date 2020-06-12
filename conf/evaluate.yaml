@@ -1,0 +1,12 @@
+log_dir: ${name}/
+checkpoint: ???
+
+metrics:
+  - cls: srcs.model.metric.accuracy
+  - cls: srcs.model.metric.top_k_acc
+
+defaults:
+  - dataset: mnist_test
+
+  - hydra/job_logging : custom
+  - hydra/run/dir: no_chdir
