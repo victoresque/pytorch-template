@@ -19,8 +19,8 @@ PyTorch deep learning project made easy.
 		* [Data Loader](#data-loader)
 		* [Trainer](#trainer)
 		* [Model](#model)
-		* [Loss and metrics](#loss-and-metrics)
-			* [Multiple metrics](#multiple-metrics)
+		* [Loss](#loss)
+		* [metrics](#metrics)
 		* [Additional logging](#additional-logging)
 		* [Validation data](#validation-data)
 		* [Checkpoints](#checkpoints)
@@ -28,7 +28,7 @@ PyTorch deep learning project made easy.
 	* [Contribution](#contribution)
 	* [TODOs](#todos)
 	* [License](#license)
-	* [Acknowledgements](#acknowledgments)
+	* [Acknowledgements](#acknowledgements)
 
 <!-- /code_chunk_output -->
 
@@ -36,7 +36,7 @@ PyTorch deep learning project made easy.
 * Python >= 3.5 (3.6 recommended)
 * PyTorch >= 0.4 (1.2 recommended)
 * tqdm (Optional for `test.py`)
-* tensorboard >= 1.14 (see [Tensorboard Visualization][#tensorboardx-visualization])
+* tensorboard >= 1.14 (see [Tensorboard Visualization](#tensorboard-visualization))
 
 ## Features
 * Clear folder structure which is suitable for many deep learning projects.
@@ -279,7 +279,7 @@ which is increased to 256 by command line options.
 ### Loss
 Custom loss functions can be implemented in 'model/loss.py'. Use them by changing the name given in "loss" in config file, to corresponding name.
 
-#### Metrics
+### Metrics
 Metric functions are located in 'model/metric.py'.
 
 You can monitor multiple metrics by providing a list in the configuration file, e.g.:
@@ -292,7 +292,7 @@ If you have additional information to be logged, in `_train_epoch()` of your tra
 
   ```python
   additional_log = {"gradient_norm": g, "sensitivity": s}
-  log = log.update(additional_log)
+  log.update(additional_log)
   return log
   ```
 
