@@ -1,14 +1,14 @@
 import logging
 import torch
 from pathlib import Path
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 from numpy import inf
 from srcs.logger import TensorboardWriter
 
 
 logger = logging.getLogger('base-trainer')
 
-class BaseTrainer:
+class BaseTrainer(metaclass=ABCMeta):
     """
     Base class for all trainers
     """
