@@ -21,17 +21,18 @@ def main(config):
     # setup data_loader instances
     data_loader, valid_data_loader = instantiate(config.data_loader)
 
-    # build model architecture, then print to console
+    # build model. print it's structure and # trainable params.
     model = instantiate(config.arch)
     logger.info(model)
+    trainable_params = filter(lambda p: p.requires_grad, model.parameters())
+    logger.info(f'Trainable parameters: {sum([p.numel() for p in trainable_params])}')
 
     # get function handles of loss and metrics
     criterion = instantiate(config.loss)
     metrics = [getattr(module_metric, met) for met in config['metrics']]
 
-    # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
-    trainable_params = filter(lambda p: p.requires_grad, model.parameters())
-    optimizer = instantiate(config.optimizer, trainable_params)
+    # build optimizer, learning rate scheduler.
+    optimizer = instantiate(config.optimizer, model.parameters())
     lr_scheduler = instantiate(config.lr_scheduler, optimizer)
 
     trainer = Trainer(model, criterion, metrics, optimizer,
@@ -39,7 +40,6 @@ def main(config):
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
                       lr_scheduler=lr_scheduler)
-
     trainer.train()
 
 
