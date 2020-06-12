@@ -1,11 +1,11 @@
 # @package _global_
 name: MnistLeNet
 arch:
-  cls: model.model.MnistModel
+  cls: srcs.model.model.MnistModel
   params:
     num_classes: 10
 data_loader:
-  cls: data_loader.data_loaders.get_data_loaders
+  cls: srcs.data_loader.data_loaders.get_data_loaders
   params:
     data_dir: /data/private/pytorch-template/data
     batch_size: ${batch_size}
@@ -13,7 +13,7 @@ data_loader:
     validation_split: 0.1
     num_workers: ${n_cpu}
 loss:
-  cls: model.loss.nll_loss
+  cls: srcs.model.loss.nll_loss
 optimizer:
   cls: torch.optim.Adam
   params:

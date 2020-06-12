@@ -3,7 +3,7 @@ import torch
 from pathlib import Path
 from abc import abstractmethod
 from numpy import inf
-from logger import TensorboardWriter
+from srcs.logger import TensorboardWriter
 
 
 logger = logging.getLogger('base-trainer')

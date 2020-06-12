@@ -2,8 +2,8 @@ import torch
 import numpy as np
 import logging
 import hydra
-from trainer import Trainer
-from utils import instantiate
+from srcs.trainer import Trainer
+from srcs.utils import instantiate
 
 
 # fix random seeds for reproducibility

@@ -2,8 +2,8 @@ log_dir: ${name}/
 resume:
 
 metrics:
-  - cls: model.metric.accuracy
-  - cls: model.metric.top_k_acc
+  - cls: srcs.model.metric.accuracy
+  - cls: srcs.model.metric.top_k_acc
 
 defaults:
   - status: train
