@@ -2,9 +2,6 @@ save_dir: saved/
 resume:
 n_gpu: 1
 n_cpu: 8
-metrics:
-  - accuracy
-  - top_k_acc
 trainer:
   epochs: 5
   logging_step: 10

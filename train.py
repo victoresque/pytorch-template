@@ -2,9 +2,8 @@ import torch
 import numpy as np
 import logging
 import hydra
-from hydra.utils import instantiate
-import model.metric as module_metric
 from trainer import Trainer
+from utils import instantiate
 
 
 # fix random seeds for reproducibility
@@ -28,8 +27,8 @@ def main(config):
     logger.info(f'Trainable parameters: {sum([p.numel() for p in trainable_params])}')
 
     # get function handles of loss and metrics
-    criterion = instantiate(config.loss)
-    metrics = [getattr(module_metric, met) for met in config['metrics']]
+    criterion = instantiate(config.loss, is_func=True)
+    metrics = [instantiate(met, is_func=True) for met in config['metrics']]
 
     # build optimizer, learning rate scheduler.
     optimizer = instantiate(config.optimizer, model.parameters())

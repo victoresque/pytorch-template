@@ -13,7 +13,7 @@ data_loader:
     validation_split: 0.1
     num_workers: ${n_cpu}
 loss:
-  cls: torch.nn.NLLLoss
+  cls: model.loss.nll_loss
 optimizer:
   cls: torch.optim.Adam
   params:
