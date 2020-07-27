@@ -67,11 +67,10 @@ class BaseTrainer(metaclass=ABCMeta):
         not_improved_count = 0
         for epoch in range(self.start_epoch, self.epochs + 1):
             result = self._train_epoch(epoch)
-
             self.ep_metrics.update(epoch, result)
-            max_line_width = max(len(line) for line in str(self.ep_metrics).splitlines())
 
             # print result metrics of this epoch
+            max_line_width = max(len(line) for line in str(self.ep_metrics).splitlines())
             logger.info('-'*max_line_width)
             logger.info(str(self.ep_metrics.latest()) + '\n')
 
@@ -92,6 +91,7 @@ class BaseTrainer(metaclass=ABCMeta):
             # TODO: add saving top-k checkpoints
             self._save_checkpoint(epoch, save_best=is_best)
             self.ep_metrics.to_csv('epoch-results.csv')
+
             logger.info('='*max_line_width+'\n')
 
     def _prepare_device(self, n_gpu_use):
