@@ -1,7 +1,8 @@
 import logging
 import torch
-from pathlib import Path
 from abc import abstractmethod, ABCMeta
+from pathlib import Path
+from shutil import copyfile
 from numpy import inf
 from hydra.utils import to_absolute_path
 from srcs.logger import TensorboardWriter, EpochMetricTracker
@@ -133,7 +134,7 @@ class BaseTrainer(metaclass=ABCMeta):
         logger.info("Saving checkpoint: {} ...".format(filename))
         if save_best:
             best_path = str(self.checkpoint_dir / 'model_best.pth')
-            torch.save(state, best_path) # TODO: copy file, instead of saving this again
+            copyfile(filename, best_path)
             logger.info("Saving current best: model_best.pth ...")
 
     def _resume_checkpoint(self, resume_path):
