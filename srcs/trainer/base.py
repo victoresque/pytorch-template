@@ -100,7 +100,7 @@ class BaseTrainer(metaclass=ABCMeta):
 
                 if not_improved_count > self.early_stop:
                     logger.info("Validation performance didn\'t improve for {} epochs. "
-                                     "Training stops.".format(self.early_stop))
+                                "Training stops.".format(self.early_stop))
                     break
 
             self._save_checkpoint(epoch, save_best=is_best)
@@ -112,11 +112,11 @@ class BaseTrainer(metaclass=ABCMeta):
         n_gpu = torch.cuda.device_count()
         if n_gpu_use > 0 and n_gpu == 0:
             logger.warning("Warning: There\'s no GPU available on this machine,"
-                                "training will be performed on CPU.")
+                           "training will be performed on CPU.")
             n_gpu_use = 0
         if n_gpu_use > n_gpu:
             logger.warning("Warning: The number of GPU\'s configured to use is {}, but only {} are available "
-                                "on this machine.".format(n_gpu_use, n_gpu))
+                           "on this machine.".format(n_gpu_use, n_gpu))
             n_gpu_use = n_gpu
         device = torch.device('cuda:0' if n_gpu_use > 0 else 'cpu')
         list_ids = list(range(n_gpu_use))
@@ -162,13 +162,13 @@ class BaseTrainer(metaclass=ABCMeta):
         # load architecture params from checkpoint.
         if checkpoint['config']['arch'] != self.config['arch']:
             logger.warning("Warning: Architecture configuration given in config file is different from that of "
-                                "checkpoint. This may yield an exception while state_dict is being loaded.")
+                           "checkpoint. This may yield an exception while state_dict is being loaded.")
         self.model.load_state_dict(checkpoint['state_dict'])
 
         # load optimizer state from checkpoint only when optimizer type is not changed.
         if checkpoint['config']['optimizer']['type'] != self.config['optimizer']['type']:
             logger.warning("Warning: Optimizer type given in config file is different from that of checkpoint. "
-                                "Optimizer parameters not being resumed.")
+                           "Optimizer parameters not being resumed.")
         else:
             self.optimizer.load_state_dict(checkpoint['optimizer'])
 
