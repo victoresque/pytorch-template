@@ -1,10 +1,12 @@
 import logging
 import pandas as pd
+from numpy import inf
+from itertools import product
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 
 
-logger = logging.getLogger('tensorboard-writer')
+logger = logging.getLogger('logger')
 
 class TensorboardWriter():
     def __init__(self, log_dir, enabled):
@@ -82,3 +84,51 @@ class MetricTracker:
 
     def result(self):
         return dict(self._data.average)
+
+class EpochMetricTracker:
+    def __init__(self, metric_names, phases=('train', 'valid'), monitoring='off'):
+        columns = tuple(product(metric_names, phases))
+        self._data = pd.DataFrame(columns=columns)
+        self._data.index.name = 'epoch'
+
+        self.monitor_mode, self.monitor_metric, self.best_score = self.parse_monitor_mode(monitoring)
+
+    def parse_monitor_mode(self, monitor_mode):
+        if monitor_mode == 'off':
+            return 'off', None, 0
+        else:
+            monitor_mode, monitor_metric = monitor_mode.split()
+            monitor_metric = tuple(monitor_metric.split('/'))
+
+            assert monitor_mode in ['min', 'max']
+            initial_best_score = inf if monitor_mode == 'min' else -inf
+        return monitor_mode, monitor_metric, initial_best_score
+
+    def is_improved(self):
+        if self.monitor_mode == 'off':
+            return True
+        try:
+            # check whether model performance improved or not, according to specified metric(mnt_metric)
+            improved = (self.monitor_mode == 'min' and self._data[self.monitor_metric][-1:].item() <= self.best_score) or \
+                       (self.monitor_mode == 'max' and self._data[self.monitor_metric][-1:].item() >= self.best_score)
+        except KeyError:
+            logger.warning("Warning: Metric '{}' is not found. "
+                           "Model performance monitoring is disabled.".format(self.monitor_metric))
+            self.monitor_mode = 'off'
+            improved = False
+
+        if improved:
+            self.best_score = self._data[self.monitor_metric][-1:].item()
+        return improved
+
+    def update(self, epoch, result):
+        self._data.loc[epoch] = {tuple(k.split('/')):v for k, v in result.items()}
+
+    def latest(self):
+        return self._data[-1:]
+
+    def to_csv(self, save_path=None):
+        self._data.to_csv(save_path)
+
+    def __str__(self):
+        return str(self._data)
