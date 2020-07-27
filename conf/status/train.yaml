@@ -10,7 +10,7 @@ trainer:
   save_period: 1
   verbosity: 2
 
-  monitor: min val_loss
+  monitor: min loss/valid
   early_stop: 10
 
   tensorboard: true

@@ -47,9 +47,6 @@ class TensorboardWriter():
 
             def wrapper(tag, data, *args, **kwargs):
                 if add_data is not None:
-                    # add mode(train/valid) tag
-                    if name not in self.tag_mode_exceptions:
-                        tag = '{}/{}'.format(tag, self.mode)
                     add_data(tag, data, self.step, *args, **kwargs)
             return wrapper
         else:
@@ -57,8 +54,11 @@ class TensorboardWriter():
             return attr
 
 class MetricTracker:
-    def __init__(self, *keys, writer=None):
+    def __init__(self, *keys, postfix='', writer=None):
         self.writer = writer
+        self.postfix = postfix
+        if postfix:
+            keys = [k+postfix for k in keys]
         self._data = pd.DataFrame(index=keys, columns=['total', 'counts', 'average'])
         self.reset()
 
@@ -67,6 +67,8 @@ class MetricTracker:
             self._data[col].values[:] = 0
 
     def update(self, key, value, n=1):
+        if self.postfix:
+            key = key + self.postfix
         if self.writer is not None:
             self.writer.add_scalar(key, value)
         self._data.total[key] += value * n
@@ -74,6 +76,8 @@ class MetricTracker:
         self._data.average[key] = self._data.total[key] / self._data.counts[key]
 
     def avg(self, key):
+        if self.postfix:
+            key = key + self.postfix
         return self._data.average[key]
 
     def result(self):
