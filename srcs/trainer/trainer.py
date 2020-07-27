@@ -70,7 +70,7 @@ class Trainer(BaseTrainer):
             log.update(**val_log)
 
         if self.lr_scheduler is not None:
-            self.lr_scheduler.step(epoch)
+            self.lr_scheduler.step()
         return log
 
     def _valid_epoch(self, epoch):
