@@ -1,6 +1,6 @@
 import logging
-import importlib
 import pandas as pd
+from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 
 
@@ -8,28 +8,12 @@ logger = logging.getLogger('tensorboard-writer')
 
 class TensorboardWriter():
     def __init__(self, log_dir, enabled):
-        self.writer = None
+        self.writer = SummaryWriter(log_dir) if enabled else None
         self.selected_module = ""
 
         if enabled:
             log_dir = str(log_dir)
 
-            # Retrieve vizualization writer.
-            succeeded = False
-            for module in ["torch.utils.tensorboard", "tensorboardX"]:
-                try:
-                    self.writer = importlib.import_module(module).SummaryWriter(log_dir)
-                    succeeded = True
-                    break
-                except ImportError:
-                    succeeded = False
-                self.selected_module = module
-
-            if not succeeded:
-                message = "Warning: visualization (Tensorboard) is configured to use, but currently not installed on " \
-                    "this machine. Please install TensorboardX with 'pip install tensorboardx', upgrade PyTorch to " \
-                    "version >= 1.1 to use 'torch.utils.tensorboard' or turn off the option in the 'config.json' file."
-                logger.warning(message)
 
         self.step = 0
         self.mode = ''
@@ -69,11 +53,7 @@ class TensorboardWriter():
                     add_data(tag, data, self.step, *args, **kwargs)
             return wrapper
         else:
-            # default action for returning methods defined in this class, set_step() for instance.
-            try:
-                attr = object.__getattr__(name)
-            except AttributeError:
-                raise AttributeError("type object '{}' has no attribute '{}'".format(self.selected_module, name))
+            attr = getattr(self.writer, name)
             return attr
 
 class MetricTracker:
