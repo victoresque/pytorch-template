@@ -28,7 +28,6 @@ class BaseTrainer(metaclass=ABCMeta):
         cfg_trainer = config['trainer']
         self.epochs = cfg_trainer['epochs']
         self.log_step = cfg_trainer['logging_step']
-        self.save_period = cfg_trainer['save_period']
         self.monitor = cfg_trainer.get('monitor', 'off')
 
         # configuration to monitor model performance and save best
@@ -104,8 +103,7 @@ class BaseTrainer(metaclass=ABCMeta):
                                      "Training stops.".format(self.early_stop))
                     break
 
-            if epoch % self.save_period == 0:
-                self._save_checkpoint(epoch, save_best=best)
+            self._save_checkpoint(epoch, save_best=is_best)
 
     def _prepare_device(self, n_gpu_use):
         """

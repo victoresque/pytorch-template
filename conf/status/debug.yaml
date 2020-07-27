@@ -6,7 +6,6 @@ trainer:
   epochs: 5
   logging_step: 10
 
-  save_period: 1
   verbosity: 2
 
   monitor: min loss/valid
