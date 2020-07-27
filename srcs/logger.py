@@ -91,34 +91,30 @@ class EpochMetricTracker:
         self._data = pd.DataFrame(columns=columns)
         self._data.index.name = 'epoch'
 
-        self.monitor_mode, self.monitor_metric, self.best_score = self.parse_monitor_mode(monitoring)
+        self.monitor_mode, self.monitor_metric = self._parse_monitoring_mode(monitoring)
 
-    def parse_monitor_mode(self, monitor_mode):
+    def _parse_monitoring_mode(self, monitor_mode):
         if monitor_mode == 'off':
-            return 'off', None, 0
+            return 'off', None
         else:
             monitor_mode, monitor_metric = monitor_mode.split()
             monitor_metric = tuple(monitor_metric.split('/'))
-
             assert monitor_mode in ['min', 'max']
-            initial_best_score = inf if monitor_mode == 'min' else -inf
-        return monitor_mode, monitor_metric, initial_best_score
+        return monitor_mode, monitor_metric
 
     def is_improved(self):
         if self.monitor_mode == 'off':
             return True
         try:
-            # check whether model performance improved or not, according to specified metric(mnt_metric)
-            improved = (self.monitor_mode == 'min' and self._data[self.monitor_metric][-1:].item() <= self.best_score) or \
-                       (self.monitor_mode == 'max' and self._data[self.monitor_metric][-1:].item() >= self.best_score)
+            # check whether model performance improved or not
+            current_score = self._data[self.monitor_metric][-1:].item()
+            improved = (self.monitor_mode == 'min' and current_score <= self._data[self.monitor_metric].min() or \
+                       (self.monitor_mode == 'max' and current_score >= self._data[self.monitor_metric].max()))
         except KeyError:
             logger.warning("Warning: Metric '{}' is not found. "
                            "Model performance monitoring is disabled.".format(self.monitor_metric))
             self.monitor_mode = 'off'
-            improved = False
-
-        if improved:
-            self.best_score = self._data[self.monitor_metric][-1:].item()
+            improved = True
         return improved
 
     def update(self, epoch, result):
