@@ -1,5 +1,6 @@
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
+from hydra.utils import to_absolute_path
 
 
 def get_data_loaders(data_dir, batch_size, shuffle=True, validation_split=0.0, num_workers=1, training=True):
@@ -7,6 +8,8 @@ def get_data_loaders(data_dir, batch_size, shuffle=True, validation_split=0.0, n
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ])
+
+    data_dir = to_absolute_path(data_dir)
     dataset = datasets.MNIST(data_dir, train=training, download=True, transform=trsfm)
 
     loader_args = {
