@@ -1,6 +1,5 @@
 import logging
 import pandas as pd
-from numpy import inf
 from itertools import product
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
@@ -16,19 +15,15 @@ class TensorboardWriter():
         if enabled:
             log_dir = str(log_dir)
 
-
         self.step = 0
-        self.mode = ''
 
         self.tb_writer_ftns = {
             'add_scalar', 'add_scalars', 'add_image', 'add_images', 'add_audio',
             'add_text', 'add_histogram', 'add_pr_curve', 'add_embedding'
         }
-        self.tag_mode_exceptions = {'add_histogram', 'add_embedding'}
         self.timer = datetime.now()
 
-    def set_step(self, step, mode='train'):
-        self.mode = mode
+    def set_step(self, step):
         self.step = step
         if step == 0:
             self.timer = datetime.now()
@@ -87,8 +82,9 @@ class MetricTracker:
 
 class EpochMetricTracker:
     def __init__(self, metric_names, phases=('train', 'valid'), monitoring='off'):
+        # setup pandas DataFrame with hierarchical columns
         columns = tuple(product(metric_names, phases))
-        self._data = pd.DataFrame(columns=columns)
+        self._data = pd.DataFrame(columns=columns) # TODO: add epoch duration
         self._data.index.name = 'epoch'
 
         self.monitor_mode, self.monitor_metric = self._parse_monitoring_mode(monitoring)
