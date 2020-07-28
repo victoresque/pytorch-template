@@ -102,12 +102,12 @@ Config files are in `.json` format:
 {
   "name": "Mnist_LeNet",        // training session name
   "n_gpu": 1,                   // number of GPUs to use for training.
-  
+
   "arch": {
     "type": "MnistModel",       // name of model architecture to train
     "args": {
 
-    }                
+    }
   },
   "data_loader": {
     "type": "MnistDataLoader",         // selecting data loader
@@ -130,11 +130,11 @@ Config files are in `.json` format:
   "loss": "nll_loss",                  // loss
   "metrics": [
     "accuracy", "top_k_acc"            // list of metrics to evaluate
-  ],                         
+  ],
   "lr_scheduler": {
     "type": "StepLR",                  // learning rate scheduler
     "args":{
-      "step_size": 50,          
+      "step_size": 50,
       "gamma": 0.1
     }
   },
@@ -143,10 +143,10 @@ Config files are in `.json` format:
     "save_dir": "saved/",              // checkpoints are saved in save_dir/models/name
     "save_freq": 1,                    // save checkpoints every save_freq epochs
     "verbosity": 2,                    // 0: quiet, 1: per epoch, 2: full
-  
+
     "monitor": "min val_loss"          // mode and metric for model performance monitoring. set 'off' to disable.
     "early_stop": 10	                 // number of epochs to wait before early stop. set 0 to disable.
-  
+
     "tensorboard": true,               // enable tensorboard visualization
   }
 }
@@ -185,7 +185,7 @@ Specify indices of available GPUs by cuda environmental variable.
 ### Project initialization
 Use the `new_project.py` script to make your new project directory with template files.
 `python new_project.py ../NewProject` then a new project folder named 'NewProject' will be made.
-This script will filter out unneccessary files like cache, git files or readme file. 
+This script will filter out unneccessary files like cache, git files or readme file.
 
 ### Custom CLI options
 
@@ -204,7 +204,7 @@ you can change some of them using CLI flags.
       # options added here can be modified by command line flags.
   ]
   ```
-`target` argument should be sequence of keys, which are used to access that option in the config dict. In this example, `target` 
+`target` argument should be sequence of keys, which are used to access that option in the config dict. In this example, `target`
 for the learning rate option is `('optimizer', 'args', 'lr')` because `config['optimizer']['args']['lr']` points to the learning rate.
 `python train.py -c config.json --bs 256` runs training with options given in `config.json` except for the `batch size`
 which is increased to 256 by command line options.
@@ -337,7 +337,7 @@ This template supports Tensorboard visualization by using either  `torch.utils.t
 
     Otherwise, you should install tensorboardx. Follow installation guide in [TensorboardX](https://github.com/lanpa/tensorboardX).
 
-2. **Run training** 
+2. **Run training**
 
     Make sure that `tensorboard` option in the config file is turned on.
 
@@ -345,13 +345,13 @@ This template supports Tensorboard visualization by using either  `torch.utils.t
      "tensorboard" : true
     ```
 
-3. **Open Tensorboard server** 
+3. **Open Tensorboard server**
 
     Type `tensorboard --logdir saved/log/` at the project root, then server will open at `http://localhost:6006`
 
 By default, values of loss and metrics specified in config file, input images, and histogram of model parameters will be logged.
 If you need more visualizations, use `add_scalar('tag', data)`, `add_image('tag', image)`, etc in the `trainer._train_epoch` method.
-`add_something()` methods in this template are basically wrappers for those of `tensorboardX.SummaryWriter` and `torch.utils.tensorboard.SummaryWriter` modules. 
+`add_something()` methods in this template are basically wrappers for those of `tensorboardX.SummaryWriter` and `torch.utils.tensorboard.SummaryWriter` modules.
 
 **Note**: You don't have to specify current steps, since `WriterTensorboard` class defined at `logger/visualization.py` will track current steps.
 
