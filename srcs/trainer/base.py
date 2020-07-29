@@ -46,7 +46,7 @@ class BaseTrainer(metaclass=ABCMeta):
         write_conf(self.config, 'config.yaml')
 
         self.start_epoch = 1
-        self.checkpoint_dir = Path('model')
+        self.checkpoint_dir = Path(self.config.save_dir)
         self.checkpoint_dir.mkdir()
 
         # setup visualization writer instance
