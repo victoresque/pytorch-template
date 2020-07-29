@@ -91,7 +91,7 @@ This repository is designed to be used with [Hydra](https://hydra.cc/) framework
 
 ```yaml
   conf/ # hierarchical, structured config files to be used with 'Hydra' framework
-  ├── config.yaml               # main config file used for train.py
+  ├── train.yaml                # main config file used for train.py
   ├── evaluate.yaml             # main config file used for evaluate.py
   ├── hparams                   # define global hyper-parameters
   │   └── lenet_baseline.yaml

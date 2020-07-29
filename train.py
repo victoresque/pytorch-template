@@ -15,7 +15,7 @@ np.random.seed(SEED)
 
 logger = logging.getLogger('train')
 
-@hydra.main(config_path='conf/', config_name='config')
+@hydra.main(config_path='conf/', config_name='train')
 def main(config):
     # setup data_loader instances
     data_loader, valid_data_loader = instantiate(config.data_loader)
