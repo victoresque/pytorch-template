@@ -50,7 +50,7 @@ class TensorboardWriter():
             attr = getattr(self.writer, name)
             return attr
 
-class MetricTracker:
+class BatchMetrics:
     def __init__(self, *keys, postfix='', writer=None):
         self.writer = writer
         self.postfix = postfix
@@ -80,7 +80,7 @@ class MetricTracker:
     def result(self):
         return dict(self._data.average)
 
-class EpochMetricTracker:
+class EpochMetrics:
     def __init__(self, metric_names, phases=('train', 'valid'), monitoring='off'):
         # setup pandas DataFrame with hierarchical columns
         columns = tuple(product(metric_names, phases))

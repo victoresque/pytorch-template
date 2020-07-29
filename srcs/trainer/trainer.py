@@ -3,7 +3,7 @@ import torch
 from torchvision.utils import make_grid
 from .base import BaseTrainer
 from srcs.utils import inf_loop
-from srcs.logger import MetricTracker
+from srcs.logger import BatchMetrics
 
 
 logger = logging.getLogger('trainer')
@@ -27,8 +27,8 @@ class Trainer(BaseTrainer):
         self.valid_data_loader = valid_data_loader
         self.lr_scheduler = lr_scheduler
 
-        self.train_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], postfix='/train', writer=self.writer)
-        self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], postfix='/valid', writer=self.writer)
+        self.train_metrics = BatchMetrics('loss', *[m.__name__ for m in self.metric_ftns], postfix='/train', writer=self.writer)
+        self.valid_metrics = BatchMetrics('loss', *[m.__name__ for m in self.metric_ftns], postfix='/valid', writer=self.writer)
 
     def _train_epoch(self, epoch):
         """

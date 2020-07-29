@@ -8,7 +8,7 @@ from hydra.utils import to_absolute_path
 from hydra.core.hydra_config import HydraConfig
 
 from srcs.utils import write_conf
-from srcs.logger import TensorboardWriter, EpochMetricTracker
+from srcs.logger import TensorboardWriter, EpochMetrics
 
 
 logger = logging.getLogger('base-trainer')
@@ -38,7 +38,7 @@ class BaseTrainer(metaclass=ABCMeta):
         self.monitor = cfg_trainer.get('monitor', 'off')
 
         metric_names = ['loss'] + [met.__name__ for met in self.metric_ftns]
-        self.ep_metrics = EpochMetricTracker(metric_names, phases=('train', 'valid'), monitoring=self.monitor)
+        self.ep_metrics = EpochMetrics(metric_names, phases=('train', 'valid'), monitoring=self.monitor)
 
         self.checkpt_top_k = cfg_trainer.get('checkpoint_top_k', -1)
         self.early_stop = cfg_trainer.get('early_stop', inf)
