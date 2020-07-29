@@ -100,58 +100,60 @@ Try `python train.py` to run code.
 
 ### Config file format
 Config files are in `.yaml` format:
-```javascript
-{
-  "name": "Mnist_LeNet",        // training session name
-  "n_gpu": 1,                   // number of GPUs to use for training.
+```yaml
+name: MnistLeNet
 
-  "arch": {
-    "type": "MnistModel",       // name of model architecture to train
-    "args": {
+save_dir: models/
+log_dir: MnistLeNet/
+resume:
 
-    }
-  },
-  "data_loader": {
-    "type": "MnistDataLoader",         // selecting data loader
-    "args":{
-      "data_dir": "data/",             // dataset path
-      "batch_size": 64,                // batch size
-      "shuffle": true,                 // shuffle training data before splitting
-      "validation_split": 0.1          // size of validation dataset. float(portion) or int(number of samples)
-      "num_workers": 2,                // number of cpu processes to be used for data loading
-    }
-  },
-  "optimizer": {
-    "type": "Adam",
-    "args":{
-      "lr": 0.001,                     // learning rate
-      "weight_decay": 0,               // (optional) weight decay
-      "amsgrad": true
-    }
-  },
-  "loss": "nll_loss",                  // loss
-  "metrics": [
-    "accuracy", "top_k_acc"            // list of metrics to evaluate
-  ],
-  "lr_scheduler": {
-    "type": "StepLR",                  // learning rate scheduler
-    "args":{
-      "step_size": 50,
-      "gamma": 0.1
-    }
-  },
-  "trainer": {
-    "epochs": 100,                     // number of training epochs
-    "save_dir": "saved/",              // checkpoints are saved in save_dir/models/name
-    "save_freq": 1,                    // save checkpoints every save_freq epochs
-    "verbosity": 2,                    // 0: quiet, 1: per epoch, 2: full
+# global hyper-parameters defined in conf.hparams
+batch_size: 256
+learning_rate: 0.001
+weight_decay: 0
+scheduler_step_size: 50
+scheduler_gamma: 0.1
 
-    "monitor": "min val_loss"          // mode and metric for model performance monitoring. set 'off' to disable.
-    "early_stop": 10	                 // number of epochs to wait before early stop. set 0 to disable.
+data_loader:
+  cls: srcs.data_loader.data_loaders.get_data_loaders
+  params:
+    data_dir: data/
+    batch_size: ${batch_size}
+    shuffle: true
+    validation_split: 0.1
+    num_workers: ${n_cpu}
 
-    "tensorboard": true,               // enable tensorboard visualization
-  }
-}
+arch:
+  cls: srcs.model.model.MnistModel
+  params:
+    num_classes: 10
+loss:
+  cls: srcs.model.loss.nll_loss
+optimizer:
+  cls: torch.optim.Adam
+  params:
+    lr: ${learning_rate}
+    weight_decay: ${weight_decay}
+    amsgrad: true
+lr_scheduler:
+  cls: torch.optim.lr_scheduler.StepLR
+  params:
+    step_size: ${scheduler_step_size}
+    gamma: ${scheduler_gamma}
+
+metrics:
+- cls: srcs.model.metric.accuracy
+- cls: srcs.model.metric.top_k_acc
+
+n_gpu: 1
+n_cpu: 8
+trainer:
+  epochs: 20
+  logging_step: 100
+  verbosity: 2
+  monitor: min loss/valid
+  early_stop: 10
+  tensorboard: true
 ```
 
 Add addional configurations if you need.
@@ -332,13 +334,7 @@ A copy of config file will be saved in the same folder.
 ### Tensorboard Visualization
 This template supports Tensorboard visualization with `torch.utils.tensorboard`.
 
-1. **Install**
-
-    If you are using pytorch 1.1 or higher, install tensorboard by 'pip install tensorboard>=1.14.0'.
-
-    Otherwise, you should install tensorboardx. Follow installation guide in [TensorboardX](https://github.com/lanpa/tensorboardX).
-
-2. **Run training**
+1. **Run training**
 
     Make sure that `tensorboard` option in the config file is turned on.
 
@@ -348,13 +344,13 @@ This template supports Tensorboard visualization with `torch.utils.tensorboard`.
 
 3. **Open Tensorboard server**
 
-    Type `tensorboard --logdir saved/log/` at the project root, then server will open at `http://localhost:6006`
+    Type `tensorboard --logdir outputs/train/` at the project root, then server will open at `http://localhost:6006`
 
 By default, values of loss and metrics specified in config file, input images, and histogram of model parameters will be logged.
 If you need more visualizations, use `add_scalar('tag', data)`, `add_image('tag', image)`, etc in the `trainer._train_epoch` method.
 `add_something()` methods in this template are basically wrappers for those of `tensorboardX.SummaryWriter` and `torch.utils.tensorboard.SummaryWriter` modules.
 
-**Note**: You don't have to specify current steps, since `WriterTensorboard` class defined at `logger/visualization.py` will track current steps.
+**Note**: You don't have to specify current steps, since `WriterTensorboard` class defined at `srcs.logger.py` will track current steps.
 
 ## Contribution
 Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8
@@ -364,6 +360,7 @@ Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before c
 ## TODOs
 - [ ] Option to save top-k checkpoints
 - [ ] Multiple optimizers
+- [ ] Simple unittest code for `nn.Module`
 
 ## License
 This project is licensed under the MIT License. See  LICENSE for more details
