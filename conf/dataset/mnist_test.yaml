@@ -1,7 +1,7 @@
 # @package data_loader
 cls: srcs.data_loader.data_loaders.get_data_loaders
 params:
-  data_dir: data/
+  data_dir: ${hydra:runtime.cwd}/data/
   batch_size: 512
   training: false
   shuffle: false
