@@ -33,71 +33,73 @@ PyTorch deep learning project made easy.
 <!-- /code_chunk_output -->
 
 ## Requirements
-* Python >= 3.5 (3.6 recommended)
-* PyTorch >= 0.4 (1.2 recommended)
-* tqdm (Optional for `test.py`)
+* Python >= 3.6
+* PyTorch >= 1.2
 * tensorboard >= 1.14 (see [Tensorboard Visualization](#tensorboard-visualization))
+* tqdm (Optional for `test.py`)
+* hydra-core >=1.0.0rc1
 
 ## Features
 * Clear folder structure which is suitable for many deep learning projects.
-* `.json` config file support for convenient parameter tuning.
+* `.yaml` config file support for convenient parameter tuning.
 * Customizable command line options for more convenient parameter tuning.
 * Checkpoint saving and resuming.
 * Abstract base classes for faster development:
   * `BaseTrainer` handles checkpoint saving/resuming, training process logging, and more.
-  * `BaseDataLoader` handles batch generation, data shuffling, and validation data splitting.
-  * `BaseModel` provides basic model summary.
 
 ## Folder Structure
-  ```
+```yaml
   pytorch-template/
+  ├── train.py                  # main script to start training.
+  ├── evaluate.py               # script to evaluate trained model on testset.
+  ├── conf # config files. described separatedly below.
+  │   └── ...
+  ├── srcs # source code.
+  │   ├── data_loader           # data loading, preprocessing
+  │   │   └── data_loaders.py
+  │   ├── model
+  │   │   ├── loss.py
+  │   │   ├── metric.py
+  │   │   └── model.py
+  │   ├── trainer               # customized class managing training process
+  │   │   ├── base.py
+  │   │   └── trainer.py
+  │   ├── logger.py             # tensorboard, train / validation metric logging
+  │   └── utils
+  │       └── util.py
+  ├── new_project.py            # script to initialize new project
+  ├── requirements.txt
+  ├── README.md
+  └── LICENSE
+
+  conf/ # hierarchical, structured config files to be used with 'Hydra' framework
+  ├── config.yaml               # main config file used for train.py
+  ├── evaluate.yaml             # main config file used for evaluate.py
+  ├── dataset
+  │   ├── mnist_test.yaml
+  │   └── mnist_train.yaml
+  ├── structure                 # define structure of NN to train
+  │   └── mnist_lenet.yaml
+  ├── hparams                   # define global hyper-parameters
+  │   └── lenet_baseline.yaml
+  ├── status                    # select train/debug mode.
+  │   ├── debug.yaml            #   debug mode runs faster, and don't use tensorboard
+  │   └── train.yaml            #   train mode is default with full logging
   │
-  ├── train.py - main script to start training
-  ├── test.py - evaluation of trained model
-  │
-  ├── config.json - holds configuration for training
-  ├── parse_config.py - class to handle config file and cli options
-  │
-  ├── new_project.py - initialize new project with template files
-  │
-  ├── base/ - abstract base classes
-  │   ├── base_data_loader.py
-  │   ├── base_model.py
-  │   └── base_trainer.py
-  │
-  ├── data_loader/ - anything about data loading goes here
-  │   └── data_loaders.py
-  │
-  ├── data/ - default directory for storing input data
-  │
-  ├── model/ - models, losses, and metrics
-  │   ├── model.py
-  │   ├── metric.py
-  │   └── loss.py
-  │
-  ├── saved/
-  │   ├── models/ - trained models are saved here
-  │   └── log/ - default logdir for tensorboard and logging output
-  │
-  ├── trainer/ - trainers
-  │   └── trainer.py
-  │
-  ├── logger/ - module for tensorboard visualization and logging
-  │   ├── visualization.py
-  │   ├── logger.py
-  │   └── logger_config.json
-  │  
-  └── utils/ - small utility functions
-      ├── util.py
-      └── ...
-  ```
+  └── hydra                     # configure hydra framework
+      ├── job_logging           #   setup python logging module
+      │   └── custom.yaml
+      └── run/dir               #   setup working directory
+          ├── job_timestamp.yaml
+          └── no_chdir.yaml
+```
 
 ## Usage
-The code in this repo is an MNIST example of the template.
-Try `python train.py -c config.json` to run code.
+This repository itself is an working example project which trains simple model(LeNet) on Fashion-MNIST dataset.
+Try `python train.py` to run code.
 
 ### Config file format
-Config files are in `.json` format:
+Config files are in `.yaml` format:
 ```javascript
 {
   "name": "Mnist_LeNet",        // training session name
@@ -155,10 +157,9 @@ Config files are in `.json` format:
 Add addional configurations if you need.
 
 ### Using config files
-Modify the configurations in `.json` config files, then run:
-
+Modify the configurations in `.yaml` files in `conf/` dir, then run:
   ```
-  python train.py --config config.json
+  python train.py
   ```
 
 ### Resuming from checkpoints
@@ -173,7 +174,7 @@ You can enable multi-GPU training by setting `n_gpu` argument of the config file
 If configured to use smaller number of gpu than available, first n devices will be used by default.
 Specify indices of available GPUs by cuda environmental variable.
   ```
-  python train.py --device 2,3 -c config.json
+  python train.py --device 2,3 -c config.yaml
   ```
   This is equivalent to
   ```
@@ -192,7 +193,7 @@ This script will filter out unneccessary files like cache, git files or readme f
 Changing values of config file is a clean, safe and easy way of tuning hyperparameters. However, sometimes
 it is better to have command line options if some values need to be changed too often or quickly.
 
-This template uses the configurations stored in the json file by default, but by registering custom options as follows
+This template uses the configurations stored in the yaml file by default, but by registering custom options as follows
 you can change some of them using CLI flags.
 
   ```python
@@ -206,7 +207,7 @@ you can change some of them using CLI flags.
   ```
 `target` argument should be sequence of keys, which are used to access that option in the config dict. In this example, `target`
 for the learning rate option is `('optimizer', 'args', 'lr')` because `config['optimizer']['args']['lr']` points to the learning rate.
-`python train.py -c config.json --bs 256` runs training with options given in `config.json` except for the `batch size`
+`python train.py -c config.yaml --bs 256` runs training with options given in `config.yaml` except for the `batch size`
 which is increased to 256 by command line options.
 
 
@@ -283,7 +284,7 @@ Custom loss functions can be implemented in 'model/loss.py'. Use them by changin
 Metric functions are located in 'model/metric.py'.
 
 You can monitor multiple metrics by providing a list in the configuration file, e.g.:
-  ```json
+  ```yaml
   "metrics": ["accuracy", "top_k_acc"],
   ```
 
@@ -308,7 +309,7 @@ The `validation_split` can be a ratio of validation set per total data(0.0 <= fl
 
 ### Checkpoints
 You can specify the name of the training session in config files:
-  ```json
+  ```yaml
   "name": "MNIST_LeNet",
   ```
 
@@ -323,13 +324,13 @@ A copy of config file will be saved in the same folder.
     'epoch': epoch,
     'state_dict': self.model.state_dict(),
     'optimizer': self.optimizer.state_dict(),
-    'monitor_best': self.mnt_best,
+    'epoch_metrics': self.ep_metrics,
     'config': self.config
   }
   ```
 
 ### Tensorboard Visualization
-This template supports Tensorboard visualization by using either  `torch.utils.tensorboard` or [TensorboardX](https://github.com/lanpa/tensorboardX).
+This template supports Tensorboard visualization with `torch.utils.tensorboard`.
 
 1. **Install**
 
@@ -361,18 +362,8 @@ Feel free to contribute any kind of function or enhancement, here the coding sty
 Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before committing.
 
 ## TODOs
-
+- [ ] Option to save top-k checkpoints
 - [ ] Multiple optimizers
-- [ ] Support more tensorboard functions
-- [x] Using fixed random seed
-- [x] Support pytorch native tensorboard
-- [x] `tensorboardX` logger support
-- [x] Configurable logging layout, checkpoint naming
-- [x] Iteration-based training (instead of epoch-based)
-- [x] Adding command line option for fine-tuning
 
 ## License
 This project is licensed under the MIT License. See  LICENSE for more details
-
-## Acknowledgements
-This project is inspired by the project [Tensorflow-Project-Template](https://github.com/MrGemy95/Tensorflow-Project-Template) by [Mahmoud Gemy](https://github.com/MrGemy95)
