@@ -25,7 +25,6 @@ class Trainer(BaseTrainer):
             self.data_loader = inf_loop(data_loader)
             self.len_epoch = len_epoch
         self.valid_data_loader = valid_data_loader
-        self.do_validation = self.valid_data_loader is not None
         self.lr_scheduler = lr_scheduler
 
         self.train_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], postfix='/train', writer=self.writer)
@@ -51,26 +50,30 @@ class Trainer(BaseTrainer):
 
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
             self.train_metrics.update('loss', loss.item())
-            for met in self.metric_ftns:
-                self.train_metrics.update(met.__name__, met(output, target))
 
             if batch_idx % self.log_step == 0:
+                self.writer.add_image('train/input', make_grid(data.cpu(), nrow=8, normalize=True))
+                for met in self.metric_ftns:
+                    self.train_metrics.update(met.__name__, met(output, target))
                 logger.info('Train Epoch: {} {} Loss: {:.6f}'.format(
                     epoch,
                     self._progress(batch_idx),
                     loss.item()))
-                self.writer.add_image('train/input', make_grid(data.cpu(), nrow=8, normalize=True))
 
             if batch_idx == self.len_epoch:
                 break
         log = self.train_metrics.result()
 
-        if self.do_validation:
+        if self.valid_data_loader is not None:
             val_log = self._valid_epoch(epoch)
             log.update(**val_log)
 
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()
+
+        # add result metrics on entire epoch to tensorboard
+        for k, v in log.items():
+            self.writer.add_scalar(k+'/epoch', v)
         return log
 
     def _valid_epoch(self, epoch):
@@ -89,11 +92,11 @@ class Trainer(BaseTrainer):
                 output = self.model(data)
                 loss = self.criterion(output, target)
 
-                self.writer.set_step((epoch - 1) * len(self.valid_data_loader) + batch_idx, 'valid')
+                self.writer.set_step((epoch - 1) * len(self.valid_data_loader) + batch_idx)
+                self.writer.add_image('valid/input', make_grid(data.cpu(), nrow=8, normalize=True))
                 self.valid_metrics.update('loss', loss.item())
                 for met in self.metric_ftns:
                     self.valid_metrics.update(met.__name__, met(output, target))
-                self.writer.add_image('valid/input', make_grid(data.cpu(), nrow=8, normalize=True))
 
         # add histogram of model parameters to the tensorboard
         for name, p in self.model.named_parameters():
