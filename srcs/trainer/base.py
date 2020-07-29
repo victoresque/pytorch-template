@@ -96,7 +96,7 @@ class BaseTrainer(metaclass=ABCMeta):
             self._save_checkpoint(epoch, save_best=is_best)
             self.ep_metrics.to_csv('epoch-results.csv')
 
-            logger.info('='*max_line_width+'\n')
+            logger.info('='*max_line_width)
 
     def _prepare_device(self, n_gpu_use):
         """
@@ -115,13 +115,14 @@ class BaseTrainer(metaclass=ABCMeta):
         list_ids = list(range(n_gpu_use))
         return device, list_ids
 
-    def _save_checkpoint(self, epoch, save_best=False):
+    def _save_checkpoint(self, epoch, save_best=False, save_latest=True):
         """
         Saving checkpoints
 
         :param epoch: current epoch number
         :param log: logging information of the epoch
-        :param save_best: if True, rename the saved checkpoint to 'model_best.pth'
+        :param save_best: if True, save a copy of current checkpoint file as 'model_best.pth'
+        :param save_latest: if True, save a copy of current checkpoint file as 'model_latest.pth'
         """
         arch = type(self.model).__name__
         state = {
@@ -139,6 +140,9 @@ class BaseTrainer(metaclass=ABCMeta):
             best_path = str(self.checkpoint_dir / 'model_best.pth')
             copyfile(filename, best_path)
             logger.info("Saving current best: model_best.pth ...")
+        if save_latest:
+            latest_path = str(self.checkpoint_dir / 'model_latest.pth')
+            copyfile(filename, latest_path)
 
     def _resume_checkpoint(self, resume_path):
         """
