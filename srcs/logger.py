@@ -85,7 +85,6 @@ class EpochMetricTracker:
         # setup pandas DataFrame with hierarchical columns
         columns = tuple(product(metric_names, phases))
         self._data = pd.DataFrame(columns=columns) # TODO: add epoch duration
-        self._data.index.name = 'epoch'
 
         self.monitor_mode, self.monitor_metric = self._parse_monitoring_mode(monitoring)
 
@@ -114,7 +113,7 @@ class EpochMetricTracker:
         return improved
 
     def update(self, epoch, result):
-        self._data.loc[epoch] = {tuple(k.split('/')):v for k, v in result.items()}
+        self._data.loc[f'epoch-{epoch}'] = {tuple(k.split('/')):v for k, v in result.items()}
 
     def latest(self):
         return self._data[-1:]

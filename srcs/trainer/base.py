@@ -5,6 +5,8 @@ from pathlib import Path
 from shutil import copyfile
 from numpy import inf
 from hydra.utils import to_absolute_path
+from hydra.core.hydra_config import HydraConfig
+
 from srcs.utils import write_conf
 from srcs.logger import TensorboardWriter, EpochMetricTracker
 
@@ -135,14 +137,16 @@ class BaseTrainer(metaclass=ABCMeta):
         }
         filename = str(self.checkpoint_dir / 'checkpoint-epoch{}.pth'.format(epoch))
         torch.save(state, filename)
-        logger.info("Saving checkpoint: {} ...".format(filename))
-        if save_best:
-            best_path = str(self.checkpoint_dir / 'model_best.pth')
-            copyfile(filename, best_path)
-            logger.info("Saving current best: model_best.pth ...")
+
+        cwd = HydraConfig.get().run.dir
+        logger.info(f"Saved checkpoint: {cwd}/{filename}")
         if save_latest:
             latest_path = str(self.checkpoint_dir / 'model_latest.pth')
             copyfile(filename, latest_path)
+        if save_best:
+            best_path = str(self.checkpoint_dir / 'model_best.pth')
+            copyfile(filename, best_path)
+            logger.info(f"Renewing best checkpoint: .../model/model_best.pth")
 
     def _resume_checkpoint(self, resume_path):
         """
