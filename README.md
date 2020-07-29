@@ -1,43 +1,44 @@
 # PyTorch Template Project
-PyTorch deep learning project made easy.
+Simple project template for PyTorch deep Learning project.
 
-<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+<!-- TOC depthFrom:1 depthTo:6 orderedList:false -->
 
-<!-- code_chunk_output -->
+- [PyTorch Template Project](#pytorch-template-project)
+    - [Requirements](#requirements)
+    - [Features](#features)
+    - [Folder Structure](#folder-structure)
+    - [Usage](#usage)
+        - [Hierarchical configurations with Hydra](#hierarchical-configurations-with-hydra)
+        - [Using config files](#using-config-files)
+        - [Checkpoints](#checkpoints)
+        - [Resuming from checkpoints](#resuming-from-checkpoints)
+        - [Using Multiple GPU](#using-multiple-gpu)
+    - [Customization](#customization)
+        - [Project initialization](#project-initialization)
+        - [Custom CLI options](#custom-cli-options)
+        - [Data Loader](#data-loader)
+        - [Trainer](#trainer)
+        - [Model](#model)
+        - [Loss](#loss)
+        - [Metrics](#metrics)
+        - [Additional logging](#additional-logging)
+        - [Testing](#testing)
+        - [Validation data](#validation-data)
+        - [Checkpoints](#checkpoints-1)
+        - [Tensorboard Visualization](#tensorboard-visualization)
+    - [Contribution](#contribution)
+    - [TODOs](#todos)
+    - [License](#license)
 
-* [PyTorch Template Project](#pytorch-template-project)
-	* [Requirements](#requirements)
-	* [Features](#features)
-	* [Folder Structure](#folder-structure)
-	* [Usage](#usage)
-		* [Config file format](#config-file-format)
-		* [Using config files](#using-config-files)
-		* [Resuming from checkpoints](#resuming-from-checkpoints)
-    * [Using Multiple GPU](#using-multiple-gpu)
-	* [Customization](#customization)
-		* [Custom CLI options](#custom-cli-options)
-		* [Data Loader](#data-loader)
-		* [Trainer](#trainer)
-		* [Model](#model)
-		* [Loss](#loss)
-		* [metrics](#metrics)
-		* [Additional logging](#additional-logging)
-		* [Validation data](#validation-data)
-		* [Checkpoints](#checkpoints)
-    * [Tensorboard Visualization](#tensorboard-visualization)
-	* [Contribution](#contribution)
-	* [TODOs](#todos)
-	* [License](#license)
-	* [Acknowledgements](#acknowledgements)
+<!-- /TOC -->
 
-<!-- /code_chunk_output -->
 
 ## Requirements
 * Python >= 3.6
 * PyTorch >= 1.2
 * tensorboard >= 1.14 (see [Tensorboard Visualization](#tensorboard-visualization))
 * tqdm (Optional for `test.py`)
-* hydra-core >=1.0.0rc1
+* hydra-core >= 1.0.0rc1
 
 ## Features
 * Clear folder structure which is suitable for many deep learning projects.
@@ -52,7 +53,7 @@ PyTorch deep learning project made easy.
   pytorch-template/
   ├── train.py                  # main script to start training.
   ├── evaluate.py               # script to evaluate trained model on testset.
-  ├── conf # config files. described separatedly below.
+  ├── conf # config files. explained in separated section below.
   │   └── ...
   ├── srcs # source code.
   │   ├── data_loader           # data loading, preprocessing
@@ -71,49 +72,65 @@ PyTorch deep learning project made easy.
   ├── requirements.txt
   ├── README.md
   └── LICENSE
-
-  conf/ # hierarchical, structured config files to be used with 'Hydra' framework
-  ├── config.yaml               # main config file used for train.py
-  ├── evaluate.yaml             # main config file used for evaluate.py
-  ├── dataset
-  │   ├── mnist_test.yaml
-  │   └── mnist_train.yaml
-  ├── structure                 # define structure of NN to train
-  │   └── mnist_lenet.yaml
-  ├── hparams                   # define global hyper-parameters
-  │   └── lenet_baseline.yaml
-  ├── status                    # select train/debug mode.
-  │   ├── debug.yaml            #   debug mode runs faster, and don't use tensorboard
-  │   └── train.yaml            #   train mode is default with full logging
-  │
-  └── hydra                     # configure hydra framework
-      ├── job_logging           #   setup python logging module
-      │   └── custom.yaml
-      └── run/dir               #   setup working directory
-          ├── job_timestamp.yaml
-          └── no_chdir.yaml
 ```
 
 ## Usage
 This repository itself is an working example project which trains simple model(LeNet) on Fashion-MNIST dataset.
 Try `python train.py` to run code.
 
-### Config file format
-Config files are in `.yaml` format:
+### Hierarchical configurations with Hydra
+This repository is designed to be used with [Hydra](https://hydra.cc/) framework, which has useful key features as following.
+
+- Hierarchical configuration composable from multiple sources
+- Configuration can be specified or overridden from the command line
+- Dynamic command line tab completion
+- Run your application locally or launch it to run remotely
+- Run multiple jobs with different arguments with a single command
+
+`conf/` directory contains `.yaml`config files which are structured into multiple **config groups**.
+
 ```yaml
-name: MnistLeNet
+  conf/ # hierarchical, structured config files to be used with 'Hydra' framework
+  ├── config.yaml               # main config file used for train.py
+  ├── evaluate.yaml             # main config file used for evaluate.py
+  ├── hparams                   # define global hyper-parameters
+  │   └── lenet_baseline.yaml
+  ├── dataset
+  │   ├── mnist_test.yaml
+  │   └── mnist_train.yaml
+  ├── structure                 # define structure of NN to train
+  │   └── mnist_lenet.yaml
+  ├── status                    # select train/debug mode.
+  │   ├── debug.yaml            #   debug mode runs faster, and don't use tensorboard
+  │   └── train.yaml            #   train mode is default with full logging
+  │
+  └── hydra                     # configure hydra framework
+      ├── job_logging           #   config for python logging module
+      │   └── custom.yaml
+      └── run/dir               #   setup working directory
+          ├── job_timestamp.yaml
+          └── no_chdir.yaml
+```
+
+At runtime, one file from each config group is selected and combined to be used as one global config.
+
+```yaml
+name: MnistLeNet # experiment name.
 
 save_dir: models/
-log_dir: MnistLeNet/
+log_dir: ${name}/
 resume:
 
-# global hyper-parameters defined in conf.hparams
+# Global hyper-parameters defined in conf.hparams
+#   you can change the values by either editing yaml file directly,
+#   or using command line arguments, like `python3 train.py batch_size=128`
 batch_size: 256
 learning_rate: 0.001
 weight_decay: 0
 scheduler_step_size: 50
 scheduler_gamma: 0.1
 
+# configuration for data loading
 data_loader:
   cls: srcs.data_loader.data_loaders.get_data_loaders
   params:
@@ -164,23 +181,39 @@ Modify the configurations in `.yaml` files in `conf/` dir, then run:
   python train.py
   ```
 
+### Checkpoints
+
+```yaml
+outputs/train/2020-07-29/12-44-37/
+├── config.yaml # composed config file
+├── epoch-results.csv # epoch-wise evaluation results
+├── MnistLeNet/ # tensorboard log file
+├── model
+│   ├── checkpoint-epoch1.pth
+│   ├── checkpoint-epoch2.pth
+│   ├── ...
+│   ├── model_best.pth # checkpoint with best score
+│   └── model_latest.pth # checkpoint which is saved last
+└── train.log
+```
+
 ### Resuming from checkpoints
 You can resume from a previously saved checkpoint by:
 
   ```
-  python train.py --resume path/to/checkpoint
+  python train.py resume=path/to/checkpoint
   ```
 
 ### Using Multiple GPU
-You can enable multi-GPU training by setting `n_gpu` argument of the config file to larger number.
+You can enable multi-GPU training(with DataParallel) by setting `n_gpu` argument of the config file to larger number.
 If configured to use smaller number of gpu than available, first n devices will be used by default.
 Specify indices of available GPUs by cuda environmental variable.
   ```
-  python train.py --device 2,3 -c config.yaml
+  python train.py n_gpu=2
   ```
   This is equivalent to
   ```
-  CUDA_VISIBLE_DEVICES=2,3 python train.py -c config.py
+  CUDA_VISIBLE_DEVICES=0,1 python train.py
   ```
 
 ## Customization
@@ -342,7 +375,7 @@ This template supports Tensorboard visualization with `torch.utils.tensorboard`.
      "tensorboard" : true
     ```
 
-3. **Open Tensorboard server**
+2. **Open Tensorboard server**
 
     Type `tensorboard --logdir outputs/train/` at the project root, then server will open at `http://localhost:6006`
 
@@ -358,8 +391,9 @@ Feel free to contribute any kind of function or enhancement, here the coding sty
 Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before committing.
 
 ## TODOs
-- [ ] Option to save top-k checkpoints
-- [ ] Multiple optimizers
+- [ ] Multi-GPU training with DistributedDataParallel
+- [ ] Option to specify GPU indices to be used
+- [ ] Option to keep top-k checkpoints only
 - [ ] Simple unittest code for `nn.Module`
 
 ## License
