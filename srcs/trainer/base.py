@@ -5,6 +5,7 @@ from pathlib import Path
 from shutil import copyfile
 from numpy import inf
 from hydra.utils import to_absolute_path
+from srcs.utils import write_conf
 from srcs.logger import TensorboardWriter, EpochMetricTracker
 
 
@@ -39,6 +40,8 @@ class BaseTrainer(metaclass=ABCMeta):
 
         self.checkpt_top_k = cfg_trainer.get('checkpoint_top_k', -1)
         self.early_stop = cfg_trainer.get('early_stop', inf)
+
+        write_conf(self.config, 'config.yaml')
 
         self.start_epoch = 1
         self.checkpoint_dir = Path('model')

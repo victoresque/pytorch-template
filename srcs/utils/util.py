@@ -1,7 +1,10 @@
+import yaml
 import hydra
+from omegaconf import OmegaConf
+from pathlib import Path
 from importlib import import_module
-from functools import partial, update_wrapper
 from itertools import repeat
+from functools import partial, update_wrapper
 
 
 def inf_loop(data_loader):
@@ -32,3 +35,13 @@ def instantiate(config, *args, is_func=False, **kwargs):
         update_wrapper(partial_func, func)
         return partial_func
     return hydra.utils.instantiate(config, *args, **kwargs)
+
+def write_yaml(content, fname):
+    with fname.open('wt') as handle:
+        yaml.dump(content, handle, indent=2, sort_keys=False)
+
+def write_conf(config, save_path):
+    save_path = Path(save_path)
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+    config_dict = OmegaConf.to_container(config, resolve=True)
+    write_yaml(config_dict, save_path)
