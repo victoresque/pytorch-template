@@ -46,8 +46,8 @@ class BaseTrainer(metaclass=ABCMeta):
         write_conf(self.config, 'config.yaml')
 
         self.start_epoch = 1
-        self.checkpoint_dir = Path(self.config.save_dir)
-        self.checkpoint_dir.mkdir()
+        self.checkpt_dir = Path(self.config.save_dir)
+        self.checkpt_dir.mkdir()
 
         # setup visualization writer instance
         log_dir = Path(self.config.log_dir)
@@ -135,18 +135,18 @@ class BaseTrainer(metaclass=ABCMeta):
             'epoch_metrics': self.ep_metrics,
             'config': self.config
         }
-        filename = str(self.checkpoint_dir / 'checkpoint-epoch{}.pth'.format(epoch))
+        filename = str(self.checkpt_dir / 'checkpoint-epoch{}.pth'.format(epoch))
         torch.save(state, filename)
 
-        cwd = HydraConfig.get().run.dir
-        logger.info(f"Saved checkpoint: {cwd}/{filename}")
+        cwd = HydraConfig.get().run.dir.replace('./', '')
+        logger.info(f"Model checkpoint saved at: \n    {cwd}/{filename}")
         if save_latest:
-            latest_path = str(self.checkpoint_dir / 'model_latest.pth')
-            copyfile(filename, latest_path)
+            latest_path = str(self.checkpt_dir / 'model_latest.pth')
+            shutil.copyfile(filename, latest_path)
         if save_best:
-            best_path = str(self.checkpoint_dir / 'model_best.pth')
-            copyfile(filename, best_path)
-            logger.info(f"Renewing best checkpoint: .../model/model_best.pth")
+            best_path = str(self.checkpt_dir / 'model_best.pth')
+            shutil.copyfile(filename, best_path)
+            logger.info(f"Renewing best checkpoint: \n    .../{best_path}")
 
     def _resume_checkpoint(self, resume_path):
         """
