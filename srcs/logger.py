@@ -1,3 +1,4 @@
+import os
 import logging
 import pandas as pd
 from itertools import product
@@ -85,8 +86,15 @@ class EpochMetrics:
         # setup pandas DataFrame with hierarchical columns
         columns = tuple(product(metric_names, phases))
         self._data = pd.DataFrame(columns=columns) # TODO: add epoch duration
-
         self.monitor_mode, self.monitor_metric = self._parse_monitoring_mode(monitoring)
+        self.topk_idx = None
+
+    def minimizing_metric(self, idx):
+        metric = self._data[self.monitor_metric].loc[idx]
+        if self.monitor_mode == 'min':
+            return metric
+        else:
+            return - metric
 
     def _parse_monitoring_mode(self, monitor_mode):
         if monitor_mode == 'off':
@@ -111,6 +119,27 @@ class EpochMetrics:
             self.monitor_mode = 'off'
             improved = True
         return improved
+
+    def keep_topk_checkpt(self, checkpt_dir, k=3):
+        """
+        Keep top-k checkpoints k+1'th best epoch index from dataframe.
+        """
+        if len(self._data) > k:
+            last_epoch = self._data.index[-1]
+            if self.topk_idx is None:
+                self.topk_idx = sorted(self._data.index.tolist(), key=self.minimizing_metric)[:(k+1)]
+            else:
+                self.topk_idx.append(last_epoch)
+                self.topk_idx = sorted(self.topk_idx, key=self.minimizing_metric)[:-1]
+
+            if last_epoch not in self.topk_idx:
+                to_delete = last_epoch
+            else:
+                to_delete = self.topk_idx[-1]
+
+            # delete checkpoint having out-of topk metric
+            filename = str(checkpt_dir / 'checkpoint-epoch{}.pth'.format(to_delete.split('-')[1]))
+            os.remove(filename)
 
     def update(self, epoch, result):
         self._data.loc[f'epoch-{epoch}'] = {tuple(k.split('/')):v for k, v in result.items()}

@@ -40,7 +40,7 @@ class BaseTrainer(metaclass=ABCMeta):
         metric_names = ['loss'] + [met.__name__ for met in self.metric_ftns]
         self.ep_metrics = EpochMetrics(metric_names, phases=('train', 'valid'), monitoring=self.monitor)
 
-        self.checkpt_top_k = cfg_trainer.get('checkpoint_top_k', -1)
+        self.checkpt_top_k = cfg_trainer.get('save_topk', -1)
         self.early_stop = cfg_trainer.get('early_stop', inf)
 
         write_conf(self.config, 'config.yaml')
@@ -77,10 +77,11 @@ class BaseTrainer(metaclass=ABCMeta):
 
             # print result metrics of this epoch
             max_line_width = max(len(line) for line in str(self.ep_metrics).splitlines())
+            # divider ---
             logger.info('-'*max_line_width)
             logger.info(str(self.ep_metrics.latest()) + '\n')
 
-            # evaluate model performance according to configured metric, save best checkpoint as model_best
+            # check if model performance improved or not, for early stopping and topk saving
             is_best = False
             improved = self.ep_metrics.is_improved()
             if improved:
@@ -94,10 +95,16 @@ class BaseTrainer(metaclass=ABCMeta):
                             "Training stops.".format(self.early_stop))
                 break
 
-            # TODO: add saving top-k checkpoints
-            self._save_checkpoint(epoch, save_best=is_best)
+            using_topk_save = self.checkpt_top_k > 0
+            self._save_checkpoint(epoch, save_best=is_best, save_latest=using_topk_save)
+
+            # keep top-k checkpoints only, using monitoring metrics
+            if using_topk_save:
+                self.ep_metrics.keep_topk_checkpt(self.checkpt_dir, self.checkpt_top_k)
+
             self.ep_metrics.to_csv('epoch-results.csv')
 
+            # divider ===
             logger.info('='*max_line_width)
 
     def _prepare_device(self, n_gpu_use):
@@ -142,10 +149,10 @@ class BaseTrainer(metaclass=ABCMeta):
         logger.info(f"Model checkpoint saved at: \n    {cwd}/{filename}")
         if save_latest:
             latest_path = str(self.checkpt_dir / 'model_latest.pth')
-            shutil.copyfile(filename, latest_path)
+            copyfile(filename, latest_path)
         if save_best:
             best_path = str(self.checkpt_dir / 'model_best.pth')
-            shutil.copyfile(filename, best_path)
+            copyfile(filename, best_path)
             logger.info(f"Renewing best checkpoint: \n    .../{best_path}")
 
     def _resume_checkpoint(self, resume_path):

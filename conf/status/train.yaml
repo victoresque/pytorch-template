@@ -8,6 +8,7 @@ trainer:
   logging_step: 100
 
   monitor: min loss/valid
+  save_topk: 7
   early_stop: 10
 
   tensorboard: true
