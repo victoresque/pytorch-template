@@ -87,10 +87,18 @@ class EpochMetrics:
         columns = tuple(product(metric_names, phases))
         self._data = pd.DataFrame(columns=columns) # TODO: add epoch duration
         self.monitor_mode, self.monitor_metric = self._parse_monitoring_mode(monitoring)
-        self.topk_idx = None
+        self.topk_idx = []
 
     def minimizing_metric(self, idx):
-        metric = self._data[self.monitor_metric].loc[idx]
+        if self.monitor_mode == 'off':
+            return 0
+        try:
+            metric = self._data[self.monitor_metric].loc[idx]
+        except KeyError:
+            logger.warning("Warning: Metric '{}' is not found. "
+                           "Model performance monitoring is disabled.".format(self.monitor_metric))
+            self.monitor_mode = 'off'
+            return 0
         if self.monitor_mode == 'min':
             return metric
         else:
@@ -108,30 +116,18 @@ class EpochMetrics:
     def is_improved(self):
         if self.monitor_mode == 'off':
             return True
-        try:
-            # check whether model performance improved or not
-            current_score = self._data[self.monitor_metric][-1:].item()
-            improved = (self.monitor_mode == 'min' and current_score <= self._data[self.monitor_metric].min() or \
-                       (self.monitor_mode == 'max' and current_score >= self._data[self.monitor_metric].max()))
-        except KeyError:
-            logger.warning("Warning: Metric '{}' is not found. "
-                           "Model performance monitoring is disabled.".format(self.monitor_metric))
-            self.monitor_mode = 'off'
-            improved = True
-        return improved
+
+        last_epoch = self._data.index[-1]
+        best_epoch = self.topk_idx[0]
+        return last_epoch == best_epoch
 
     def keep_topk_checkpt(self, checkpt_dir, k=3):
         """
         Keep top-k checkpoints k+1'th best epoch index from dataframe.
         """
-        if len(self._data) > k:
+        if len(self.topk_idx) > k and self.monitor_mode != 'off':
             last_epoch = self._data.index[-1]
-            if self.topk_idx is None:
-                self.topk_idx = sorted(self._data.index.tolist(), key=self.minimizing_metric)[:(k+1)]
-            else:
-                self.topk_idx.append(last_epoch)
-                self.topk_idx = sorted(self.topk_idx, key=self.minimizing_metric)[:-1]
-
+            self.topk_idx = self.topk_idx[:(k+1)]
             if last_epoch not in self.topk_idx:
                 to_delete = last_epoch
             else:
@@ -142,7 +138,11 @@ class EpochMetrics:
             os.remove(filename)
 
     def update(self, epoch, result):
-        self._data.loc[f'epoch-{epoch}'] = {tuple(k.split('/')):v for k, v in result.items()}
+        epoch_idx = f'epoch-{epoch}'
+        self._data.loc[epoch_idx] = {tuple(k.split('/')):v for k, v in result.items()}
+
+        self.topk_idx.append(epoch_idx)
+        self.topk_idx = sorted(self.topk_idx, key=self.minimizing_metric)
 
     def latest(self):
         return self._data[-1:]
