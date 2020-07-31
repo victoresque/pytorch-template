@@ -4,8 +4,7 @@ from abc import abstractmethod, ABCMeta
 from pathlib import Path
 from shutil import copyfile
 from numpy import inf
-from hydra.utils import to_absolute_path
-from hydra.core.hydra_config import HydraConfig
+from hydra.utils import to_absolute_path, get_original_cwd
 
 from srcs.utils import write_conf
 from srcs.logger import TensorboardWriter, EpochMetrics
@@ -145,7 +144,7 @@ class BaseTrainer(metaclass=ABCMeta):
         filename = str(self.checkpt_dir / 'checkpoint-epoch{}.pth'.format(epoch))
         torch.save(state, filename)
 
-        cwd = HydraConfig.get().run.dir.replace('./', '')
+        cwd = Path.cwd().relative_to(get_original_cwd())
         logger.info(f"Model checkpoint saved at: \n    {cwd}/{filename}")
         if save_latest:
             latest_path = str(self.checkpt_dir / 'model_latest.pth')
