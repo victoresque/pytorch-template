@@ -123,7 +123,7 @@ class EpochMetrics:
 
     def keep_topk_checkpt(self, checkpt_dir, k=3):
         """
-        Keep top-k checkpoints k+1'th best epoch index from dataframe.
+        Keep top-k checkpoints by deleting k+1'th best epoch index from dataframe for every epoch.
         """
         if len(self.topk_idx) > k and self.monitor_mode != 'off':
             last_epoch = self._data.index[-1]
