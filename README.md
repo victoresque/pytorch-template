@@ -4,9 +4,10 @@ Simple project template for PyTorch deep Learning project.
 <!-- TOC depthFrom:1 depthTo:6 orderedList:false -->
 
 - [PyTorch Template Project](#pytorch-template-project)
-    - [Requirements](#requirements)
-    - [Features](#features)
-    - [Folder Structure](#folder-structure)
+    - [Installation](#installation)
+        - [Requirements](#requirements)
+        - [Features](#features)
+        - [Folder Structure](#folder-structure)
     - [Usage](#usage)
         - [Hierarchical configurations with Hydra](#hierarchical-configurations-with-hydra)
         - [Using config files](#using-config-files)
@@ -15,7 +16,6 @@ Simple project template for PyTorch deep Learning project.
         - [Using Multiple GPU](#using-multiple-gpu)
     - [Customization](#customization)
         - [Project initialization](#project-initialization)
-        - [Custom CLI options](#custom-cli-options)
         - [Data Loader](#data-loader)
         - [Trainer](#trainer)
         - [Model](#model)
@@ -32,15 +32,15 @@ Simple project template for PyTorch deep Learning project.
 
 <!-- /TOC -->
 
-
-## Requirements
+## Installation
+### Requirements
 * Python >= 3.6
 * PyTorch >= 1.2
 * tensorboard >= 1.14 (see [Tensorboard Visualization](#tensorboard-visualization))
 * tqdm (Optional for `test.py`)
 * hydra-core >= 1.0.0rc1
 
-## Features
+### Features
 * Clear folder structure which is suitable for many deep learning projects.
 * `.yaml` config file support for convenient parameter tuning.
 * Customizable command line options for more convenient parameter tuning.
@@ -48,7 +48,7 @@ Simple project template for PyTorch deep Learning project.
 * Abstract base classes for faster development:
   * `BaseTrainer` handles checkpoint saving/resuming, training process logging, and more.
 
-## Folder Structure
+### Folder Structure
 ```yaml
   pytorch-template/
   ├── train.py                  # main script to start training.
@@ -112,6 +112,12 @@ This repository is designed to be used with [Hydra](https://hydra.cc/) framework
           └── no_chdir.yaml
 ```
 
+### Using config files
+Modify the configurations in `.yaml` files in `conf/` dir, then run:
+  ```
+  python train.py
+  ```
+
 At runtime, one file from each config group is selected and combined to be used as one global config.
 
 ```yaml
@@ -132,7 +138,7 @@ scheduler_gamma: 0.1
 
 # configuration for data loading
 data_loader:
-  cls: srcs.data_loader.data_loaders.get_data_loaders
+  target: srcs.data_loader.data_loaders.get_data_loaders
   params:
     data_dir: data/
     batch_size: ${batch_size}
@@ -141,26 +147,26 @@ data_loader:
     num_workers: ${n_cpu}
 
 arch:
-  cls: srcs.model.model.MnistModel
+  target: srcs.model.model.MnistModel
   params:
     num_classes: 10
 loss:
-  cls: srcs.model.loss.nll_loss
+  target: srcs.model.loss.nll_loss
 optimizer:
-  cls: torch.optim.Adam
+  target: torch.optim.Adam
   params:
     lr: ${learning_rate}
     weight_decay: ${weight_decay}
     amsgrad: true
 lr_scheduler:
-  cls: torch.optim.lr_scheduler.StepLR
+  target: torch.optim.lr_scheduler.StepLR
   params:
     step_size: ${scheduler_step_size}
     gamma: ${scheduler_gamma}
 
 metrics:
-- cls: srcs.model.metric.accuracy
-- cls: srcs.model.metric.top_k_acc
+- target: srcs.model.metric.accuracy
+- target: srcs.model.metric.top_k_acc
 
 n_gpu: 1
 n_cpu: 8
@@ -175,12 +181,15 @@ trainer:
 
 Add addional configurations if you need.
 
-### Using config files
-Modify the configurations in `.yaml` files in `conf/` dir, then run:
-  ```
-  python train.py
-  ```
+`conf/hparams/lenet_baseline.yaml` contains
 
+```yaml
+batch_size: 256
+learning_rate: 0.001
+weight_decay: 0
+scheduler_step_size: 50
+scheduler_gamma: 0.1
+```
 ### Checkpoints
 
 ```yaml
@@ -223,52 +232,11 @@ Use the `new_project.py` script to make your new project directory with template
 `python new_project.py ../NewProject` then a new project folder named 'NewProject' will be made.
 This script will filter out unneccessary files like cache, git files or readme file.
 
-### Custom CLI options
-
-Changing values of config file is a clean, safe and easy way of tuning hyperparameters. However, sometimes
-it is better to have command line options if some values need to be changed too often or quickly.
-
-This template uses the configurations stored in the yaml file by default, but by registering custom options as follows
-you can change some of them using CLI flags.
-
-  ```python
-  # simple class-like object having 3 attributes, `flags`, `type`, `target`.
-  CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
-  options = [
-      CustomArgs(['--lr', '--learning_rate'], type=float, target=('optimizer', 'args', 'lr')),
-      CustomArgs(['--bs', '--batch_size'], type=int, target=('data_loader', 'args', 'batch_size'))
-      # options added here can be modified by command line flags.
-  ]
-  ```
-`target` argument should be sequence of keys, which are used to access that option in the config dict. In this example, `target`
-for the learning rate option is `('optimizer', 'args', 'lr')` because `config['optimizer']['args']['lr']` points to the learning rate.
-`python train.py -c config.yaml --bs 256` runs training with options given in `config.yaml` except for the `batch size`
-which is increased to 256 by command line options.
-
 
 ### Data Loader
 * **Writing your own data loader**
 
-1. **Inherit ```BaseDataLoader```**
-
-    `BaseDataLoader` is a subclass of `torch.utils.data.DataLoader`, you can use either of them.
-
-    `BaseDataLoader` handles:
-    * Generating next batch
-    * Data shuffling
-    * Generating validation data loader by calling
-    `BaseDataLoader.split_validation()`
-
-* **DataLoader Usage**
-
-  `BaseDataLoader` is an iterator, to iterate through batches:
-  ```python
-  for batch_idx, (x_batch, y_batch) in data_loader:
-      pass
-  ```
-* **Example**
-
-  Please refer to `data_loader/data_loaders.py` for an MNIST data loading example.
+Please refer to `data_loader/data_loaders.py` for an MNIST data loading example.
 
 ### Trainer
 * **Writing your own trainer**
@@ -297,7 +265,7 @@ which is increased to 256 by command line options.
 
 ### Model
 * **Writing your own model**
-
+<!-- deprecated -->
 1. **Inherit `BaseModel`**
 
     `BaseModel` handles:
