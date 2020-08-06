@@ -1,19 +1,19 @@
 # @package _global_
 name: MnistLeNet
 arch:
-  cls: srcs.model.model.MnistModel
+  target: srcs.model.model.MnistModel
   params:
     num_classes: 10
 loss:
-  cls: srcs.model.loss.nll_loss
+  target: srcs.model.loss.nll_loss
 optimizer:
-  cls: torch.optim.Adam
+  target: torch.optim.Adam
   params:
     lr: ${learning_rate}
     weight_decay: ${weight_decay}
     amsgrad: true
 lr_scheduler:
-  cls: torch.optim.lr_scheduler.StepLR
+  target: torch.optim.lr_scheduler.StepLR
   params:
     step_size: ${scheduler_step_size}
     gamma: ${scheduler_gamma}
