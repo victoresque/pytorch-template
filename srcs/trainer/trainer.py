@@ -72,8 +72,8 @@ class Trainer(BaseTrainer):
             self.lr_scheduler.step()
 
         # add result metrics on entire epoch to tensorboard
+        self.writer.set_step(epoch)
         for k, v in log.items():
-            self.writer.set_step(epoch)
             self.writer.add_scalar(k+'/epoch', v)
         return log
 
