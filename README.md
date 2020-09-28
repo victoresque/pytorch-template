@@ -73,8 +73,8 @@ Simple project base template for PyTorch deep Learning project.
 ```
 
 ## Usage
-This repository itself is an working example project which trains simple model(LeNet) on Fashion-MNIST dataset.
-Try `python train.py` to run code.
+This template itself is an working example project which trains a simple model(LeNet) on [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist) dataset.
+Try `python train.py` to run training.
 
 ### Hierarchical configurations with Hydra
 This repository is designed to be used with [Hydra](https://hydra.cc/) framework, which has useful key features as following.
@@ -95,12 +95,12 @@ Check [Hydra documentation](https://hydra.cc/), for more information.
   ├── evaluate.yaml             # main config file used for evaluate.py
   ├── hparams                   # define global hyper-parameters
   │   └── lenet_baseline.yaml
-  ├── dataset
+  ├── data
   │   ├── mnist_test.yaml
   │   └── mnist_train.yaml
-  ├── structure                 # define structure of NN to train
+  ├── model                     # select NN architecture to train
   │   └── mnist_lenet.yaml
-  ├── status                    # select train/debug mode.
+  ├── status                    # set train/debug mode.
   │   ├── debug.yaml            #   debug mode runs faster, and don't use tensorboard
   │   └── train.yaml            #   train mode is default with full logging
   │
@@ -189,7 +189,7 @@ scheduler_gamma: 0.1
 ```
 
 
-Those config items containing _target_ are designed to be used with `instantiate` function of Hydra. For example,
+Those config items containing `_target_` are designed to be used with `instantiate` function of Hydra. For example,
 When your config looks like
 ```yaml
 # @package _global_

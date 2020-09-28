@@ -6,11 +6,11 @@ metrics:
   - _target_: srcs.model.metric.top_k_acc
 
 defaults:
-  - dataset: mnist_train
+  - data: mnist_train
+  - model: mnist_lenet
+  - hparams: lenet_baseline
 
   - status: train
-  - structure: mnist_lenet
-  - hparams: lenet_baseline
 
   - hydra/job_logging : custom
   - hydra/run/dir: job_timestamp
