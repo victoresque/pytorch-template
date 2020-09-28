@@ -1,5 +1,8 @@
+# @package _global_
 save_dir: models/
 resume:
+status: debug
+
 n_gpu: 1
 n_cpu: 8
 trainer:
