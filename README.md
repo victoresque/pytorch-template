@@ -1,5 +1,5 @@
 # PyTorch Template Project
-Simple project template for PyTorch deep Learning project.
+Simple project base template for PyTorch deep Learning project.
 
 <!-- TOC depthFrom:1 depthTo:6 orderedList:false -->
 
@@ -37,16 +37,14 @@ Simple project template for PyTorch deep Learning project.
 * Python >= 3.6
 * PyTorch >= 1.2
 * tensorboard >= 1.14 (see [Tensorboard Visualization](#tensorboard-visualization))
-* tqdm (Optional for `test.py`)
-* hydra-core >= 1.0.0rc1
+* tqdm
+* hydra-core >= 1.0.3
 
 ### Features
-* Clear folder structure which is suitable for many deep learning projects.
-* `.yaml` config file support for convenient parameter tuning.
-* Customizable command line options for more convenient parameter tuning.
-* Checkpoint saving and resuming.
-* Abstract base classes for faster development:
-  * `BaseTrainer` handles checkpoint saving/resuming, training process logging, and more.
+* Simple and clear directory structure, suitable for most of deep learning projects.
+* Hierarchical management of project configurations with [Hydra](https://hydra.cc/docs/intro).
+* Advanced logging and monitoring for validation metrics. Automatic handling of model checkpoints.
+* **Note**: This repository is detached from [victorisque/pytorch-template](https://github.com/victoresque/pytorch-template), in order to introduce advanced features rapidly without concerning much for backward compatibility.
 
 ### Folder Structure
 ```yaml
@@ -86,6 +84,8 @@ This repository is designed to be used with [Hydra](https://hydra.cc/) framework
 - Dynamic command line tab completion
 - Run your application locally or launch it to run remotely
 - Run multiple jobs with different arguments with a single command
+
+Check [Hydra documentation](https://hydra.cc/), for more information.
 
 `conf/` directory contains `.yaml`config files which are structured into multiple **config groups**.
 
@@ -127,7 +127,7 @@ save_dir: models/
 log_dir: ${name}/
 resume:
 
-# Global hyper-parameters defined in conf.hparams
+# Global hyper-parameters defined in conf/hparams/
 #   you can change the values by either editing yaml file directly,
 #   or using command line arguments, like `python3 train.py batch_size=128`
 batch_size: 256
@@ -136,7 +136,8 @@ weight_decay: 0
 scheduler_step_size: 50
 scheduler_gamma: 0.1
 
-# configuration for data loading
+
+# configuration for data loading.
 data_loader:
   _target_: srcs.data_loader.data_loaders.get_data_loaders
   data_dir: data/
@@ -186,12 +187,45 @@ weight_decay: 0
 scheduler_step_size: 50
 scheduler_gamma: 0.1
 ```
+
+
+Those config items containing _target_ are designed to be used with `instantiate` function of Hydra. For example,
+When your config looks like
+```yaml
+# @package _global_
+classitem:
+  _target_: location.to.class.definition
+  arg1: 123
+  arg2: 'example'
+```
+
+then usage of instantiate as
+
+```python
+example_object = instantiate(config.classitem)
+```
+
+is equivalent to
+
+```python
+from location.to.class import definition
+
+example_object = definition(arg1=1, arg2='example')
+```
+
+This feature is especially useful, when you switch between multiple models with same interface(input, output),
+like choosing ResNet or MobileNet for CNN backbone of detection model.
+You can change architecture by simply using different config file, even not needing to importing both in code.
+
 ### Checkpoints
 
 ```yaml
+# new directory with timestamp will be created automatically.
+# if you enable debug mode by status=debug either in command line or main config,
+# checkpoints will be saved under separate directory `outputs/debug`.
 outputs/train/2020-07-29/12-44-37/
 ├── config.yaml # composed config file
-├── epoch-results.csv # epoch-wise evaluation results
+├── epoch-results.csv # epoch-wise evaluation metrics
 ├── MnistLeNet/ # tensorboard log file
 ├── model
 │   ├── checkpoint-epoch1.pth
@@ -204,21 +238,16 @@ outputs/train/2020-07-29/12-44-37/
 
 ### Resuming from checkpoints
 You can resume from a previously saved checkpoint by:
-
   ```
-  python train.py resume=path/to/checkpoint
+  python train.py resume=output/train/path/to/checkpoint.pth
   ```
 
 ### Using Multiple GPU
-You can enable multi-GPU training(with DataParallel) by setting `n_gpu` argument of the config file to larger number.
-If configured to use smaller number of gpu than available, first n devices will be used by default.
-Specify indices of available GPUs by cuda environmental variable.
-  ```
-  python train.py n_gpu=2
-  ```
-  This is equivalent to
-  ```
-  CUDA_VISIBLE_DEVICES=0,1 python train.py
+You can enable multi-GPU training(with DataParallel) by setting `n_gpu` argument of the config file to larger number. If configured to use smaller number of gpu than available, first n devices will be used by default. When you want to run multiple instances of training on larger maching, specify indices of available GPUs by cuda environmental variable.
+  ```bash
+  # assume running on a machine with 4 GPUs.
+  python train.py n_gpu=2 # This will use first two GPU, which are on index 0 and 1
+  CUDA_VISIBLE_DEVICES=2,3 python train.py n_gpu=2 # This will use remaining 2 GPUs on index 2 and 3
   ```
 
 ## Customization
@@ -355,10 +384,9 @@ Feel free to contribute any kind of function or enhancement, here the coding sty
 Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before committing.
 
 ## TODOs
-- [ ] Multi-GPU training with DistributedDataParallel
-- [ ] Option to specify GPU indices to be used
-- [ ] Option to keep top-k checkpoints only
-- [ ] Simple unittest code for `nn.Module`
+- [ ] Support DistributedDataParallel
+- [x] Option to keep top-k checkpoints only
+- [ ] Simple unittest code for `nn.Module` and others
 
 ## License
 This project is licensed under the MIT License. See  LICENSE for more details
