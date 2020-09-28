@@ -138,35 +138,31 @@ scheduler_gamma: 0.1
 
 # configuration for data loading
 data_loader:
-  target: srcs.data_loader.data_loaders.get_data_loaders
-  params:
-    data_dir: data/
-    batch_size: ${batch_size}
-    shuffle: true
-    validation_split: 0.1
-    num_workers: ${n_cpu}
+  _target_: srcs.data_loader.data_loaders.get_data_loaders
+  data_dir: data/
+  batch_size: ${batch_size}
+  shuffle: true
+  validation_split: 0.1
+  num_workers: ${n_cpu}
 
 arch:
-  target: srcs.model.model.MnistModel
-  params:
-    num_classes: 10
+  _target_: srcs.model.model.MnistModel
+  num_classes: 10
 loss:
-  target: srcs.model.loss.nll_loss
+  _target_: srcs.model.loss.nll_loss
 optimizer:
-  target: torch.optim.Adam
-  params:
-    lr: ${learning_rate}
-    weight_decay: ${weight_decay}
-    amsgrad: true
+  _target_: torch.optim.Adam
+  lr: ${learning_rate}
+  weight_decay: ${weight_decay}
+  amsgrad: true
 lr_scheduler:
-  target: torch.optim.lr_scheduler.StepLR
-  params:
-    step_size: ${scheduler_step_size}
-    gamma: ${scheduler_gamma}
+  _target_: torch.optim.lr_scheduler.StepLR
+  step_size: ${scheduler_step_size}
+  gamma: ${scheduler_gamma}
 
 metrics:
-- target: srcs.model.metric.accuracy
-- target: srcs.model.metric.top_k_acc
+- _target_: srcs.model.metric.accuracy
+- _target_: srcs.model.metric.top_k_acc
 
 n_gpu: 1
 n_cpu: 8

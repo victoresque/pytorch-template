@@ -2,8 +2,8 @@ log_dir: ${name}/
 checkpoint: ???
 
 metrics:
-  - target: srcs.model.metric.accuracy
-  - target: srcs.model.metric.top_k_acc
+  - _target_: srcs.model.metric.accuracy
+  - _target_: srcs.model.metric.top_k_acc
 
 defaults:
   - dataset: mnist_test

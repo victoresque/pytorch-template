@@ -18,12 +18,13 @@ def instantiate(config, *args, is_func=False, **kwargs):
     1. return None if config.class is None
     2. return function handle if is_func is True
     """
-    assert 'target' in config, f'Config should have \'target\' and \'params\' for class instantiation.'
-    if config['target'] is None:
+    assert '_target_' in config, f'Config should have \'_target_\' for class instantiation.'
+    target = config['_target_']
+    if target is None:
         return None
     if is_func:
         # get function handle
-        modulename, funcname = config['target'].rsplit('.', 1)
+        modulename, funcname = target.rsplit('.', 1)
         mod = import_module(modulename)
         func = getattr(mod, funcname)
 
