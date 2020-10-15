@@ -29,7 +29,7 @@ def instantiate(config, *args, is_func=False, **kwargs):
         func = getattr(mod, funcname)
 
         # make partial function with arguments given in config, code
-        kwargs.update(config.get('params', {}))
+        kwargs.update({k: v for k, v in config.items() if k != '_target_'})
         partial_func = partial(func, *args, **kwargs)
 
         # update original function's __name__ and __doc__ to partial function
