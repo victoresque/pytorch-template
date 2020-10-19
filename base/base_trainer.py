@@ -8,7 +8,8 @@ class BaseTrainer:
     """
     Base class for all trainers
     """
-    def __init__(self, model, criterion, metric_ftns, optimizer, config):
+
+    def __init__(self, model, criterion, metric_ftns, optimizer, config, data_loader):
         self.config = config
         self.logger = config.get_logger('trainer', config['trainer']['verbosity'])
 
@@ -42,8 +43,10 @@ class BaseTrainer:
 
         self.checkpoint_dir = config.save_dir
 
-        # setup visualization writer instance                
+        # setup visualization writer instance
         self.writer = TensorboardWriter(config.log_dir, self.logger, cfg_trainer['tensorboard'])
+
+        self._add_graph_to_writer(data_loader)
 
         if config.resume is not None:
             self._resume_checkpoint(config.resume)
@@ -117,6 +120,13 @@ class BaseTrainer:
         device = torch.device('cuda:0' if n_gpu_use > 0 else 'cpu')
         list_ids = list(range(n_gpu_use))
         return device, list_ids
+
+    def _add_graph_to_writer(self, data_loader):
+        if self.writer.writer is not None:
+            dataiter = iter(data_loader)
+            model_inputs, _ = dataiter.next()
+            model_inputs = model_inputs.to(self.device)
+            self.writer.writer.add_graph(self.model, model_inputs)
 
     def _save_checkpoint(self, epoch, save_best=False):
         """
