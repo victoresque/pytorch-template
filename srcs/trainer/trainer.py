@@ -1,12 +1,10 @@
-import logging
 import torch
+import torch.distributed as dist
 from torchvision.utils import make_grid
 from .base import BaseTrainer
-from srcs.utils import inf_loop
+from srcs.utils import inf_loop, collect
 from srcs.logger import BatchMetrics
 
-
-logger = logging.getLogger('trainer')
 
 class Trainer(BaseTrainer):
     """
@@ -49,16 +47,14 @@ class Trainer(BaseTrainer):
             self.optimizer.step()
 
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
-            self.train_metrics.update('loss', loss.item())
+            self.train_metrics.update('loss', collect(loss))
 
             if batch_idx % self.log_step == 0:
                 self.writer.add_image('train/input', make_grid(data.cpu(), nrow=8, normalize=True))
                 for met in self.metric_ftns:
-                    self.train_metrics.update(met.__name__, met(output, target))
-                logger.info('Train Epoch: {} {} Loss: {:.6f}'.format(
-                    epoch,
-                    self._progress(batch_idx),
-                    loss.item()))
+                    metric = collect(met(output, target)) # average metric between processes
+                    self.train_metrics.update(met.__name__, metric)
+                self.logger.info(f'Train Epoch: {epoch} {self._progress(batch_idx)} Loss: {loss.item():.6f}')
 
             if batch_idx == self.len_epoch:
                 break
@@ -110,6 +106,8 @@ class Trainer(BaseTrainer):
             # epoch-based training
             total = len(self.data_loader.dataset)
             current = batch_idx * self.data_loader.batch_size
+            if dist.is_initialized():
+                current *= dist.get_world_size()
         except AttributeError:
             # iteration-based training
             total = self.len_epoch
