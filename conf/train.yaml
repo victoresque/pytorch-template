@@ -1,5 +1,6 @@
-log_dir: ${name}/
 resume:
+save_dir: models/
+log_dir: ${name}/
 
 metrics:
   - _target_: srcs.model.metric.accuracy

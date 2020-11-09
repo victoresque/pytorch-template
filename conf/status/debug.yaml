@@ -1,15 +1,12 @@
 # @package _global_
-save_dir: models/
-resume:
 status: debug
 
-n_gpu: 1
-n_cpu: 8
 trainer:
   epochs: 5
   logging_step: 10
 
   monitor: min loss/valid
-  early_stop: 2
+  save_topk: 3
+  early_stop: 5
 
   tensorboard: false
