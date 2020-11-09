@@ -135,7 +135,12 @@ class EpochMetrics:
 
             # delete checkpoint having out-of topk metric
             filename = str(checkpt_dir / 'checkpoint-epoch{}.pth'.format(to_delete.split('-')[1]))
-            os.remove(filename)
+            try:
+                os.remove(filename)
+            except FileNotFoundError:
+                # this happens when current model is loaded from checkpoint
+                # or target file is already removed somehow
+                pass
 
     def update(self, epoch, result):
         epoch_idx = f'epoch-{epoch}'
