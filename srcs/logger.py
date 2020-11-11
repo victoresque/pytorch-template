@@ -1,15 +1,14 @@
 import os
-import logging
 import pandas as pd
 from itertools import product
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
+from srcs.utils import get_logger
 
-
-logger = logging.getLogger('logger')
 
 class TensorboardWriter():
     def __init__(self, log_dir, enabled):
+        self.logger = get_logger('tensorboard-writer')
         self.writer = SummaryWriter(log_dir) if enabled else None
         self.selected_module = ""
 
@@ -83,6 +82,7 @@ class BatchMetrics:
 
 class EpochMetrics:
     def __init__(self, metric_names, phases=('train', 'valid'), monitoring='off'):
+        self.logger = get_logger('epoch-metrics')
         # setup pandas DataFrame with hierarchical columns
         columns = tuple(product(metric_names, phases))
         self._data = pd.DataFrame(columns=columns) # TODO: add epoch duration
@@ -95,8 +95,8 @@ class EpochMetrics:
         try:
             metric = self._data[self.monitor_metric].loc[idx]
         except KeyError:
-            logger.warning("Warning: Metric '{}' is not found. "
-                           "Model performance monitoring is disabled.".format(self.monitor_metric))
+            self.logger.warning("Warning: Metric '{}' is not found. "
+                                "Model performance monitoring is disabled.".format(self.monitor_metric))
             self.monitor_mode = 'off'
             return 0
         if self.monitor_mode == 'min':
