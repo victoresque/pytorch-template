@@ -32,6 +32,8 @@ class BaseTrainer:
 
             self.mnt_best = inf if self.mnt_mode == 'min' else -inf
             self.early_stop = cfg_trainer.get('early_stop', inf)
+            if self.early_stop <= 0:
+                self.early_stop = inf
 
         self.start_epoch = 1
 
