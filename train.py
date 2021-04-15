@@ -58,6 +58,8 @@ if __name__ == '__main__':
     args = argparse.ArgumentParser(description='PyTorch Template')
     args.add_argument('-c', '--config', default=None, type=str,
                       help='config file path (default: None)')
+    args.add_argument('-ft', '--fine-tune', default=False, type=bool,
+                      help='fine tune pretrained model or not. If True, the saved config will be overridden by outer config')
     args.add_argument('-r', '--resume', default=None, type=str,
                       help='path to latest checkpoint (default: None)')
     args.add_argument('-d', '--device', default=None, type=str,

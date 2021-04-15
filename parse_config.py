@@ -69,8 +69,9 @@ class ConfigParser:
             cfg_fname = Path(args.config)
         
         config = read_json(cfg_fname)
-        if args.config and resume:
+        if args.config and resume and args.fine_tune:
             # update new config for fine-tuning
+            # if not fine tune, the saved config will remain as it is
             config.update(read_json(args.config))
 
         # parse custom cli options into dictionary
