@@ -3,7 +3,7 @@
     "n_gpu": 1,
 
     "arch": {
-        "type": "MnistModel",
+        "type": "Mnist_Experimental",
         "args": {}
     },
     "data_loader": {
@@ -36,7 +36,7 @@
         }
     },
     "trainer": {
-        "epochs": 100,
+        "epochs": 15,
 
         "save_dir": "saved/",
         "save_period": 1,
