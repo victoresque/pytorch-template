@@ -1,22 +1,31 @@
-import torch.nn as nn
-import torch.nn.functional as F
+import sys
+sys.path.append('D:\software\Code\code-file\pytorch-model')
+import torch
 from base import BaseModel
+from .model_arc.my_model import setr_pretrain
+from .model_arc.decoder import PointHead
 
-
-class MnistModel(BaseModel):
-    def __init__(self, num_classes=10):
+#完整模型
+class Pointrend_pre(BaseModel):
+    def __init__(self,my_pretrain=False):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
-        self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
-        self.conv2_drop = nn.Dropout2d()
-        self.fc1 = nn.Linear(320, 50)
-        self.fc2 = nn.Linear(50, num_classes)
+        self.model_net = setr_pretrain()
+        self.pointhead = PointHead()
+        if my_pretrain:
+            pretrain_path = r'D:\software\Code\code-file\pytorch-model\saved\models\setr\0804_154240\checkpoint-epoch30.pth'
+            checkpoint = torch.load(pretrain_path,map_location=torch.device('cpu'))
+            state_dict = checkpoint['state_dict']
+            self.model_net.load_state_dict(state_dict)
+    def forward(self,x):
+        result = self.model_net(x)
+        result.update(self.pointhead(x, result["res2"], result["coarse"]))
+        return result
 
-    def forward(self, x):
-        x = F.relu(F.max_pool2d(self.conv1(x), 2))
-        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
-        x = x.view(-1, 320)
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, training=self.training)
-        x = self.fc2(x)
-        return F.log_softmax(x, dim=1)
+if __name__ == "__main__":
+    a = torch.randn(1, 3, 512, 512)
+    net = Pointrend_pre()
+
+    # net.eval()
+    out = net(a)
+    for k, v in out.items():
+        print(k, v.shape)

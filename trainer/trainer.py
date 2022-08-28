@@ -3,6 +3,7 @@ import torch
 from torchvision.utils import make_grid
 from base import BaseTrainer
 from utils import inf_loop, MetricTracker
+from torch.cuda.amp import autocast,GradScaler
 
 
 class Trainer(BaseTrainer):
@@ -37,24 +38,40 @@ class Trainer(BaseTrainer):
         :param epoch: Integer, current training epoch.
         :return: A log that contains average loss and metric in this epoch.
         """
+        #混合精度
+        scaler = GradScaler()
         self.model.train()
         self.train_metrics.reset()
         for batch_idx, (data, target) in enumerate(self.data_loader):
             data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
+
+            '''原始
             output = self.model(data)
             loss = self.criterion(output, target)
             loss.backward()
             self.optimizer.step()
+            '''
+            #混合精度
+            with autocast():
+                output = self.model(data)
+                loss = self.criterion(output, target)
+            scaler.scale(loss).backward()
+            scaler.step(self.optimizer)
+            scaler.update()
 
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
             self.train_metrics.update('loss', loss.item())
+
+            '''
+            pointrend用不到
             for met in self.metric_ftns:
                 self.train_metrics.update(met.__name__, met(output, target))
+            '''
 
             if batch_idx % self.log_step == 0:
-                self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
+                self.logger.info('Train Epoch: {} {} Loss: {:.6f}'.format(
                     epoch,
                     self._progress(batch_idx),
                     loss.item()))
@@ -86,12 +103,20 @@ class Trainer(BaseTrainer):
                 data, target = data.to(self.device), target.to(self.device)
 
                 output = self.model(data)
-                loss = self.criterion(output, target)
+                #loss = self.criterion(output, target)
+
 
                 self.writer.set_step((epoch - 1) * len(self.valid_data_loader) + batch_idx, 'valid')
-                self.valid_metrics.update('loss', loss.item())
+                #self.valid_metrics.update('loss', loss.item())
+
+                #原始验证
+                '''
                 for met in self.metric_ftns:
                     self.valid_metrics.update(met.__name__, met(output, target))
+                '''
+                for met in self.metric_ftns:
+                    self.valid_metrics.update(met.__name__, met(output['fine'], target))
+
                 self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
         # add histogram of model parameters to the tensorboard
