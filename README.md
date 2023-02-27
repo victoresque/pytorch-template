@@ -38,6 +38,7 @@ PyTorch deep learning project made easy.
 * tqdm (Optional for `test.py`)
 * tensorboard >= 1.14 (see [Tensorboard Visualization](#tensorboard-visualization))
 
+* Noted to create data, saved, input, and dataset by your self
 ## Features
 * Clear folder structure which is suitable for many deep learning projects.
 * `.json` config file support for convenient parameter tuning.
