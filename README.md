@@ -355,6 +355,14 @@ If you need more visualizations, use `add_scalar('tag', data)`, `add_image('tag'
 `add_something()` methods in this template are basically wrappers for those of `tensorboardX.SummaryWriter` and `torch.utils.tensorboard.SummaryWriter` modules. 
 
 **Note**: You don't have to specify current steps, since `WriterTensorboard` class defined at `logger/visualization.py` will track current steps.
+**known issue** when using numpy>=1.24 and pytorch <=1.13 may encontered [Type error: No loop matching the specified signature and casting was found for ufunc greater](https://github.com/pytorch/pytorch/issues/91516) which will fixed by following update of pytorch.
+
+one fix is to install the pkg from source, since it has been fixed in source just havent released yet.
+another if following [this hot fix](https://github.com/pytorch/pytorch/commit/0205ffb8d95a5751b341b5d4f65f2f066f107766) that modify the `torch/utils/tensorboard/summary.py` 
+from 
+` cum_counts = np.cumsum(np.greater(counts, 0, dtype=np.int32))` to  `cum_counts = np.cumsum(np.greater(counts, 0))`
+one can find the pkg source by clicking the import line in vscode
+
 
 ## Contribution
 Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8
